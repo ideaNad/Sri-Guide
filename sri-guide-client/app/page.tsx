@@ -145,35 +145,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Newsletter - Liquid Glass Background */}
-      <section className="py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-primary -z-10" />
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-secondary/20 rounded-full blur-[120px] -z-10 animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-highlight/20 rounded-full blur-[100px] -z-10" />
-
-        <div className="container mx-auto px-4 md:px-6 text-center text-white">
-          <div className="max-w-4xl mx-auto bg-gray-900 p-12 md:p-24 border border-white/10 shadow-2xl overflow-hidden relative">
-            <Mail className="w-16 h-16 text-primary mx-auto mb-8 opacity-20" />
-            <h2 className="text-4xl md:text-5xl font-black mb-6 uppercase tracking-tighter">Join the Inner Circle</h2>
-            <p className="text-lg text-white/50 mb-12 leading-relaxed font-medium max-w-2xl mx-auto">
-              Get exclusive travel tips, hidden gem alerts, and special offers delivered to your inbox every week. Original Stories.
-            </p>
-
-            <form className="flex flex-col md:flex-row gap-0 max-w-xl mx-auto border border-white/20">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 bg-white/5 px-8 py-5 text-white placeholder:text-white/20 outline-none focus:bg-white/10 transition-all font-bold uppercase text-xs tracking-widest"
-              />
-              <button className="bg-white text-gray-900 px-10 py-5 font-black text-xs uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all shadow-xl">
-                Subscribe
-              </button>
-            </form>
-            <p className="mt-6 text-xs text-white/40">We respect your privacy. Unsubscribe at any time.</p>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

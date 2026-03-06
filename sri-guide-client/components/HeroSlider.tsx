@@ -25,7 +25,7 @@ const HeroSection = () => {
     transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
     className="text-center -mt-1 sm:-mt-15 lg:mt-0"
   >
-<h1 className="text-[29vw] lg:text-[20rem] font-black text-white leading-none tracking-tighter opacity-50 drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] whitespace-normal sm:whitespace-nowrap">
+<h1 className="text-[29vw] lg:text-[18rem] font-black text-white leading-none tracking-tighter opacity-50 drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] whitespace-normal sm:whitespace-nowrap">
   SRI LANKA
 </h1>
   </motion.div>

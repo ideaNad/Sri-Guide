@@ -9,10 +9,12 @@ const Footer = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
                     {/* Brand Info */}
                     <div className="space-y-6">
-                        <Link href="/" className="flex items-center space-x-2">
-                            <span className="text-2xl font-bold tracking-tight text-white">
-                                Sri<span className="text-highlight">Guide</span>
-                            </span>
+                        <Link href="/" className="relative flex items-center h-8 md:h-10">
+                            <img
+                                src="/logo.svg"
+                                alt="SRIGuide Logo"
+                                className="absolute left-0 h-40 w-auto brightness-0 invert object-contain"
+                            />
                         </Link>
                         <p className="text-sm leading-relaxed">
                             Your ultimate travel companion to explore the wonders of Sri Lanka.
@@ -79,9 +81,16 @@ const Footer = () => {
                     </div>
                 </div>
 
-                <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-xs">
+                <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-xs text-gray-400 font-medium">
                     <p>© 2026 SriGuide Travel (Pvt) Ltd. All Rights Reserved.</p>
-                    <div className="flex space-x-6">
+
+                    <p className="text-sm">
+                        Powered by:{' '}
+                        <span style={{ fontFamily: 'var(--font-comfortaa), sans-serif' }} className="text-gray-500 font-black">Idea</span>
+                        <span style={{ fontFamily: 'var(--font-comfortaa), sans-serif' }} className="text-teal-500 font-black">Nad</span>
+                    </p>
+
+                    <div className="flex space-x-6 uppercase tracking-widest text-[10px]">
                         <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
                         <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>
                         <Link href="#" className="hover:text-white transition-colors">Cookies Policy</Link>
