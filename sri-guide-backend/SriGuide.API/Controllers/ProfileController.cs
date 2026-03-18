@@ -1,0 +1,73 @@
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SriGuide.Application.Profiles.Commands;
+using SriGuide.Application.Profiles.Queries;
+using SriGuide.Application.Profiles.Queries.GetProfileById;
+using System.Security.Claims;
+
+namespace SriGuide.API.Controllers;
+
+[Authorize]
+[ApiController]
+[Route("api/[controller]")]
+public class ProfileController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public ProfileController(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
+    [HttpGet("me")]
+    public async Task<IActionResult> GetMyProfile()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var query = new GetUserProfileQuery(Guid.Parse(userId));
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+
+    [HttpGet("{id}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ProfileDetailDto>> GetPublicProfile(Guid id)
+    {
+        var result = await _mediator.Send(new GetProfileByIdQuery(id));
+        if (result == null) return NotFound();
+        return Ok(result);
+    }
+
+    [HttpPost("update-user")]
+    public async Task<ActionResult<bool>> UpdateUser(UpdateUserProfileCommand command)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null || Guid.Parse(userId) != command.UserId) return Forbid();
+
+        return await _mediator.Send(command);
+    }
+
+    [HttpPost("update-guide")]
+    [Authorize(Roles = "Guide")]
+    public async Task<ActionResult<bool>> UpdateGuideProfile([FromBody] UpdateGuideProfileCommand command)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null || Guid.Parse(userId) != command.UserId) return Forbid();
+
+        var result = await _mediator.Send(command);
+        return Ok(result);
+    }
+
+    [HttpPost("upgrade-to-agency")]
+    [Authorize(Roles = "Guide")]
+    public async Task<IActionResult> UpgradeToAgency([FromBody] UpgradeToAgencyCommand command)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var result = await _mediator.Send(command with { UserId = Guid.Parse(userId) });
+        return Ok(result);
+    }
+}

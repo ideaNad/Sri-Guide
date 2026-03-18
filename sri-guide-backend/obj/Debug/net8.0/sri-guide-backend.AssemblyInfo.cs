@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("sri-guide-backend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ba3d8c9ee854aa560f22f01377a3e2c8851e568e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5798ea617ff6cfc799744fb9036a1d9857110926")]
 [assembly: System.Reflection.AssemblyProductAttribute("sri-guide-backend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("sri-guide-backend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

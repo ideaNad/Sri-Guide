@@ -31,6 +31,8 @@ export const metadata: Metadata = {
   description: "Discover the hidden gems of Sri Lanka. Authentic tours, expert guides, and unforgettable experiences.",
 };
 
+import { AuthProvider } from "@/context/AuthContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -39,9 +41,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${geistSans.variable} ${geistMono.variable} ${jakarta.variable} ${comfortaa.variable} antialiased selection:bg-primary selection:text-white`}>
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
+        <AuthProvider>
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

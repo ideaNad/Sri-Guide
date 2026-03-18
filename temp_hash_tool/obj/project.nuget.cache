@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "7B6tfZ9vtOs=",
+  "success": true,
+  "projectFilePath": "C:\\Sources\\SriGuide\\Sri-Guide\\temp_hash_tool\\temp_hash_tool.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\msi\\.nuget\\packages\\bcrypt.net-next\\4.1.0\\bcrypt.net-next.4.1.0.nupkg.sha512"
+  ],
+  "logs": []
+}

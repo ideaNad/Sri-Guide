@@ -1,6 +1,9 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
-import { Star, MapPin, Clock } from "lucide-react";
+import { Star, MapPin, Clock, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 interface CardProps {
     title: string;
@@ -11,9 +14,15 @@ interface CardProps {
     reviews?: number;
     duration?: string;
     tags?: string[];
-    type?: "tour" | "guide" | "place" | "restaurant" | "vehicle";
+    type?: "tour" | "guide" | "place" | "restaurant" | "vehicle" | "agency";
     subtitle?: string;
+    phone?: string;
+    email?: string;
+    whatsapp?: string;
+    id?: string | number;
 }
+
+import ProtectedContact from "./ProtectedContact";
 
 const Card: React.FC<CardProps> = ({
     title,
@@ -25,10 +34,20 @@ const Card: React.FC<CardProps> = ({
     duration,
     tags,
     type = "tour",
-    subtitle
+    subtitle,
+    phone,
+    email,
+    whatsapp,
+    id
 }) => {
+    const isProfile = type === "guide" || type === "agency";
+    const profileLink = id ? `/profile/${id}` : "#";
+
     return (
-        <div className="group bg-white rounded-none overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
+        <div className="group bg-white rounded-none overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 relative">
+            {isProfile && id && (
+                <Link href={profileLink} className="absolute inset-0 z-10" />
+            )}
             {/* Image Container */}
             <div className="relative h-56 w-full overflow-hidden">
                 <img
@@ -91,6 +110,23 @@ const Card: React.FC<CardProps> = ({
                         )}
                     </div>
                 </div>
+
+                {(type === "guide" || type === "agency") && (phone || email || whatsapp) && (
+                    <div className="mt-4 pt-4 border-t border-gray-100 space-y-2 relative z-20">
+                        {phone && <ProtectedContact type="phone" value={phone} />}
+                        {email && <ProtectedContact type="email" value={email} />}
+                        {whatsapp && <ProtectedContact type="whatsapp" value={whatsapp} />}
+                    </div>
+                )}
+                
+                {isProfile && (
+                    <div className="mt-6">
+                        <div className="flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-widest group-hover:gap-4 transition-all">
+                            <span>View Full Profile</span>
+                            <ArrowRight size={14} />
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

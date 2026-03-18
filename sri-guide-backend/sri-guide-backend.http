@@ -1,6 +1,0 @@
-@sri_guide_backend_HostAddress = http://localhost:5084
-
-GET {{sri_guide_backend_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

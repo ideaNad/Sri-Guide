@@ -1,0 +1,72 @@
+using Microsoft.EntityFrameworkCore;
+using SriGuide.Application.Common.Interfaces;
+using SriGuide.Domain.Common;
+using SriGuide.Domain.Entities;
+
+namespace SriGuide.Infrastructure.Persistence;
+
+public class ApplicationDbContext : DbContext, IApplicationDbContext
+{
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+    {
+    }
+
+    public DbSet<User> Users => Set<User>();
+    public DbSet<GuideProfile> GuideProfiles => Set<GuideProfile>();
+    public DbSet<AgencyProfile> AgencyProfiles => Set<AgencyProfile>();
+    public DbSet<Review> Reviews => Set<Review>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        // Configure User unique email
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+
+        // GuideProfile relationships
+        modelBuilder.Entity<GuideProfile>()
+            .HasOne(g => g.User)
+            .WithOne(u => u.GuideProfile)
+            .HasForeignKey<GuideProfile>(g => g.UserId);
+
+        modelBuilder.Entity<GuideProfile>()
+            .HasOne(g => g.Agency)
+            .WithMany(a => a.Guides)
+            .HasForeignKey(g => g.AgencyId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // AgencyProfile relationship
+        modelBuilder.Entity<AgencyProfile>()
+            .HasOne(a => a.User)
+            .WithOne(u => u.AgencyProfile)
+            .HasForeignKey<AgencyProfile>(a => a.UserId);
+
+        // Review relationship
+        modelBuilder.Entity<Review>()
+            .HasOne(r => r.User)
+            .WithMany()
+            .HasForeignKey(r => r.UserId);
+
+        base.OnModelCreating(modelBuilder);
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+        {
+            switch (entry.State)
+            {
+                case EntityState.Added:
+                    entry.Entity.CreatedAt = DateTime.UtcNow;
+                    break;
+                case EntityState.Modified:
+                    entry.Entity.UpdatedAt = DateTime.UtcNow;
+                    break;
+            }
+        }
+
+        return base.SaveChangesAsync(cancellationToken);
+    }
+}

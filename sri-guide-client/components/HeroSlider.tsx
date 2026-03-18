@@ -2,7 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import AuthModal from "./AuthModal";
+import Link from "next/link";
 
 const images = [
     "/hero-ella.png",
@@ -13,6 +16,8 @@ const images = [
 
 const HeroSection = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const { user, login } = useAuth();
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -75,29 +80,54 @@ const HeroSection = () => {
                     </div>
 
                     {/* CTA & Description */}
-                    <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8 max-w-xl">
-                        <div className="flex items-center gap-2 group cursor-pointer">
-                            <motion.button
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="px-10 py-4 bg-white rounded-full flex items-center justify-center shadow-2xl transition-all"
-                            >
-                                <span className="text-black font-bold text-sm md:text-base">Book Now</span>
-                            </motion.button>
-                            <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                className="w-12 h-12 md:w-14 md:h-14 bg-white rounded-full flex items-center justify-center shadow-2xl"
-                            >
-                                <ArrowRight className="w-5 h-5 md:w-6 md:h-6 text-black" />
-                            </motion.button>
-                        </div>
+                    <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8 max-w-2xl">
+                        {!user ? (
+                            <div className="flex items-center gap-2 group cursor-pointer">
+                                <motion.button
+                                    onClick={() => setIsAuthModalOpen(true)}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="px-10 py-5 bg-primary text-white rounded-full flex items-center justify-center shadow-2xl transition-all font-black text-sm uppercase tracking-widest hover:bg-secondary"
+                                >
+                                    <span>Get Started</span>
+                                </motion.button>
+                                <motion.div
+                                    whileHover={{ scale: 1.1 }}
+                                    className="w-14 h-14 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center shadow-2xl"
+                                >
+                                    <Sparkles className="w-6 h-6 text-white" />
+                                </motion.div>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2 group cursor-pointer">
+                                <Link
+                                    href="/discover"
+                                    className="px-10 py-5 bg-white text-black rounded-full flex items-center justify-center shadow-2xl transition-all font-black text-sm uppercase tracking-widest hover:bg-gray-100"
+                                >
+                                    <span>Find a Guide</span>
+                                </Link>
+                                <motion.div
+                                    whileHover={{ scale: 1.1 }}
+                                    className="w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-2xl"
+                                >
+                                    <ArrowRight className="w-6 h-6 text-white" />
+                                </motion.div>
+                            </div>
+                        )}
                         <p className="text-white/70 text-[10px] md:text-sm lg:text-base md:text-left leading-relaxed font-medium max-w-[200px] md:max-w-xs">
-                            Journey across continents, cultures, and landscapes — because every path leads to new discoveries.
+                            Experience the magic of the teardrop isle with certified local experts by your side.
                         </p>
                     </div>
                 </div>
             </div>
+
+            {/* Auth Modal */}
+            <AuthModal 
+                isOpen={isAuthModalOpen} 
+                onClose={() => setIsAuthModalOpen(false)} 
+                onSuccess={(userData) => login(userData)}
+                defaultIsLogin={false}
+            />
         </section>
     );
 };

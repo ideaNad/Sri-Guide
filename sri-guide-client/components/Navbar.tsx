@@ -2,15 +2,19 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, ShieldCheck } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname } from "next/navigation";
+import AuthModal from "./AuthModal";
+import { useAuth } from "@/context/AuthContext";
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const pathname = usePathname();
     const isHomePage = pathname === "/";
+    const { user, login, logout } = useAuth();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -24,7 +28,7 @@ const Navbar = () => {
     const navLinks = [
         { name: "Home", href: "/" },
         { name: "Tours", href: "/tours" },
-        { name: "Review", href: "#" },
+        { name: "Guides", href: "/guides" },
         { name: "Contact", href: "#" },
     ];
 
@@ -37,6 +41,24 @@ const Navbar = () => {
 
     const textColor = isScrolled || !isHomePage ? "text-black" : "text-white";
     const logoColor = isScrolled || !isHomePage ? "text-primary" : "text-white";
+
+    const NavItems = ({ mobile = false }: { mobile?: boolean }) => (
+        <>
+            {navLinks.map((link) => (
+                <Link
+                    key={link.name}
+                    href={link.href}
+                    className={mobile 
+                        ? "text-3xl font-black text-black hover:text-primary transition-colors uppercase tracking-tight"
+                        : `px-6 py-2.5 text-[13px] font-bold ${textColor} hover:bg-black/5 rounded-full transition-all flex items-center`
+                    }
+                    onClick={() => mobile && setIsMobileMenuOpen(false)}
+                >
+                    {link.name}
+                </Link>
+            ))}
+        </>
+    );
 
     return (
         <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${navBackground}`}>
@@ -54,7 +76,7 @@ const Navbar = () => {
 
                 {/* Desktop Menu */}
                 {/* Floating rounded menu only on home page & top */}
-                {!isScrolled && isHomePage && (
+                {!isScrolled && isHomePage ? (
                     <div className="hidden lg:flex items-center space-x-1 p-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 transition-all duration-500">
                         {navLinks.map((link) => (
                             <Link
@@ -63,33 +85,55 @@ const Navbar = () => {
                                 className="px-6 py-2.5 text-[13px] font-bold text-white hover:bg-black/5 rounded-full transition-all flex items-center"
                             >
                                 {link.name}
-                                {link.name === "Destination" && <ChevronDown className="ml-1 w-3.5 h-3.5 opacity-50" />}
                             </Link>
                         ))}
                     </div>
-                )}
-
-                {/* Full-width desktop menu on scroll or other pages */}
-                {(isScrolled || !isHomePage) && (
+                ) : (
                     <div className="hidden lg:flex items-center space-x-1">
-                        {navLinks.map((link) => (
-                            <Link
-                                key={link.name}
-                                href={link.href}
-                                className={`px-6 py-2.5 text-[13px] font-bold ${textColor} hover:bg-black/5 rounded-full transition-all flex items-center`}
-                            >
-                                {link.name}
-                                {link.name === "Destination" && <ChevronDown className="ml-1 w-3.5 h-3.5 opacity-50" />}
-                            </Link>
-                        ))}
+                        <NavItems />
                     </div>
                 )}
 
-                {/* CTA Button */}
-                <div className="hidden lg:block">
-                    <button className="px-8 py-3 bg-primary hover:bg-secondary text-white rounded-full text-[13px] font-bold transition-all shadow-lg shadow-primary/20">
-                        Book Now
-                    </button>
+                {/* Auth & CTA */}
+                <div className="hidden lg:flex items-center gap-4">
+                    {user ? (
+                        <div className="flex items-center gap-4">
+                            <Link 
+                                href="/dashboard" 
+                                className={`flex items-center gap-2 text-[13px] font-bold ${textColor} hover:text-primary transition-colors`}
+                            >
+                                <LayoutDashboard size={18} />
+                                <span>Dashboard</span>
+                            </Link>
+                            {user.role === "Admin" && (
+                                <Link 
+                                    href="/admin/upgrades" 
+                                    className={`flex items-center gap-2 text-[13px] font-bold ${textColor} hover:text-primary transition-colors`}
+                                >
+                                    <ShieldCheck size={18} className="text-secondary" />
+                                    <span>Admin Panel</span>
+                                </Link>
+                            )}
+                            <button 
+                                onClick={logout}
+                                className="flex items-center gap-2 text-[13px] font-bold text-rose-500 hover:text-rose-600 transition-colors"
+                            >
+                                <LogOut size={18} />
+                                <span>Logout</span>
+                            </button>
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20">
+                                {user.fullName.charAt(0)}
+                            </div>
+                        </div>
+                    ) : (
+                        <button 
+                            onClick={() => setIsAuthModalOpen(true)}
+                            className={`px-8 py-3 bg-primary hover:bg-secondary text-white rounded-full text-[13px] font-bold transition-all shadow-lg shadow-primary/20 flex items-center gap-2 active:scale-95`}
+                        >
+                            <User size={16} />
+                            <span>Sign In</span>
+                        </button>
+                    )}
                 </div>
 
                 {/* Mobile Menu Button */}
@@ -105,7 +149,7 @@ const Navbar = () => {
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className="absolute top-0 left-0 w-full h-screen bg-white/98 backdrop-blur-xl lg:hidden py-12 px-6 flex flex-col items-center justify-center space-y-10 z-50"
+                        className="fixed top-0 left-0 w-full h-screen bg-white lg:hidden py-12 px-6 flex flex-col items-center justify-center space-y-10 z-[60]"
                     >
                         {/* Logo inside Mobile Menu */}
                         <Link href="/" className="absolute top-8 left-6" onClick={() => setIsMobileMenuOpen(false)}>
@@ -124,26 +168,56 @@ const Navbar = () => {
                         </button>
 
                         <div className="flex flex-col items-center space-y-8">
-                            {navLinks.map((link) => (
-                                <Link
-                                    key={link.name}
-                                    href={link.href}
-                                    className="text-3xl font-black text-black hover:text-primary transition-colors uppercase tracking-tight"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    {link.name}
-                                </Link>
-                            ))}
+                            <NavItems mobile />
                         </div>
 
-                        <button className="w-full max-w-xs py-5 bg-primary text-white rounded-full text-lg font-black uppercase tracking-widest shadow-xl">
-                            Book Now
-                        </button>
+                        <div className="w-full max-w-xs space-y-4">
+                            {user ? (
+                                <>
+                                    <Link 
+                                        href="/dashboard" 
+                                        className="w-full block text-center py-5 bg-gray-100 text-black rounded-full text-lg font-black uppercase tracking-widest"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    >
+                                        Dashboard
+                                    </Link>
+                                    {user.role === "Admin" && (
+                                        <Link 
+                                            href="/admin/upgrades" 
+                                            className="w-full block text-center py-5 bg-secondary/10 text-secondary rounded-full text-lg font-black uppercase tracking-widest"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            Admin Panel
+                                        </Link>
+                                    )}
+                                    <button 
+                                        onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+                                        className="w-full py-5 bg-rose-50 text-rose-500 rounded-full text-lg font-black uppercase tracking-widest"
+                                    >
+                                        Logout
+                                    </button>
+                                </>
+                            ) : (
+                                <button 
+                                    onClick={() => { setIsAuthModalOpen(true); setIsMobileMenuOpen(false); }}
+                                    className="w-full py-5 bg-primary text-white rounded-full text-lg font-black uppercase tracking-widest shadow-xl"
+                                >
+                                    Sign In
+                                </button>
+                            )}
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Auth Modal */}
+            <AuthModal 
+                isOpen={isAuthModalOpen} 
+                onClose={() => setIsAuthModalOpen(false)} 
+                onSuccess={(userData) => login(userData)}
+            />
         </nav>
     );
 };
 
-export default Navbar;
+export default Navbar;
