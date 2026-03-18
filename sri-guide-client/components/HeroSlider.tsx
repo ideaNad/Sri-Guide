@@ -1,35 +1,58 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
+const images = [
+    "/hero-ella.png",
+    "/hero-nine-arch.png",
+    "/hero-mirissa.png",
+    "/hero-0.png",
+];
+
 const HeroSection = () => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, []);
+
     return (
         <section className="relative h-screen min-h-[600px] w-full bg-black overflow-hidden flex flex-col justify-between pt-24 pb-12 md:pb-20 px-6 md:px-12 lg:px-24">
             {/* Background Image with Immersive Overlay */}
             <div className="absolute inset-0 z-0">
-                <img
-                    src="/hero-0.png"
-                    alt="Sigiriya Rock Fortress"
-                    className="w-full h-full object-cover transition-transform duration-[10s] scale-105"
-                />
+                <AnimatePresence mode="wait">
+                    <motion.img
+                        key={currentIndex}
+                        src={images[currentIndex]}
+                        alt="Sri Lanka Destination"
+                        initial={{ opacity: 0, scale: 1.1 }}
+                        animate={{ opacity: 1, scale: 1.05 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1.5, ease: "easeInOut" }}
+                        className="w-full h-full object-cover"
+                    />
+                </AnimatePresence>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
             </div>
 
             {/* Centered Huge Typography */}
-<div className="relative z-10 flex-1 flex items-center justify-center">
-  <motion.div
-    initial={{ opacity: 0, scale: 0.9, y: 30 }}
-    animate={{ opacity: 1, scale: 1, y: 0 }}
-    transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-    className="text-center -mt-1 sm:-mt-15 lg:mt-0"
-  >
-<h1 className="text-[29vw] lg:text-[18rem] font-black text-white leading-none tracking-tighter opacity-50 drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] whitespace-normal sm:whitespace-nowrap">
-  SRI LANKA
-</h1>
-  </motion.div>
-</div>
+            <div className="relative z-10 flex-1 flex items-center justify-center pointer-events-none">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                    className="text-center -mt-1 sm:-mt-15 lg:mt-0"
+                >
+                    <h1 className="text-[29vw] lg:text-[18rem] font-black text-white leading-none tracking-tighter opacity-50 drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] whitespace-normal sm:whitespace-nowrap">
+                        SRI LANKA
+                    </h1>
+                </motion.div>
+            </div>
 
             {/* Bottom Row: Stats & CTA (Responsive Container) */}
             <div className="relative z-10 w-full max-w-[1400px] mx-auto mt-auto">
@@ -80,3 +103,4 @@ const HeroSection = () => {
 };
 
 export default HeroSection;
+

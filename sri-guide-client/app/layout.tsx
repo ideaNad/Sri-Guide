@@ -27,7 +27,7 @@ const comfortaa = Comfortaa({
 });
 
 export const metadata: Metadata = {
-  title: "SriGuide | Your Premium Gateway to Sri Lanka",
+  title: "SRIGuide | Your Premium Gateway to Sri Lanka",
   description: "Discover the hidden gems of Sri Lanka. Authentic tours, expert guides, and unforgettable experiences.",
 };
 
