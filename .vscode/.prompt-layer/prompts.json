@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "prompts": [
+    {
+      "id": "4bdba209-16cd-4b45-b4a5-9577e51fe95a",
+      "name": "Implement Feature",
+      "description": "Feature implementation prompt with tests and docs.",
+      "template": "Implement {functionName} in {fileName}. Include tests, edge cases, and concise docs for maintainers.",
+      "tags": [
+        "feature",
+        "tests",
+        "docs"
+      ],
+      "scope": "workspace",
+      "favorite": true,
+      "pinned": true,
+      "createdAt": "2026-03-18T06:47:57.871Z",
+      "updatedAt": "2026-03-18T06:47:57.871Z",
+      "useCount": 0,
+      "fileTypes": [
+        "ts",
+        "tsx",
+        "js"
+      ],
+      "versions": []
+    }
+  ]
+}

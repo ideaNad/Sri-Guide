@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "id": "726333e7-e7a4-4d37-914c-b66cf1ec092f",
+      "name": "TypeScript Quality Rule",
+      "enabled": true,
+      "fileExtensions": [
+        "ts",
+        "tsx"
+      ],
+      "requiredPromptTags": [],
+      "prependText": "Use strict TypeScript and avoid any unless justified.",
+      "appendText": "Return output with quick test plan and key edge cases.",
+      "createdAt": "2026-03-18T06:47:57.891Z",
+      "updatedAt": "2026-03-18T06:47:57.891Z"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "templates": [
+    {
+      "id": "d94fdc20-cb08-4b4e-b624-29076a45d057",
+      "name": "Bug Fix Template",
+      "description": "Standard bug fix with reproduction and validation steps.",
+      "body": "Fix bug in {fileName}. Explain root cause, patch safely, add regression test, and provide validation checklist.",
+      "tags": [
+        "bugfix",
+        "quality"
+      ],
+      "createdAt": "2026-03-18T06:47:57.885Z",
+      "updatedAt": "2026-03-18T06:47:57.885Z"
+    }
+  ]
+}
