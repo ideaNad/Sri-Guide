@@ -20,7 +20,7 @@
 
 | Layer | Tasks |
 |:---|:---|
-| **DB** | **Migration `001_CreateUsersAndRoles`**:<br/>• `Users` — Id (UUID PK), FullName, Email (unique), PasswordHash, PhoneNumber, ProfileImageUrl, Role (enum), IsVerified, CreatedAt, UpdatedAt.<br/>• `RefreshTokens` — Id, Token, ExpiresAt, UserId (FK).<br/>• Seed roles: tourist, guide, vehicle_owner, hotel_owner, restaurant_owner, admin. |
+| **DB** | **Migration `001_CreateUsersAndRoles`**:<br/>• `Users` — Id (UUID PK), FullName, Email (unique), PasswordHash, PhoneNumber, ProfileImageUrl, Role (enum), IsVerified, CreatedAt, UpdatedAt.<br/>• `RefreshTokens` — Id, Token, ExpiresAt, UserId (FK).<br/>• Seed roles: `tourist`, `guide`, `vehicle_owner`, `hotel_owner`, `restaurant_owner`, `travel_agency` 🆕, `event_planner` 🆕, `admin`. |
 | **BE** | • `POST /api/auth/register` — FluentValidation, Argon2 hashing, return JWT pair.<br/>• `POST /api/auth/login` — Access (15min) + Refresh (7d, HTTP-only cookie).<br/>• `POST /api/auth/refresh`, `POST /api/auth/logout`.<br/>• Rate limiting, global error middleware, CORS config. |
 | **FE** | • `AuthModal.tsx` — Tabbed Login/Sign Up with glassmorphism card overlay.<br/>• `useAuth` hook — session + auto-refresh.<br/>• Trigger modal on Book/Save/Contact/Review (never hard redirect). |
 
@@ -34,13 +34,29 @@
 
 ## Phase 2 — Provider Ecosystem & Discovery
 
-### 2.1 Guide Profiles & Tour Plans
+### 2.1 Guide Profiles
 
 | Layer | Tasks |
 |:---|:---|
-| **DB** | **Migration `002_CreateGuides`**:<br/>• `Guides` — Id, UserId (FK), Bio, Languages (text[]), LicenseNumber, Specialty, DailyRate, HourlyRate, IsVerified, AverageRating, ReviewCount.<br/>• `TourPlans` — Id, GuideId (FK), Title, Description, CoverImageUrl, TotalPrice, DurationDays, IsPublished. |
-| **BE** | • `GET /api/guides` (paginated, filtered), `GET /api/guides/{id}`, `POST /api/guides`.<br/>• `POST /api/guides/{id}/tour-plans`, `GET /api/plans`, `GET /api/plans/{id}`. |
-| **FE** | • `/guide/[id]` — animated profile hero, bio, gallery (lightbox), reviews, tour plans.<br/>• "Add to Plan" floating pill button with pulse animation. |
+| **DB** | **Migration `002_CreateGuides`**:<br/>• `Guides` — Id, UserId (FK), Bio, Languages (text[]), LicenseNumber, Specialty, DailyRate, HourlyRate, IsVerified, VerificationStatus (pending/approved/rejected), AverageRating, ReviewCount, AgencyId (FK, nullable). |
+| **BE** | • `GET /api/guides` (paginated, filtered), `GET /api/guides/{id}`, `POST /api/guides`.<br/>• ⚠️ Guides can manage **profile only** — they **cannot** create Tour Plans.<br/>• ⚠️ `GET /api/guides/{id}` — **contact details (phone, email, WhatsApp) are hidden for anonymous users**. Backend checks auth token: if authenticated → return full response; if anonymous → return `contactDetails: null`. Same pattern for all provider detail endpoints. |
+| **FE** | • `/guide/[id]` — animated profile hero, bio, gallery, reviews.<br/>• "Add to Plan" floating button. Show "Upgrade to Agency" CTA if guide tries to create plans. |
+
+### 2.1b 🆕 Travel Agency System
+
+| Layer | Tasks |
+|:---|:---|
+| **DB** | **Migration `002b_CreateAgencies`**:<br/>• `AgencyProfiles` — Id, UserId (FK), **CompanyName**, **CompanyEmail**, **RegistrationNumber**, **AgencyPhoneNumber**, **WhatsAppNumber**, Description, VerificationStatus (pending/approved/rejected), VerificationDocuments (JSONB — business registration doc, license doc URLs), VerifiedBadge (bool), CreatedAt.<br/>• `AgencyGuides` — Id, AgencyId (FK), GuideId (FK), Status (invited/accepted/removed), InvitedAt, AcceptedAt.<br/>• `TourPlans` — Id, AgencyId (FK) 🔄 (changed from GuideId), Title, Description, CoverImageUrl, TotalPrice, DurationDays, IsPublished, AssignedGuideId (FK, nullable). |
+| **BE** | • `POST /api/agency/apply` — guide submits: CompanyName, CompanyEmail, RegistrationNumber, AgencyPhoneNumber, WhatsAppNumber + document uploads (business registration, license). FluentValidation: email format, phone format, required fields.<br/>• `GET /api/agency/me` — get agency profile + verification status.<br/>• `POST /api/agency/invite-guide`, `POST /api/agency/accept-invite`, `GET /api/agency/guides`.<br/>• ⚠️ Tour Plan CRUD restricted to `travel_agency` role only.<br/>• `POST /api/plans` — create tour plan (travel_agency only).<br/>• `PUT /api/plans/{id}/assign-guide` — assign a guide to a plan. |
+| **FE** | • `/agency/upgrade` — multi-step form:<br/>  Step 1: Company Name, Registration Number<br/>  Step 2: Company Email, Phone Number, WhatsApp Number<br/>  Step 3: Upload documents (business registration + license)<br/>  Step 4: Review & Submit<br/>• Agency dashboard: My Guides, My Tour Plans, Received Bookings, Earnings.<br/>• "Invite Guide" button with search + invite flow.<br/>• Guide sees pending invitations in their dashboard. |
+
+### 2.1c 🆕 Verification & Badge System
+
+| Layer | Tasks |
+|:---|:---|
+| **DB** | **Migration `002c_CreateVerifications`**:<br/>• `Verifications` — Id, UserId (FK), EntityType (guide/agency/event_planner), Documents (JSONB), Status (pending/approved/rejected), ReviewedBy (admin UserId), ReviewedAt, Notes, CreatedAt. |
+| **BE** | • `POST /api/verification/submit` — user uploads verification documents.<br/>• `GET /api/admin/verifications` — admin lists pending verifications.<br/>• `POST /api/admin/verify` — admin approves/rejects + sets IsVerified + VerifiedBadge.<br/>• On approval: update `IsVerified=true` on the relevant entity (Guide/Agency/EventPlanner). |
+| **FE** | • **Verified Badge** component — blue checkmark shown on profiles, listings, plans, cards.<br/>• Admin dashboard: Verification queue with document preview + approve/reject buttons.<br/>• User dashboard: Verification status card (pending/approved/rejected). |
 
 ### 2.2 Hotels
 
@@ -74,13 +90,13 @@
 | **BE** | • `GET /api/attractions` (filter by category, city), `GET /api/attractions/{id}`. |
 | **FE** | • `/attraction/[id]` — immersive hero image, info grid, map pin, "Add to Plan" button.<br/>• Category filter chips with icons. |
 
-### 2.6 🆕 Events & Festivals
+### 2.6 🆕 Events & Festivals (Public) + Event Planner Role
 
 | Layer | Tasks |
 |:---|:---|
-| **DB** | **Migration `007_CreateEvents`**:<br/>• `Events` — Id, Name, Description, EventDate, EndDate, Location, City, Category (festival/perahera/cultural/sports), CoverImageUrl, IsRecurring. |
-| **BE** | • `GET /api/events` (filter by date, city, category), `GET /api/events/{id}`. |
-| **FE** | • `/events` — timeline or calendar view with animated cards.<br/>• `/events/[id]` — event detail with countdown timer.<br/>• "Happening Now" badge for active events on homepage. |
+| **DB** | **Migration `007_CreateEvents`**:<br/>• `Events` — Id, Name, Description, EventDate, EndDate, Location, City, Category (festival/perahera/cultural/sports/wedding/corporate/group_travel 🆕), CoverImageUrl, IsRecurring, **PlannerId (FK, nullable)** 🆕, Price, Images (JSONB), Status (draft/published).<br/>• Public events (festivals etc.) can be admin-created.<br/>• Planner events (weddings/corporate) are created by `event_planner` role. |
+| **BE** | • `GET /api/events` (public, filter by date/city/category), `GET /api/events/{id}`.<br/>• `POST /api/events` — **event_planner or admin** only.<br/>• `PUT /api/events/{id}`, `DELETE /api/events/{id}` — owner only. |
+| **FE** | • `/events` — timeline or calendar view with animated cards.<br/>• `/events/[id]` — event detail with countdown timer. "Happening Now" badge on homepage.<br/>• Event Planner dashboard: My Events, Create Event (wedding/corporate/group travel), Bookings. |
 
 ### 2.7 Image/Media System
 
@@ -107,7 +123,7 @@
 | Layer | Tasks |
 |:---|:---|
 | **DB** | **Migration `009_CreateItinerarySystem`**:<br/>• `Itineraries` — Id, UserId, Name, Notes, Status (draft/published), TotalCost, CreatedAt, UpdatedAt.<br/>• `ItineraryDays` — Id, ItineraryId, DayNumber, Date, DailyNote, DailyCost.<br/>• `ItineraryItems` — Id, DayId, ItemType (guide/hotel/vehicle/restaurant/attraction), ReferenceId, SortOrder, StartTime, EndTime, Cost, Notes, Metadata (JSONB). |
-| **BE** | • `POST /api/itineraries`, `GET /api/itineraries/{id}`, `PUT /api/itineraries/{id}` (batch), `DELETE`.<br/>• `POST /api/itineraries/{id}/copy` — tourist copies guide plan. |
+| **BE** | • `POST /api/itineraries` — tourist creates private itinerary.<br/>• `GET /api/itineraries/{id}`, `PUT /api/itineraries/{id}` (batch), `DELETE`.<br/>• `POST /api/itineraries/{id}/copy` — tourist copies agency tour plan.<br/>• ⚠️ **Tour Plans** (`POST /api/plans`) — restricted to `travel_agency` role only. Guides CANNOT create plans. |
 
 ### 3.2 Pricing / Costing Engine
 
@@ -157,12 +173,12 @@
 | **BE** | • `POST /api/wishlist`, `GET /api/wishlist`, `DELETE /api/wishlist/{id}`. |
 | **FE** | • **Heart icon** on all cards — animated fill on click (`scale` bounce + color transition).<br/>• `/dashboard/wishlist` — saved items grid with "Add to Plan" quick action. |
 
-### 4.4 Role-Based Dashboards
+### 4.4 Role-Based Dashboards (Updated RBAC)
 
 | Layer | Tasks |
 |:---|:---|
-| **FE** | • `/dashboard` — role-based:<br/>  — **Tourist**: My Trips, My Bookings, My Reviews, My Wishlist.<br/>  — **Guide**: Profile, Tour Plans, Received Bookings, Reviews, Earnings.<br/>  — **Hotel/Vehicle/Restaurant Owner**: Listing, Bookings, Reviews.<br/>  — **Admin**: User management, Provider verification, Platform stats.<br/>• **Dashboard Stats Cards**: Animated count-up numbers with icon backgrounds. |
-| **BE** | • `GET /api/dashboard/stats` — role-specific summary. |
+| **FE** | • `/dashboard` — role-based:<br/>  — **Tourist**: My Trips, My Bookings, My Reviews, My Wishlist.<br/>  — **Guide**: Profile only, Received Bookings, Reviews. ⚠️ No "Create Plan" — show "Upgrade to Agency" CTA. Pending Agency Invitations.<br/>  — **Travel Agency** 🆕: Agency Profile, My Guides (invite/manage), My Tour Plans (create/assign guide), Received Bookings, Earnings, Verification Status.<br/>  — **Event Planner** 🆕: My Events (create/manage), Event Bookings, Verification Status.<br/>  — **Hotel/Vehicle/Restaurant Owner**: Listing, Bookings, Reviews.<br/>  — **Admin**: User management, **Verification Queue** 🆕 (approve/reject agencies/guides/planners), Platform stats.<br/>• **Dashboard Stats Cards**: Animated count-up numbers with icon backgrounds. |
+| **BE** | • `GET /api/dashboard/stats` — role-specific summary.<br/>• Updated RBAC middleware for all new roles. |
 
 ### 4.5 Contact Provider & Messaging
 
@@ -261,16 +277,49 @@
 
 ---
 
+## 🔐 RBAC Permissions Matrix
+
+| Action | Tourist | Guide | Travel Agency | Event Planner | Hotel/Vehicle/Restaurant | Admin |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| Browse listings | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Book services | ✅ | — | — | — | — | — |
+| Leave reviews | ✅ | — | — | — | — | — |
+| Save to wishlist | ✅ | ✅ | ✅ | ✅ | ✅ | — |
+| **View contact details** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| View contact details (anonymous) | ❌ | — | — | — | — | — |
+| Create itinerary | ✅ | — | — | — | — | — |
+| Manage guide profile | — | ✅ | — | — | — | — |
+| Create tour plans | ❌ | ❌ | ✅ | — | — | — |
+| Invite/manage guides | — | — | ✅ | — | — | — |
+| Apply for agency upgrade | — | ✅ | — | — | — | — |
+| Accept agency invite | — | ✅ | — | — | — | — |
+| Create/manage events | — | — | — | ✅ | — | ✅ |
+| Manage own listing | — | — | — | — | ✅ | — |
+| Approve verifications | — | — | — | — | — | ✅ |
+| Manage all users | — | — | — | — | — | ✅ |
+
+---
+
+## ⚠️ Important Rules
+
+| Rule | Detail |
+|:---|:---|
+| 🔒 **Contact details require login** | Phone, email, and WhatsApp of all providers (guides, agencies, hotels, vehicles, restaurants, event planners) are **hidden for anonymous users**. Backend returns `contactDetails: null` if no auth token. Frontend shows a blurred placeholder with "Login to see contact info" CTA that triggers `AuthModal`. |
+| 👁️ **Everything else is public** | Listings, profiles, photos, reviews, ratings, prices, tour plans, events, attractions — all viewable without login. |
+
+---
+
 ## ⚠️ Anti-Patterns to Avoid
 
 | Rule | Reason |
 |:---|:---|
-| ❌ Don't force login for browsing | Tourists must browse freely |
-| ❌ Don't mix planner + booking logic | Keep services decoupled |
-| ❌ Don't store prices only in frontend | Backend = source of truth |
-| ❌ Don't skip provider verification | Trust is critical |
-| ❌ Don't ignore image performance | CDN + `next/image` everywhere |
-| ❌ Don't break existing styles | Extend, don't replace |
+| ❌ Don’t force login for browsing | Tourists must browse freely |
+| ❌ Don’t expose contact info publicly | Require login to protect provider privacy |
+| ❌ Don’t mix planner + booking logic | Keep services decoupled |
+| ❌ Don’t store prices only in frontend | Backend = source of truth |
+| ❌ Don’t skip provider verification | Trust is critical |
+| ❌ Don’t ignore image performance | CDN + `next/image` everywhere |
+| ❌ Don’t break existing styles | Extend, don’t replace |
 
 ---
 
@@ -278,13 +327,15 @@
 
 | # | Migration | Tables |
 |:---|:---|:---|
-| 001 | CreateUsersAndRoles | Users, RefreshTokens |
-| 002 | CreateGuides | Guides, TourPlans |
+| 001 | CreateUsersAndRoles | Users, RefreshTokens (roles include travel_agency, event_planner) |
+| 002 | CreateGuides | Guides (with AgencyId FK) |
+| 002b | CreateAgencies 🆕 | AgencyProfiles, AgencyGuides, TourPlans (AgencyId FK) |
+| 002c | CreateVerifications 🆕 | Verifications |
 | 003 | CreateHotels | Hotels, HotelRooms |
 | 004 | CreateVehicles | Vehicles |
 | 005 | CreateRestaurants | Restaurants |
 | 006 | CreateAttractions | Attractions |
-| 007 | CreateEvents | Events |
+| 007 | CreateEvents | Events (with PlannerId FK, expanded categories) |
 | 008 | CreateImages | Images |
 | 009 | CreateItinerarySystem | Itineraries, ItineraryDays, ItineraryItems |
 | 010 | CreateBookings | Bookings, Payments |
@@ -307,7 +358,13 @@
 | GET | `/api/guides` | Public | List guides |
 | GET | `/api/guides/{id}` | Public | Guide detail |
 | POST | `/api/guides` | Guide | Create/update profile |
-| POST | `/api/guides/{id}/tour-plans` | Guide | Create tour plan |
+| POST | `/api/agency/apply` | Guide | Apply to upgrade to travel_agency 🆕 |
+| GET | `/api/agency/me` | Agency | Get agency profile 🆕 |
+| POST | `/api/agency/invite-guide` | Agency | Invite a guide 🆕 |
+| POST | `/api/agency/accept-invite` | Guide | Accept agency invitation 🆕 |
+| GET | `/api/agency/guides` | Agency | List managed guides 🆕 |
+| POST | `/api/plans` | Agency | Create tour plan (agency only) 🔄 |
+| PUT | `/api/plans/{id}/assign-guide` | Agency | Assign guide to plan 🆕 |
 | GET | `/api/hotels` | Public | List hotels |
 | GET | `/api/hotels/{id}` | Public | Hotel detail |
 | POST | `/api/hotels` | Hotel Owner | Create/update hotel |
@@ -319,6 +376,8 @@
 | GET | `/api/attractions/{id}` | Public | Attraction detail |
 | GET | `/api/events` | Public | List events |
 | GET | `/api/events/{id}` | Public | Event detail |
+| POST | `/api/events` | Event Planner/Admin | Create event 🆕 |
+| PUT | `/api/events/{id}` | Owner | Update event 🆕 |
 | GET | `/api/plans` | Public | Browse tour plans |
 | GET | `/api/plans/{id}` | Public | Plan detail |
 | GET | `/api/search` | Public | Unified search |
@@ -338,6 +397,9 @@
 | DELETE | `/api/wishlist/{id}` | Logged In | Remove from wishlist |
 | GET | `/api/notifications` | Logged In | My notifications |
 | PUT | `/api/notifications/{id}/read` | Logged In | Mark read |
+| POST | `/api/verification/submit` | Provider | Submit verification docs 🆕 |
+| GET | `/api/admin/verifications` | Admin | List pending verifications 🆕 |
+| POST | `/api/admin/verify` | Admin | Approve/reject verification 🆕 |
 | POST | `/api/images/upload` | Provider | Upload image |
 | POST | `/api/messages` | Tourist | Contact provider |
 | GET | `/api/travel-info` | Public | Travel tips |
@@ -365,6 +427,9 @@
 | `/itinerary/shared/[slug]` | Public | Read-only shared itinerary |
 | `/dashboard` | Logged In | Role-based dashboard |
 | `/dashboard/wishlist` | Logged In | Saved favorites |
+| `/agency/upgrade` | Guide | Upgrade to Travel Agency form 🆕 |
+| `/dashboard/agency` | Agency | Manage guides + tour plans 🆕 |
+| `/dashboard/events` | Event Planner | Manage events 🆕 |
 | `/tours` | Public | Browse all tours |
 | `/travel-info` | Public | Safety, visa, health tips |
 | `/blog` | Public | Travel stories |

@@ -5,56 +5,77 @@
 ---
 
 - [ ] **Phase 1 — Foundation, Auth & Premium UI Shell**
-    - [ ] DB: Migration 001 — Users, RefreshTokens, Role seeding
+    - [ ] DB: Migration 001 — Users, RefreshTokens (roles: tourist, guide, vehicle_owner, hotel_owner, restaurant_owner, travel_agency 🆕, event_planner 🆕, admin)
     - [ ] BE: Clean Architecture solution setup
-    - [ ] BE: Auth (Register, Login, Refresh, Logout) + Rate limiting
+    - [ ] BE: Email Service integration (Welcome, Password Reset)
+    - [ ] BE: Auth (Register, Login, Refresh, Logout, Forgot/Reset Password) + Rate limiting
+    - [ ] FE: `next-intl` (i18n) setup for EN, SI, TA
     - [ ] FE: `AuthModal` + `useAuth` hook
+    - [ ] FE: Dark Mode Toggle (CSS variables + Animation)
     - [ ] FE: Refactor all `img` → `next/image` with blur placeholders
-    - [ ] FE: Animation system (page transitions, scroll reveals, parallax, card hover, counters)
-    - [ ] FE: Base components (Button, Input, Modal, SkeletonLoader, Toast)
-    - [ ] FE: Navbar active states, spacing grid, typography scale, focus rings
+    - [ ] FE: Animation system (page transitions, scroll reveals, parallax, 3D hover, counters, glassmorphism)
+    - [ ] FE: Base components (Button, Input, Modal, SkeletonLoader, Sonner Toasts)
+    - [ ] FE: Navbar active states, spacing grid, typography scale, focus rings, custom scrollbar
 
 - [ ] **Phase 2 — Provider Ecosystem & Discovery**
-    - [ ] DB: Migrations 002–008 (Guides, Hotels, Vehicles, Restaurants, Attractions, Events, Images)
-    - [ ] BE: Guide CRUD + Tour Plan CRUD
+    - [ ] DB: Migration 002 — Guides (with AgencyId FK, VerificationStatus)
+    - [ ] DB: Migration 002b — AgencyProfiles, AgencyGuides, TourPlans (AgencyId FK) 🆕
+    - [ ] DB: Migration 002c — Verifications 🆕
+    - [ ] DB: Migrations 003–008 (Hotels, Vehicles, Restaurants, Attractions, Events, Images)
+    - [ ] BE: Guide CRUD (profile only — ⚠️ no plan creation)
+    - [ ] BE: Travel Agency system (apply, invite guide, accept invite, manage guides) 🆕
+    - [ ] BE: Tour Plan CRUD — restricted to `travel_agency` only 🆕
+    - [ ] BE: Verification system (submit docs, admin review, badge assignment) 🆕
     - [ ] BE: Hotel CRUD + Room management
     - [ ] BE: Vehicle, Restaurant CRUD
-    - [ ] BE: Attractions & Events endpoints (🆕)
+    - [ ] BE: Attractions endpoints
+    - [ ] BE: Events endpoints (event_planner or admin can create) 🆕
     - [ ] BE: Local filesystem image upload service (VPS `/uploads/`)
     - [ ] BE: Unified search API with GIN indexes
-    - [ ] FE: All detail pages (`/guide/[id]`, `/hotel/[id]`, `/vehicle/[id]`, `/restaurant/[id]`)
-    - [ ] FE: `/attraction/[id]` and `/events` pages (🆕)
+    - [ ] FE: Guide profile pages (show "Upgrade to Agency" CTA)
+    - [ ] FE: `/agency/upgrade` — multi-step upgrade form 🆕
+    - [ ] FE: Verified Badge component 🆕
+    - [ ] FE: All detail pages (`/hotel/[id]`, `/vehicle/[id]`, `/restaurant/[id]`, `/attraction/[id]`)
+    - [ ] FE: `/events` pages (with event_planner dashboard) 🆕
     - [ ] FE: `/search` with animated filters, instant search, skeleton loaders
     - [ ] FE: Gallery with lightbox (shared element transitions)
     - [ ] FE: "Add to Plan" buttons everywhere
 
 - [ ] **Phase 3 — Smart Trip Planner & Costing**
     - [ ] DB: Migration 009 — Itineraries, Days, Items (JSONB)
-    - [ ] BE: Itinerary CRUD (batch update, copy guide plan)
+    - [ ] BE: Itinerary CRUD (batch update, copy agency tour plan)
+    - [ ] BE: ⚠️ Tour Plans restricted to travel_agency role
     - [ ] BE: Cost Calculation Engine
-    - [ ] BE: Itinerary sharing (shareable link generation) (🆕)
+    - [ ] BE: Itinerary sharing (shareable link generation)
     - [ ] FE: 3-column Planner (Days / DND Timeline / Search Panel)
     - [ ] FE: `dnd-kit` with layout animations
     - [ ] FE: Zustand auto-save + "Saved ✓" toast
     - [ ] FE: Sticky cost sidebar with animated number transitions
     - [ ] FE: Time conflict warnings, map preview, empty states
-    - [ ] FE: Share & PDF export (🆕)
+    - [ ] FE: Share & PDF export
     - [ ] FE: Mobile vertical layout + sticky bottom bar
 
 - [ ] **Phase 4 — Bookings, Reviews & Dashboards**
     - [ ] DB: Migrations 010–013 (Bookings, Reviews, Wishlists, Notifications)
     - [ ] BE: Booking create/list/status update
     - [ ] BE: Review submit + average recalculation
-    - [ ] BE: Wishlist CRUD (🆕)
-    - [ ] BE: Notifications auto-create + list/read (🆕)
+    - [ ] BE: Wishlist CRUD
+    - [ ] BE: Notifications auto-create + list/read
     - [ ] BE: Contact provider messaging
+    - [ ] BE: Updated RBAC middleware for all roles 🆕
     - [ ] FE: Animated booking stepper (Summary → Travelers → Price → Confirm)
     - [ ] FE: Star rating with bounce animation + review cards
-    - [ ] FE: Heart icon wishlist with animation (🆕)
-    - [ ] FE: Navbar notification bell with badge (🆕)
-    - [ ] FE: Role-based dashboards (Tourist/Guide/Hotel/Vehicle/Restaurant/Admin)
+    - [ ] FE: Heart icon wishlist with animation
+    - [ ] FE: Navbar notification bell with badge
+    - [ ] FE: Dashboards:
+        - [ ] Tourist — My Trips, Bookings, Reviews, Wishlist
+        - [ ] Guide — Profile only, "Upgrade to Agency" CTA, Pending Invitations 🆕
+        - [ ] Travel Agency — Agency Profile, My Guides, Tour Plans, Bookings, Earnings 🆕
+        - [ ] Event Planner — My Events, Event Bookings 🆕
+        - [ ] Hotel/Vehicle/Restaurant Owner — Listing, Bookings, Reviews
+        - [ ] Admin — Users, Verification Queue 🆕, Platform Stats
 
-- [ ] **Phase 5 — Tourism Ecosystem Extras** (🆕)
+- [ ] **Phase 5 — Tourism Ecosystem Extras**
     - [ ] DB: Migrations 014–015 (TravelTips, BlogPosts)
     - [ ] BE: Travel info & Blog endpoints
     - [ ] FE: Currency converter widget
