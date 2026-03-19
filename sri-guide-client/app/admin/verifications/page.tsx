@@ -11,13 +11,12 @@ import apiClient from "@/lib/api-client";
 
 interface VerificationRequest {
     id: string;
-    userId: string;
     fullName: string;
-    role: "Guide" | "TravelAgency";
     email: string;
-    status: "Pending" | "Approved" | "Rejected";
+    role: "Guide" | "TravelAgency";
+    registrationNumber: string;
+    licenseExpirationDate?: string;
     createdAt: string;
-    documents?: string[];
 }
 
 const AdminVerificationsPage = () => {
@@ -32,21 +31,11 @@ const AdminVerificationsPage = () => {
 
     const fetchRequests = async () => {
         try {
-            // Placeholder: Fetching from a real endpoint or using mock data if not ready
-            // const response = await apiClient.get("/admin/verifications");
-            // setRequests(response.data);
-            
-            // Mocking data for UI demonstration
-            setTimeout(() => {
-                setRequests([
-                    { id: "1", userId: "u1", fullName: "Nuwan Perera", role: "Guide", email: "nuwan@example.com", status: "Pending", createdAt: new Date().toISOString() },
-                    { id: "2", userId: "u2", fullName: "Lanka Travels", role: "TravelAgency", email: "info@lankatravels.lk", status: "Pending", createdAt: new Date().toISOString() },
-                    { id: "3", userId: "u3", fullName: "Amara Silva", role: "Guide", email: "amara@gmail.com", status: "Pending", createdAt: new Date().toISOString() },
-                ]);
-                setLoading(false);
-            }, 800);
+            const response = await apiClient.get<VerificationRequest[]>("/admin/pending-verifications");
+            setRequests(response.data);
         } catch (error) {
             console.error("Error fetching requests:", error);
+        } finally {
             setLoading(false);
         }
     };
@@ -54,7 +43,10 @@ const AdminVerificationsPage = () => {
     const handleAction = async (id: string, action: "approve" | "reject") => {
         setActionLoading(id);
         try {
-            // await apiClient.post(`/admin/verify/${id}`, { action });
+            await apiClient.post(`/admin/verify-guide/${id}`, { 
+                guideId: id,
+                isApproved: action === "approve"
+            });
             setRequests(requests.filter(r => r.id !== id));
         } catch (error) {
             console.error(`Error during ${action}:`, error);

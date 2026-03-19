@@ -15,9 +15,16 @@ public class GuideProfile : BaseEntity
     public decimal? DailyRate { get; set; }
     public decimal? HourlyRate { get; set; }
     
+    // Verification details
+    public string? RegistrationNumber { get; set; }
+    public DateTime? LicenseExpirationDate { get; set; }
+    public bool IsLegit { get; set; }
+
     public VerificationStatus VerificationStatus { get; set; } = VerificationStatus.Pending;
     public bool IsVerified { get; set; }
 
     public Guid? AgencyId { get; set; }
     public AgencyProfile? Agency { get; set; }
+
+    public List<Trip> Trips { get; set; } = new();
 }

@@ -15,6 +15,9 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<GuideProfile> GuideProfiles => Set<GuideProfile>();
     public DbSet<AgencyProfile> AgencyProfiles => Set<AgencyProfile>();
     public DbSet<Review> Reviews => Set<Review>();
+    public DbSet<Booking> Bookings => Set<Booking>();
+    public DbSet<Trip> Trips => Set<Trip>();
+    public DbSet<TripImage> TripImages => Set<TripImage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,6 +51,30 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .HasOne(r => r.User)
             .WithMany()
             .HasForeignKey(r => r.UserId);
+
+        // Booking relationships
+        modelBuilder.Entity<Booking>()
+            .HasOne(b => b.Guide)
+            .WithMany()
+            .HasForeignKey(b => b.GuideId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<Booking>()
+            .HasOne(b => b.Customer)
+            .WithMany()
+            .HasForeignKey(b => b.CustomerId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        // Trip relationships
+        modelBuilder.Entity<Trip>()
+            .HasOne(t => t.Guide)
+            .WithMany()
+            .HasForeignKey(t => t.GuideId);
+
+        modelBuilder.Entity<Trip>()
+            .HasMany(t => t.Images)
+            .WithOne(i => i.Trip)
+            .HasForeignKey(i => i.TripId);
 
         base.OnModelCreating(modelBuilder);
     }

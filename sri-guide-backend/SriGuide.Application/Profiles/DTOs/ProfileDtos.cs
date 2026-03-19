@@ -8,6 +8,7 @@ public record UserProfileDto(
     string Email,
     UserRole Role,
     bool IsVerified,
+    string? ProfileImageUrl,
     GuideProfileDto? GuideProfile,
     AgencyProfileDto? AgencyProfile
 );

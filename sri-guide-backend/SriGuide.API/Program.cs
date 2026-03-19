@@ -4,6 +4,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text.Json.Serialization;
 using SriGuide.Application;
 using SriGuide.Infrastructure;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,6 +65,11 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// Ensure wwwroot exists
+var wwwrootPath = Path.Combine(builder.Environment.ContentRootPath, "wwwroot");
+if (!Directory.Exists(wwwrootPath)) Directory.CreateDirectory(wwwrootPath);
+
+app.UseStaticFiles(); // Default serves from wwwroot
 app.UseHttpsRedirection();
 
 app.UseCors("AllowNextJs");

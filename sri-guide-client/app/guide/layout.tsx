@@ -9,19 +9,36 @@ import {
     LayoutDashboard, User, Star, TrendingUp,
     ChevronRight, LogOut, Menu, X, Compass, Bell, ShieldCheck
 } from "lucide-react";
+import apiClient from "@/lib/api-client";
 
 const GUIDE_NAV = [
     { name: "Overview", href: "/guide", icon: <LayoutDashboard size={20} /> },
     { name: "My Profile", href: "/guide/profile", icon: <User size={20} /> },
+    { name: "My Trips", href: "/guide/trips", icon: <Compass size={20} /> },
     { name: "Reviews", href: "/guide/reviews", icon: <Star size={20} /> },
     { name: "Upgrade to Agency", href: "/guide/upgrade", icon: <TrendingUp size={20} /> },
 ];
+
+const BASE_URL = apiClient.defaults.baseURL?.replace('/api', '') ?? '';
 
 export default function GuideLayout({ children }: { children: React.ReactNode }) {
     const { user, logout, loading } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [livePhotoUrl, setLivePhotoUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (user) {
+            apiClient.get<{ profileImageUrl?: string }>("/profile/me")
+                .then(res => {
+                    if (res.data.profileImageUrl) {
+                        setLivePhotoUrl(`${BASE_URL}${res.data.profileImageUrl}`);
+                    }
+                })
+                .catch(() => {});
+        }
+    }, [user]);
 
     useEffect(() => {
         if (!loading && (!user || user.role !== "Guide")) {
@@ -37,7 +54,7 @@ export default function GuideLayout({ children }: { children: React.ReactNode })
         );
     }
 
-const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: string, setSidebarOpen: (open: boolean) => void, logout: () => void, user: any }) => (
+const SidebarContent = ({ pathname, setSidebarOpen, logout, user, photoUrl }: { pathname: string, setSidebarOpen: (open: boolean) => void, logout: () => void, user: any, photoUrl: string | null }) => (
     <div className="flex flex-col h-full bg-white border-r border-gray-100">
         <div className="p-8 border-b border-gray-50 mb-4">
             <Link href="/" className="flex items-center gap-3 mb-6" onClick={() => setSidebarOpen(false)}>
@@ -47,9 +64,17 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
                 <span className="font-black text-gray-900 text-xl tracking-tight uppercase">Sri<span className="text-primary">Guide</span></span>
             </Link>
             <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                    {user?.fullName?.charAt(0)}
-                </div>
+                {photoUrl ? (
+                    <img
+                        src={photoUrl}
+                        alt={user?.fullName}
+                        className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                    />
+                ) : (
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold flex-shrink-0">
+                        {user?.fullName?.charAt(0)}
+                    </div>
+                )}
                 <div className="overflow-hidden">
                     <p className="text-sm font-black text-gray-900 truncate">{user?.fullName}</p>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Local Guide</p>
@@ -96,7 +121,7 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
         <div className="flex min-h-screen bg-gray-50/50">
             {/* Desktop Sidebar */}
             <aside className="hidden lg:block w-80 fixed inset-y-0 left-0 z-30">
-                <SidebarContent pathname={pathname} setSidebarOpen={setSidebarOpen} logout={logout} user={user} />
+                <SidebarContent pathname={pathname} setSidebarOpen={setSidebarOpen} logout={logout} user={user} photoUrl={livePhotoUrl} />
             </aside>
 
             {/* Mobile Sidebar */}
@@ -116,7 +141,7 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
                             exit={{ x: -320 }}
                             className="fixed inset-y-0 left-0 w-80 z-50 lg:hidden"
                         >
-                            <SidebarContent pathname={pathname} setSidebarOpen={setSidebarOpen} logout={logout} user={user} />
+                            <SidebarContent pathname={pathname} setSidebarOpen={setSidebarOpen} logout={logout} user={user} photoUrl={livePhotoUrl} />
                         </motion.aside>
                     </>
                 )}
@@ -132,9 +157,17 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
                             <Compass size={18} className="text-white" />
                         </div>
                     </Link>
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-xs border border-primary/20">
-                        {user.fullName.charAt(0)}
-                    </div>
+                    {livePhotoUrl ? (
+                        <img
+                            src={livePhotoUrl}
+                            alt={user.fullName}
+                            className="w-10 h-10 rounded-full object-cover border border-primary/20"
+                        />
+                    ) : (
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-xs border border-primary/20">
+                            {user.fullName.charAt(0)}
+                        </div>
+                    )}
                 </header>
 
                 <main className="flex-1 p-6 lg:p-12 max-w-6xl mx-auto w-full">

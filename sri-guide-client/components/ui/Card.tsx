@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { Star, MapPin, Clock, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import apiClient from "@/lib/api-client";
 
 interface CardProps {
     title: string;
@@ -43,6 +44,10 @@ const Card: React.FC<CardProps> = ({
     const isProfile = type === "guide" || type === "agency";
     const profileLink = id ? `/profile/${id}` : "#";
 
+    const displayImage = image?.startsWith("/") && !image?.startsWith("http") 
+        ? `${apiClient.defaults.baseURL?.replace('/api', '')}${image}` 
+        : image;
+
     return (
         <div className="group bg-white rounded-none overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 relative">
             {isProfile && id && (
@@ -51,7 +56,7 @@ const Card: React.FC<CardProps> = ({
             {/* Image Container */}
             <div className="relative h-56 w-full overflow-hidden">
                 <img
-                    src={image}
+                    src={displayImage}
                     alt={title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />

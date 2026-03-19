@@ -9,6 +9,9 @@ public interface IApplicationDbContext
     DbSet<GuideProfile> GuideProfiles { get; }
     DbSet<AgencyProfile> AgencyProfiles { get; }
     DbSet<Review> Reviews { get; }
+    DbSet<Booking> Bookings { get; }
+    DbSet<Trip> Trips { get; }
+    DbSet<TripImage> TripImages { get; }
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

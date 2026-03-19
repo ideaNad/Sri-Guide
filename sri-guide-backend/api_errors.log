@@ -1,0 +1,14 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  SriGuide.Domain -> C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.Domain\bin\Debug\net9.0\SriGuide.Domain.dll
+  SriGuide.Application -> C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.Application\bin\Debug\net9.0\SriGuide.Application.dll
+  SriGuide.Infrastructure -> C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\bin\Debug\net9.0\SriGuide.Infrastructure.dll
+C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.API\Controllers\TripController.cs(33,27): error CS1061: 'ClaimsPrincipal' does not contain a definition for 'FindFirstValue' and no accessible extension method 'FindFirstValue' accepting a first argument of type 'ClaimsPrincipal' could be found (are you missing a using directive or an assembly reference?) [C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.API\SriGuide.API.csproj]
+
+Build FAILED.
+
+C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.API\Controllers\TripController.cs(33,27): error CS1061: 'ClaimsPrincipal' does not contain a definition for 'FindFirstValue' and no accessible extension method 'FindFirstValue' accepting a first argument of type 'ClaimsPrincipal' could be found (are you missing a using directive or an assembly reference?) [C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.API\SriGuide.API.csproj]
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:01.21

@@ -1,0 +1,13 @@
+ column_name 
+-------------
+ UpdatedAt
+ GuideId
+ CustomerId
+ BookingDate
+ Status
+ TotalAmount
+ Id
+ CreatedAt
+ Notes
+(9 rows)
+

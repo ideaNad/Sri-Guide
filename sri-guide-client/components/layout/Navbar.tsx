@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, ShieldCheck } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import AuthModal from "@/features/auth/components/AuthModal";
 import { useAuth } from "@/context/AuthContext";
 
@@ -13,6 +13,7 @@ const Navbar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const pathname = usePathname();
+    const router = useRouter();
     const isHomePage = pathname === "/";
     const { user, login, logout } = useAuth();
 
@@ -222,7 +223,14 @@ const NavItems = ({ mobile = false, textColor, navLinks, setIsMobileMenuOpen }: 
             <AuthModal
                 isOpen={isAuthModalOpen}
                 onClose={() => setIsAuthModalOpen(false)}
-                onSuccess={(userData) => login(userData)}
+                onSuccess={(userData) => {
+                    login(userData);
+                    setIsAuthModalOpen(false);
+                    if (userData.role === "Admin") router.push("/admin");
+                    else if (userData.role === "Guide") router.push("/guide");
+                    else if (userData.role === "TravelAgency") router.push("/agency");
+                    else router.push("/dashboard");
+                }}
             />
         </nav>
     );

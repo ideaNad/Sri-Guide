@@ -17,6 +17,7 @@ interface ProfileData {
     email: string;
     role: string;
     isVerified: boolean;
+    profileImageUrl?: string;
     guideProfile: {
         bio: string;
         languages: string[];
@@ -24,6 +25,8 @@ interface ProfileData {
         hourlyRate: number;
         verificationStatus: number;
         specialty: string;
+        registrationNumber?: string;
+        licenseExpirationDate?: string;
     } | null;
 }
 
@@ -35,6 +38,7 @@ export default function GuideProfilePage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+    const [dashboardData, setDashboardData] = useState<any>(null);
 
     // Form states
     const [fullName, setFullName] = useState("");
@@ -44,6 +48,8 @@ export default function GuideProfilePage() {
     const [hourlyRate, setHourlyRate] = useState(0);
     const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
     const [newLanguage, setNewLanguage] = useState("");
+    const [registrationNumber, setRegistrationNumber] = useState("");
+    const [licenseExpiryDate, setLicenseExpiryDate] = useState("");
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -51,6 +57,13 @@ export default function GuideProfilePage() {
                 const response = await apiClient.get<ProfileData>("/profile/me");
                 const data = response.data;
                 setProfile(data);
+
+                try {
+                    const dashboardRes = await apiClient.get("/profile/guide-dashboard");
+                    setDashboardData(dashboardRes.data);
+                } catch (e) {
+                    console.error("Failed to fetch dashboard stats", e);
+                }
                 
                 // Initialize form states
                 setFullName(data.fullName || "");
@@ -60,6 +73,10 @@ export default function GuideProfilePage() {
                     setDailyRate(data.guideProfile.dailyRate || 0);
                     setHourlyRate(data.guideProfile.hourlyRate || 0);
                     setSelectedLanguages(data.guideProfile.languages || []);
+                    setRegistrationNumber(data.guideProfile.registrationNumber || "");
+                    if (data.guideProfile.licenseExpirationDate) {
+                        setLicenseExpiryDate(new Date(data.guideProfile.licenseExpirationDate).toISOString().split('T')[0]);
+                    }
                 }
             } catch (error) {
                 console.error("Failed to fetch profile", error);
@@ -98,7 +115,7 @@ export default function GuideProfilePage() {
             
             // Update local user context if name changed
             if (user) {
-                login({ ...user, fullName });
+                login({ ...user, fullName, profileImageUrl: profile.profileImageUrl });
             }
 
             // Scroll to top to see message
@@ -107,6 +124,61 @@ export default function GuideProfilePage() {
             const axiosError = error as { response?: { data?: { message?: string } } };
             console.error("Failed to update profile", error);
             setMessage({ type: "error", text: axiosError.response?.data?.message || "Something went wrong while saving." });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        setSaving(true);
+        setMessage(null);
+
+        try {
+            const response = await apiClient.post<string>("/profile/upload-photo", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+            
+            if (profile) {
+                setProfile({ ...profile, profileImageUrl: response.data });
+            }
+
+            // Update AuthContext user state to reflect new photo across the site
+            if (user) {
+                login({ ...user, profileImageUrl: response.data });
+            }
+
+            setMessage({ type: "success", text: "Profile picture updated!" });
+        } catch (error) {
+            console.error("Failed to upload photo", error);
+            setMessage({ type: "error", text: "Failed to upload photo." });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleRequestVerification = async () => {
+        if (!profile) return;
+        setSaving(true);
+        setMessage(null);
+
+        try {
+            await apiClient.post("/profile/request-verification", {
+                registrationNumber,
+                licenseExpirationDate: licenseExpiryDate
+            });
+            setMessage({ type: "success", text: "Verification request submitted! Admin will review it soon." });
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        } catch (error) {
+            console.error("Failed to submit verification", error);
+            setMessage({ type: "error", text: "Failed to submit verification request. Please try again." });
         } finally {
             setSaving(false);
         }
@@ -166,12 +238,30 @@ export default function GuideProfilePage() {
                 <div className="lg:col-span-1 space-y-6">
                     <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm text-center relative overflow-hidden group">
                         <div className="relative w-32 h-32 mx-auto mb-6">
-                            <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-4xl font-black text-gray-300 border-4 border-white shadow-xl">
-                                {fullName.charAt(0)}
-                            </div>
-                            <button className="absolute bottom-0 right-0 p-3 bg-primary text-white rounded-full shadow-lg hover:bg-secondary transition-all">
+                            {profile?.profileImageUrl ? (
+                                <img 
+                                    src={`${apiClient.defaults.baseURL?.replace('/api', '')}${profile.profileImageUrl}`} 
+                                    alt={fullName}
+                                    className="w-full h-full rounded-full object-cover border-4 border-white shadow-xl"
+                                />
+                            ) : (
+                                <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-4xl font-black text-gray-300 border-4 border-white shadow-xl">
+                                    {fullName.charAt(0)}
+                                </div>
+                            )}
+                            <input 
+                                type="file" 
+                                id="profile-upload" 
+                                className="hidden" 
+                                accept="image/*"
+                                onChange={handlePhotoUpload}
+                            />
+                            <label 
+                                htmlFor="profile-upload"
+                                className="absolute bottom-0 right-0 p-3 bg-primary text-white rounded-full shadow-lg hover:bg-secondary transition-all cursor-pointer"
+                            >
                                 <Camera size={18} />
-                            </button>
+                            </label>
                         </div>
                         <h2 className="text-xl font-black text-gray-900 leading-none">{fullName}</h2>
                         <p className="text-primary font-black text-[10px] uppercase tracking-[0.2em] mt-2 mb-4">Certified Local Guide</p>
@@ -193,12 +283,12 @@ export default function GuideProfilePage() {
                                 <span className="text-xs text-white/50 font-bold uppercase tracking-widest">Public Rating</span>
                                 <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/5">
                                     <Star size={14} className="text-primary fill-primary" />
-                                    <span className="font-black text-sm italic">4.8</span>
+                                    <span className="font-black text-sm italic">{dashboardData?.averageRating?.toFixed(1) || "0.0"}</span>
                                 </div>
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-xs text-white/50 font-bold uppercase tracking-widest">Tours Completed</span>
-                                <span className="font-black text-lg italic">24</span>
+                                <span className="font-black text-lg italic">{dashboardData?.totalBookings || 0}</span>
                             </div>
                         </div>
                     </div>
@@ -342,6 +432,52 @@ export default function GuideProfilePage() {
                                     />
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Verification & Badge */}
+                    <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm space-y-6">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2.5 bg-gray-50 rounded-xl text-gray-900">
+                                <ShieldCheck size={20} />
+                            </div>
+                            <h3 className="text-lg font-black text-gray-900 uppercase italic">Verification (Legit Badge)</h3>
+                        </div>
+
+                        <div className="space-y-4">
+                            <p className="text-xs text-gray-500 font-medium leading-relaxed px-4">
+                                Provide your official registration details to receive the <span className="text-emerald-600 font-bold italic">LEGIT</span> badge. Admin will verify these details manually.
+                            </p>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">Registration Number</label>
+                                    <input
+                                        type="text"
+                                        value={registrationNumber}
+                                        onChange={e => setRegistrationNumber(e.target.value)}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
+                                        placeholder="SLTDA/G/..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">License Expiry Date</label>
+                                    <input
+                                        type="date"
+                                        value={licenseExpiryDate}
+                                        onChange={e => setLicenseExpiryDate(e.target.value)}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
+                                    />
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={handleRequestVerification}
+                                disabled={saving || !registrationNumber || !licenseExpiryDate}
+                                className="w-full bg-emerald-50 text-emerald-700 border border-emerald-100 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-emerald-500 hover:text-white transition-all disabled:opacity-50"
+                            >
+                                {saving ? "Processing..." : "Submit for Verification"}
+                            </button>
                         </div>
                     </div>
 

@@ -66,31 +66,34 @@ export const POPULAR_TOURS = [
 
 export const TOP_GUIDES = [
     {
-        id: 1,
+        id: "1",
         name: "Sunil Perera",
         specialty: "History & Culture",
         rating: 4.9,
         reviews: 84,
         image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop",
-        languages: ["English", "Sinhala", "German"]
+        languages: ["English", "Sinhala", "German"],
+        isLegit: true
     },
     {
-        id: 2,
+        id: "2",
         name: "Kasun Jayasundara",
         specialty: "Wildlife & Nature",
         rating: 4.8,
         reviews: 62,
         image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400&auto=format&fit=crop",
-        languages: ["English", "Sinhala", "French"]
+        languages: ["English", "Sinhala", "French"],
+        isLegit: true
     },
     {
-        id: 3,
+        id: "3",
         name: "Isuru Fernando",
         specialty: "Adventure & Hiking",
         rating: 5.0,
         reviews: 45,
         image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop",
-        languages: ["English", "Sinhala", "Russian"]
+        languages: ["English", "Sinhala", "Russian"],
+        isLegit: false
     }
 ];
 

@@ -27,4 +27,15 @@ public class ReviewController : ControllerBase
         var result = await _mediator.Send(command with { UserId = Guid.Parse(userId) });
         return Ok(result);
     }
+
+    [HttpGet("guide-reviews")]
+    [Authorize(Roles = "Guide")]
+    public async Task<IActionResult> GetGuideReviews()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var result = await _mediator.Send(new SriGuide.Application.Reviews.Queries.GetGuideReviewsQuery(Guid.Parse(userId)));
+        return Ok(result);
+    }
 }

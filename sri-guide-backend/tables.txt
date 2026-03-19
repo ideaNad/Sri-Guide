@@ -1,0 +1,12 @@
+      table_name       
+-----------------------
+ __EFMigrationsHistory
+ Users
+ AgencyProfiles
+ Reviews
+ GuideProfiles
+ Bookings
+ Trips
+ TripImages
+(8 rows)
+

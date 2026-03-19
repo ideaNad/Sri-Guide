@@ -48,13 +48,13 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
                     g.Id,
                     g.User.FullName,
                     g.Bio,
-                    "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=800", // Placeholder
-                    "Sri Lanka", // Default if no location field yet
-                    5.0m, // Placeholder rating
+                    g.User.ProfileImageUrl ?? "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=800",
+                    "Sri Lanka",
+                    5.0m,
                     0,
                     "guide",
                     g.Languages.ToArray(),
-                    g.User.Email, // We should use a specific phone field later
+                    g.User.Email,
                     g.User.Email,
                     null
                 ))
@@ -76,7 +76,7 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
                     a.Id,
                     a.CompanyName,
                     "Official Travel Agency",
-                    "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80&w=800", // Placeholder
+                    a.User.ProfileImageUrl ?? "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80&w=800",
                     "Sri Lanka",
                     5.0m,
                     0,

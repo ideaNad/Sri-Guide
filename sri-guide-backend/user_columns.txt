@@ -1,0 +1,14 @@
+   column_name   
+-----------------
+ Id
+ Role
+ IsVerified
+ CreatedAt
+ UpdatedAt
+ ProfileImageUrl
+ FullName
+ Email
+ PasswordHash
+ PhoneNumber
+(10 rows)
+

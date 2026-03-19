@@ -35,6 +35,7 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
             user.Email,
             user.Role,
             user.IsVerified,
+            user.ProfileImageUrl,
             guideProfile != null ? new GuideProfileDto(
                 guideProfile.Bio,
                 guideProfile.Languages,

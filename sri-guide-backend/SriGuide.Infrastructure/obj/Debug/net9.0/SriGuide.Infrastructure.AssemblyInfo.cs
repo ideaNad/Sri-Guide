@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SriGuide.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5798ea617ff6cfc799744fb9036a1d9857110926")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4eb61cba34013f1ab2dde361a738d40ffd0ea37d")]
 [assembly: System.Reflection.AssemblyProductAttribute("SriGuide.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SriGuide.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

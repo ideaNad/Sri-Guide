@@ -35,4 +35,18 @@ public class AdminController : ControllerBase
     {
         return await _mediator.Send(new RejectAgencyCommand(id));
     }
+
+    [HttpPost("verify-guide/{id}")]
+    public async Task<IActionResult> VerifyGuide(Guid id, [FromBody] VerifyGuideCommand command)
+    {
+        var result = await _mediator.Send(command with { GuideProfileId = id });
+        return Ok(result);
+    }
+
+    [HttpGet("pending-verifications")]
+    public async Task<ActionResult<List<PendingVerificationDto>>> GetPendingVerifications()
+    {
+        var result = await _mediator.Send(new GetPendingVerificationsQuery());
+        return Ok(result);
+    }
 }

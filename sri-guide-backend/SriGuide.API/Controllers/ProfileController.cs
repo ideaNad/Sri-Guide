@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SriGuide.Application.Profiles.Commands;
 using SriGuide.Application.Profiles.Queries;
+using SriGuide.Application.Profiles.DTOs;
 using SriGuide.Application.Profiles.Queries.GetProfileById;
 using System.Security.Claims;
 
@@ -37,6 +38,47 @@ public class ProfileController : ControllerBase
     {
         var result = await _mediator.Send(new GetProfileByIdQuery(id));
         if (result == null) return NotFound();
+        return Ok(result);
+    }
+
+    [HttpGet("guide-dashboard")]
+    [Authorize(Roles = "Guide")]
+    public async Task<ActionResult<GuideDashboardDto>> GetGuideDashboard()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var query = new GetGuideDashboardQuery(Guid.Parse(userId));
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+
+    [HttpPost("request-verification")]
+    [Authorize(Roles = "Guide")]
+    public async Task<IActionResult> RequestVerification([FromBody] RequestVerificationCommand command)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var result = await _mediator.Send(command with { UserId = Guid.Parse(userId) });
+        return Ok(result);
+    }
+
+    [HttpGet("public/{id}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<PublicProfileDto>> GetDetailedPublicProfile(Guid id)
+    {
+        var result = await _mediator.Send(new GetPublicProfileQuery(id));
+        return Ok(result);
+    }
+
+    [HttpPost("upload-photo")]
+    public async Task<ActionResult<string>> UploadPhoto([FromForm] IFormFile file)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var result = await _mediator.Send(new UploadProfilePictureCommand(Guid.Parse(userId), file));
         return Ok(result);
     }
 
