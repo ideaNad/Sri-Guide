@@ -11,7 +11,14 @@ public record UpdateGuideProfileCommand(
     List<string>? Languages,
     decimal? DailyRate,
     decimal? HourlyRate,
-    string? Specialty
+    bool? ContactForPrice,
+    string? Specialty,
+    string? PhoneNumber,
+    string? WhatsAppNumber,
+    string? YouTubeLink,
+    string? TikTokLink,
+    string? FacebookLink,
+    string? InstagramLink
 ) : IRequest<bool>;
 
 public class UpdateGuideProfileCommandHandler : IRequestHandler<UpdateGuideProfileCommand, bool>
@@ -42,7 +49,14 @@ public class UpdateGuideProfileCommandHandler : IRequestHandler<UpdateGuideProfi
         if (request.Languages != null) guideProfile.Languages = request.Languages;
         guideProfile.DailyRate = request.DailyRate ?? guideProfile.DailyRate;
         guideProfile.HourlyRate = request.HourlyRate ?? guideProfile.HourlyRate;
+        guideProfile.ContactForPrice = request.ContactForPrice ?? guideProfile.ContactForPrice;
         guideProfile.Specialty = request.Specialty ?? guideProfile.Specialty;
+        guideProfile.PhoneNumber = request.PhoneNumber ?? guideProfile.PhoneNumber;
+        guideProfile.WhatsAppNumber = request.WhatsAppNumber ?? guideProfile.WhatsAppNumber;
+        guideProfile.YouTubeLink = request.YouTubeLink ?? guideProfile.YouTubeLink;
+        guideProfile.TikTokLink = request.TikTokLink ?? guideProfile.TikTokLink;
+        guideProfile.FacebookLink = request.FacebookLink ?? guideProfile.FacebookLink;
+        guideProfile.InstagramLink = request.InstagramLink ?? guideProfile.InstagramLink;
 
         await _context.SaveChangesAsync(cancellationToken);
         return true;

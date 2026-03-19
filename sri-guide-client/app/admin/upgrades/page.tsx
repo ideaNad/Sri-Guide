@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { 
     CheckCircle2, XCircle, Clock, Search, 
-    Filter, LayoutDashboard, Building2, User 
+    Filter, LayoutDashboard, Building2, User, Eye
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/lib/api-client";
@@ -27,6 +27,7 @@ const AdminUpgradesPage = () => {
     const [upgrades, setUpgrades] = useState<PendingUpgrade[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         fetchUpgrades();
@@ -121,6 +122,13 @@ const AdminUpgradesPage = () => {
                                 </div>
 
                                 <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => router.push(`/profile/${upgrade.userId}`)}
+                                        className="p-3 rounded-2xl border border-gray-50 text-gray-400 hover:text-primary hover:bg-primary/5 hover:border-primary/10 transition-all opacity-0 group-hover:opacity-100"
+                                        title="View Profile"
+                                    >
+                                        <Eye size={22} />
+                                    </button>
                                     <button
                                         disabled={!!actionLoading}
                                         onClick={() => handleAction(upgrade.id, "reject")}

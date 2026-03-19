@@ -11,18 +11,85 @@ import {
 import { motion } from "framer-motion";
 import SectionHeader from "@/components/ui/SectionHeader";
 import Card from "@/components/ui/Card";
+import apiClient from "@/lib/api-client";
+import { useAuth } from "@/context/AuthContext";
+import Link from "next/link";
+
+interface TripDetail {
+    id: string;
+    title: string;
+    description: string;
+    location: string;
+    date?: string;
+    images: string[];
+    guideId: string;
+    guideName: string;
+    guideImageUrl?: string;
+    guideRating: number;
+    guideTotalReviews: number;
+    likeCount: number;
+    isLikedByCurrentUser: boolean;
+}
 
 const TourDetailPage = () => {
     const { id } = useParams();
-    const tour = POPULAR_TOURS.find(t => t.id === Number(id)) || POPULAR_TOURS[0];
+    const { user } = useAuth();
+    const [tour, setTour] = useState<TripDetail | null>(null);
+    const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("overview");
+
+    const fetchTour = async () => {
+        try {
+            const response = await apiClient.get<TripDetail>(`/trip/${id}`);
+            setTour(response.data);
+        } catch (error) {
+            console.error("Failed to fetch tour", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    React.useEffect(() => {
+        if (id) fetchTour();
+    }, [id]);
+
+    const handleToggleLike = async () => {
+        if (!user) return; // Should ideally show login modal
+        try {
+            const response = await apiClient.post<{ liked: boolean }>(`/trip/${id}/toggle-like`);
+            if (tour) {
+                setTour({
+                    ...tour,
+                    isLikedByCurrentUser: response.data.liked,
+                    likeCount: response.data.liked ? tour.likeCount + 1 : tour.likeCount - 1
+                });
+            }
+        } catch (error) {
+            console.error("Failed to toggle like", error);
+        }
+    };
+
+    if (loading) return (
+        <div className="min-h-screen flex items-center justify-center bg-white">
+            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+    );
+
+    if (!tour) return (
+        <div className="min-h-screen flex items-center justify-center bg-white">
+            <div className="text-center">
+                <h2 className="text-4xl font-black uppercase italic mb-4">Tour Not Found</h2>
+                <Link href="/tours" className="text-primary font-bold hover:underline">Back to Tours</Link>
+            </div>
+        </div>
+    );
 
     return (
         <div className="pb-24 bg-white">
             {/* Hero Section */}
             <section className="relative h-[70vh] w-full overflow-hidden">
                 <img
-                    src={tour.image}
+                    src={tour.images[0]?.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${tour.images[0]}` : tour.images[0] || "https://images.unsplash.com/photo-1544013919-add52c3dffbd?q=80&w=1200&auto=format"}
                     alt={tour.title}
                     className="w-full h-full object-cover"
                 />
@@ -32,28 +99,29 @@ const TourDetailPage = () => {
                 <div className="absolute bottom-12 left-0 w-full">
                     <div className="container mx-auto px-4">
                         <div className="flex flex-wrap gap-2 mb-4">
-                            {tour.tags.map(tag => (
-                                <span key={tag} className="px-3 py-1 bg-white/20 backdrop-blur-md text-white border border-white/40 text-[10px] font-black uppercase tracking-[0.2em]">
-                                    {tag}
-                                </span>
-                            ))}
+                            <span className="px-3 py-1 bg-white/20 backdrop-blur-md text-white border border-white/40 text-[10px] font-black uppercase tracking-[0.2em]">
+                                Adventure
+                            </span>
+                            <span className="px-3 py-1 bg-white/20 backdrop-blur-md text-white border border-white/40 text-[10px] font-black uppercase tracking-[0.2em]">
+                                Cultural
+                            </span>
                         </div>
                         <h1 className="text-4xl md:text-6xl font-black text-white mb-6 max-w-4xl leading-tight">
                             {tour.title}
                         </h1>
                         <div className="flex flex-wrap items-center gap-6 text-white/80">
                             <div className="flex items-center">
-                                <MapPin className="w-5 h-5 mr-2 text-highlight" />
+                                <MapPin className="w-5 h-5 mr-2 text-primary" />
                                 <span className="font-medium">{tour.location}</span>
                             </div>
                             <div className="flex items-center">
-                                <Clock className="w-5 h-5 mr-2 text-highlight" />
-                                <span className="font-medium">{tour.duration}</span>
+                                <Clock className="w-5 h-5 mr-2 text-primary" />
+                                <span className="font-medium">Selected Duration</span>
                             </div>
                             <div className="flex items-center">
                                 <Star className="w-5 h-5 mr-2 text-yellow-400 fill-yellow-400" />
-                                <span className="font-bold text-white">{tour.rating}</span>
-                                <span className="ml-1 text-sm">({tour.reviews} Reviews)</span>
+                                <span className="font-bold text-white">{tour.guideRating.toFixed(1)}</span>
+                                <span className="ml-1 text-sm">({tour.guideTotalReviews} Reviews)</span>
                             </div>
                         </div>
                     </div>
@@ -61,8 +129,11 @@ const TourDetailPage = () => {
 
                 {/* Action Buttons */}
                 <div className="absolute top-28 right-8 flex space-x-0">
-                    <button className="w-14 h-14 bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-gray-900 transition-all">
-                        <Heart className="w-5 h-5" />
+                    <button 
+                        onClick={handleToggleLike}
+                        className={`w-14 h-14 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all ${tour.isLikedByCurrentUser ? "bg-primary text-white" : "bg-white/10 text-white hover:bg-white hover:text-gray-900"}`}
+                    >
+                        <Heart className={`w-5 h-5 ${tour.isLikedByCurrentUser ? "fill-white" : ""}`} />
                     </button>
                     <button className="w-14 h-14 bg-white/10 backdrop-blur-md border border-white/20 border-l-0 flex items-center justify-center text-white hover:bg-white hover:text-gray-900 transition-all">
                         <Share2 className="w-5 h-5" />
@@ -213,8 +284,8 @@ const TourDetailPage = () => {
 
                                 <div className="flex items-center justify-between mb-12">
                                     <div>
-                                        <span className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] block mb-2">Price</span>
-                                        <div className="text-4xl font-black">${tour.price} <span className="text-lg text-white/40 font-normal">/ pers.</span></div>
+                                        <span className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] block mb-2">Total Likes</span>
+                                        <div className="text-4xl font-black">{tour.likeCount} <span className="text-lg text-white/40 font-normal">Likes</span></div>
                                     </div>
                                     <div className="bg-white p-4 border-2 border-primary flex flex-col items-center shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]">
                                         <span className="text-[10px] font-black uppercase text-gray-900 tracking-tighter">Best Deal</span>
@@ -259,20 +330,23 @@ const TourDetailPage = () => {
                                 </div>
                             </div>
 
-                            {/* Guide Profile Promo */}
-                            <div className="bg-white p-8 border border-gray-100 shadow-sm flex items-center gap-6 group hover:shadow-2xl transition-all cursor-pointer">
+                            {/* Guide Profile Promo */}                            <Link href={`/profile/${tour.guideId}`} className="bg-white p-8 border border-gray-100 shadow-sm flex items-center gap-6 group hover:shadow-2xl transition-all cursor-pointer">
                                 <div className="w-24 h-24 overflow-hidden shadow-xl border-4 border-white">
-                                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop" alt="Sunil" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+                                    <img 
+                                        src={tour.guideImageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${tour.guideImageUrl}` : `https://ui-avatars.com/api/?name=${tour.guideName}&background=FFCC00&color=000&bold=true`} 
+                                        alt={tour.guideName} 
+                                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
+                                    />
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] mb-1">Proposed Guide</p>
-                                    <h4 className="text-xl font-black text-gray-900 group-hover:text-primary transition-colors tracking-tighter">Sunil Perera</h4>
+                                    <h4 className="text-xl font-black text-gray-900 group-hover:text-primary transition-colors tracking-tighter">{tour.guideName}</h4>
                                     <div className="flex items-center text-xs font-bold text-gray-400 mt-2">
                                         <Star className="w-3 h-3 text-yellow-400 fill-yellow-400 mr-1" />
-                                        4.9 (84 reviews)
+                                        {tour.guideRating.toFixed(1)} ({tour.guideTotalReviews} reviews)
                                     </div>
                                 </div>
-                            </div>
+                            </Link>
                         </div>
                     </aside>
                 </div>

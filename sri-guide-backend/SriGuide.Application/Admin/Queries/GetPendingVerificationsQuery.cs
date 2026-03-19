@@ -5,7 +5,8 @@ using SriGuide.Application.Common.Interfaces;
 namespace SriGuide.Application.Admin.Queries;
 
 public record PendingVerificationDto(
-    Guid Id,
+    Guid Id,         // GuideProfile.Id
+    Guid UserId,
     string FullName,
     string Email,
     string Role,
@@ -31,6 +32,7 @@ public class GetPendingVerificationsQueryHandler : IRequestHandler<GetPendingVer
             .Include(u => u.GuideProfile)
             .Where(u => u.GuideProfile != null && u.GuideProfile.VerificationStatus == Domain.Enums.VerificationStatus.Pending)
             .Select(u => new PendingVerificationDto(
+                u.GuideProfile!.Id,
                 u.Id,
                 u.FullName,
                 u.Email,

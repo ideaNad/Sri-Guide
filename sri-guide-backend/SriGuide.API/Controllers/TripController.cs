@@ -6,6 +6,8 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using SriGuide.Application.Trips.Commands;
+using SriGuide.Application.Trips.Queries;
 
 namespace SriGuide.API.Controllers;
 
@@ -18,6 +20,16 @@ public class TripController : ControllerBase
     public TripController(IMediator mediator)
     {
         _mediator = mediator;
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<TripDetailDto>> GetTripById(Guid id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        Guid? currentUserId = userId != null ? Guid.Parse(userId) : null;
+
+        var result = await _mediator.Send(new GetTripDetailQuery(id, currentUserId));
+        return Ok(result);
     }
 
     // Temporary basic actions until commands/queries are fully implemented
@@ -60,5 +72,16 @@ public class TripController : ControllerBase
         if (!success) return NotFound("Trip not found or you don't have permission to delete it.");
 
         return Ok();
+    }
+
+    [HttpPost("{tripId}/toggle-like")]
+    [Authorize]
+    public async Task<IActionResult> ToggleLike(Guid tripId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var result = await _mediator.Send(new ToggleTripLikeCommand(tripId, Guid.Parse(userId)));
+        return Ok(new { liked = result });
     }
 }

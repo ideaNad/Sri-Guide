@@ -8,9 +8,11 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/lib/api-client";
+import { useRouter } from "next/navigation";
 
 interface VerificationRequest {
     id: string;
+    userId: string;
     fullName: string;
     email: string;
     role: "Guide" | "TravelAgency";
@@ -24,6 +26,7 @@ const AdminVerificationsPage = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [actionLoading, setActionLoading] = useState<string | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         fetchRequests();
@@ -44,8 +47,8 @@ const AdminVerificationsPage = () => {
         setActionLoading(id);
         try {
             await apiClient.post(`/admin/verify-guide/${id}`, { 
-                guideId: id,
-                isApproved: action === "approve"
+                guideProfileId: id,
+                approve: action === "approve"
             });
             setRequests(requests.filter(r => r.id !== id));
         } catch (error) {
@@ -143,7 +146,11 @@ const AdminVerificationsPage = () => {
                                         </td>
                                         <td className="px-8 py-6 text-right">
                                             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button className="p-2 text-gray-400 hover:text-primary transition-colors">
+                                                <button 
+                                                    onClick={() => router.push(`/profile/${req.userId}`)}
+                                                    className="p-2 text-gray-400 hover:text-primary transition-colors"
+                                                    title="View Profile"
+                                                >
                                                     <Eye size={18} />
                                                 </button>
                                                 <button 

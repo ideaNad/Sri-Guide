@@ -18,6 +18,9 @@ const comfortaa = Comfortaa({
 export const metadata: Metadata = {
   title: "SriGuide — Discover Sri Lanka with Expert Local Guides",
   description: "Find certified local guides, explore curated tours and travel the authentic Sri Lanka.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({

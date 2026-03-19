@@ -5,12 +5,14 @@ import {
     Star, Languages, ShieldCheck, MapPin, 
     Calendar, MessageCircle, Compass, 
     ArrowRight, ChevronLeft, Globe, 
-    Clock, DollarSign, Loader2, Zap
+    Clock, DollarSign, Loader2, Zap,
+    Youtube, Facebook, Instagram, Phone, Music
 } from "lucide-react";
 import { motion } from "framer-motion";
 import apiClient from "@/lib/api-client";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import Link from "next/link";
 
 interface PublicProfile {
     id: string;
@@ -19,9 +21,18 @@ interface PublicProfile {
     specialty: string;
     languages: string[];
     dailyRate: number;
+    contactForPrice: boolean;
     isLegit: boolean;
     verificationStatus: string;
+    averageRating: number;
+    totalReviews: number;
     profileImageUrl?: string;
+    phoneNumber?: string;
+    whatsAppNumber?: string;
+    youTubeLink?: string;
+    tikTokLink?: string;
+    facebookLink?: string;
+    instagramLink?: string;
     recentTrips: {
         id: string;
         title: string;
@@ -143,16 +154,71 @@ export default function PublicProfilePage() {
                                     {profile.fullName}
                                 </h1>
                             </div>
-                            <p className="text-xl font-bold text-primary italic uppercase tracking-wider">{profile.specialty}</p>
+                             <p className="text-xl font-bold text-primary italic uppercase tracking-wider">{profile.specialty || "Professional Local Guide"}</p>
                             
-                            <div className="flex flex-wrap gap-8 py-6 border-y border-gray-100">
+                            {/* Social & Contact Card - Tourist Only */}
+                            {user && user.role === "Tourist" && (
+                                <div className="bg-gray-50 p-6 rounded-[2rem] border border-gray-100 flex flex-wrap gap-6 items-center my-4 shadow-sm">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 block w-full mb-2">Authenticated Tourist Access: Contact Info</span>
+                                    
+                                    {profile.phoneNumber && (
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2.5 bg-white rounded-xl shadow-sm text-gray-900 border border-gray-100">
+                                                <Phone size={16} />
+                                            </div>
+                                            <span className="text-sm font-black text-gray-900">{profile.phoneNumber}</span>
+                                        </div>
+                                    )}
+
+                                    {profile.whatsAppNumber && (
+                                        <a 
+                                            href={`https://wa.me/${profile.whatsAppNumber.replace(/\D/g, '')}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-3 group"
+                                        >
+                                            <div className="p-2.5 bg-emerald-500 rounded-xl shadow-sm text-white group-hover:bg-emerald-600 transition-colors">
+                                                <MessageCircle size={16} />
+                                            </div>
+                                            <span className="text-sm font-black text-emerald-600 group-hover:underline">WhatsApp Me</span>
+                                        </a>
+                                    )}
+
+                                    <div className="h-8 w-[1px] bg-gray-200 hidden md:block" />
+
+                                    <div className="flex gap-3">
+                                        {profile.youTubeLink && (
+                                            <a href={profile.youTubeLink} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white border border-gray-100 rounded-xl text-rose-600 hover:bg-rose-50 transition-all shadow-sm">
+                                                <Youtube size={16} />
+                                            </a>
+                                        )}
+                                        {profile.facebookLink && (
+                                            <a href={profile.facebookLink} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white border border-gray-100 rounded-xl text-blue-600 hover:bg-blue-50 transition-all shadow-sm">
+                                                <Facebook size={16} />
+                                            </a>
+                                        )}
+                                        {profile.instagramLink && (
+                                            <a href={profile.instagramLink} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white border border-gray-100 rounded-xl text-pink-600 hover:bg-pink-50 transition-all shadow-sm">
+                                                <Instagram size={16} />
+                                            </a>
+                                        )}
+                                        {profile.tikTokLink && (
+                                            <a href={profile.tikTokLink} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white border border-gray-100 rounded-xl text-black hover:bg-gray-100 transition-all shadow-sm">
+                                                <Music size={16} />
+                                            </a>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                             <div className="flex flex-wrap gap-8 py-6 border-y border-gray-100">
                                 <div className="flex items-center gap-3">
                                     <div className="p-3 bg-gray-50 rounded-2xl">
                                         <Star className="text-yellow-500 fill-yellow-500" size={20} />
                                     </div>
                                     <div>
                                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Rating</p>
-                                        <p className="font-black text-lg italic">4.9 <span className="text-xs text-gray-300 font-bold">(84 Reviews)</span></p>
+                                        <p className="font-black text-lg italic">{profile.averageRating.toFixed(1)} <span className="text-xs text-gray-300 font-bold">({profile.totalReviews} Reviews)</span></p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -160,8 +226,12 @@ export default function PublicProfilePage() {
                                         <DollarSign className="text-emerald-500" size={20} />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Daily Rate</p>
-                                        <p className="font-black text-lg italic">${profile.dailyRate} <span className="text-xs text-gray-300 font-bold">/ Day</span></p>
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Rate</p>
+                                        {profile.contactForPrice ? (
+                                            <p className="font-black text-sm italic py-1">Contact for Pricing</p>
+                                        ) : (
+                                            <p className="font-black text-lg italic">${profile.dailyRate} <span className="text-xs text-gray-300 font-bold">/ Day</span></p>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -245,7 +315,9 @@ export default function PublicProfilePage() {
                                             <div className="p-8 md:p-12">
                                                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-6">
                                                     <div>
-                                                        <h3 className="text-2xl font-black text-gray-900 uppercase italic mb-3 underline decoration-primary/30 decoration-4 underline-offset-8">{trip.title}</h3>
+                                                        <Link href={`/adventures/${trip.id}`}>
+                                                            <h3 className="text-2xl font-black text-gray-900 uppercase italic mb-3 underline decoration-primary/30 decoration-4 underline-offset-8 hover:text-primary transition-colors cursor-pointer">{trip.title}</h3>
+                                                        </Link>
                                                         <div className="flex items-center gap-4">
                                                             <div className="flex items-center gap-1">
                                                                 <Star size={16} className="text-yellow-500 fill-yellow-500" />
@@ -254,25 +326,33 @@ export default function PublicProfilePage() {
                                                             <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">({trip.reviewCount || 0} Ratings)</span>
                                                         </div>
                                                     </div>
-                                                    {user && user.id !== profile.id && (
-                                                        <div className="flex flex-col gap-2">
-                                                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Rate this trip</span>
-                                                            <div className="flex gap-1">
-                                                                {[1, 2, 3, 4, 5].map((star) => (
-                                                                    <button 
-                                                                        key={star}
-                                                                        disabled={submittingRating === trip.id}
-                                                                        onClick={() => handleRateTrip(trip.id, star)}
-                                                                        className="p-2 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-yellow-500 hover:shadow-yellow-500/20 active:scale-95 transition-all outline-none"
-                                                                    >
-                                                                        <Star size={16} className={submittingRating === trip.id ? "text-gray-300 animate-pulse" : "text-yellow-500"} />
-                                                                    </button>
-                                                                ))}
+                                                    <div className="flex flex-col gap-4">
+                                                        <Link 
+                                                            href={`/adventures/${trip.id}`}
+                                                            className="bg-gray-900 text-white px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary transition-all flex items-center justify-center gap-2 group/btn"
+                                                        >
+                                                            Read story <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+                                                        </Link>
+                                                        {user && user.id !== profile.id && (
+                                                            <div className="flex flex-col gap-2 p-3 bg-white border border-gray-100 rounded-2xl">
+                                                                <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 text-center">Quick Rate</span>
+                                                                <div className="flex gap-1 justify-center">
+                                                                    {[1, 2, 3, 4, 5].map((star) => (
+                                                                        <button 
+                                                                            key={star}
+                                                                            disabled={submittingRating === trip.id}
+                                                                            onClick={() => handleRateTrip(trip.id, star)}
+                                                                            className="p-1.5 bg-gray-50 rounded-lg border border-gray-100 hover:border-yellow-500 transition-all outline-none"
+                                                                        >
+                                                                            <Star size={12} className={submittingRating === trip.id ? "text-gray-300 animate-pulse" : "text-yellow-500"} />
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    )}
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <p className="text-gray-500 text-lg font-medium leading-relaxed mb-6">{trip.description || "Explore the beauty of Sri Lanka through the lens of a local expert. This trip captures the essence of our island."}</p>
+                                                <p className="text-gray-500 text-lg font-medium leading-relaxed mb-6">{trip.description || "Explore the beauty of Sri Lanka through the lens of a local expert."}</p>
                                                 
                                                 {trip.images && trip.images.length > 1 && (
                                                     <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar">

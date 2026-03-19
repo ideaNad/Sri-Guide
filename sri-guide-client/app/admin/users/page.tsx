@@ -1,53 +1,86 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { 
-    Users, Search, Filter, MoreVertical, 
-    User, Building2, MapPin, Shield, 
-    Mail, Phone, Trash2, Edit2
+    Users, Search, User, ChevronLeft, ChevronRight
 } from "lucide-react";
 import { motion } from "framer-motion";
+import apiClient from "@/lib/api-client";
 
-interface PlatformUser {
+interface AdminUser {
     id: string;
     fullName: string;
     email: string;
-    role: "Tourist" | "Guide" | "TravelAgency" | "Transport" | "Admin";
-    status: "Active" | "Inactive" | "Suspended";
-    joinedAt: string;
+    role: string;
+    isVerified: boolean;
+    createdAt: string;
 }
 
+interface PaginatedResult {
+    items: AdminUser[];
+    totalCount: number;
+    page: number;
+    pageSize: number;
+}
+
+const ROLE_TABS = [
+    { label: "All Users", value: "" },
+    { label: "Tourists", value: "Tourist" },
+    { label: "Guides", value: "Guide" },
+    { label: "Agencies", value: "TravelAgency" },
+    { label: "Admins", value: "Admin" },
+];
+
 const UserDirectoryPage = () => {
-    const [users, setUsers] = useState<PlatformUser[]>([]);
+    const [data, setData] = useState<PaginatedResult | null>(null);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
+    const [activeRole, setActiveRole] = useState("");
+    const [page, setPage] = useState(1);
+    const pageSize = 10;
+
+    const fetchUsers = useCallback(async () => {
+        setLoading(true);
+        try {
+            const params = new URLSearchParams();
+            params.set("page", page.toString());
+            params.set("pageSize", pageSize.toString());
+            if (activeRole) params.set("role", activeRole);
+            if (searchQuery) params.set("search", searchQuery);
+
+            const response = await apiClient.get<PaginatedResult>(`/admin/users?${params.toString()}`);
+            setData(response.data);
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [page, activeRole, searchQuery]);
 
     useEffect(() => {
-        // Mocking user data
-        setTimeout(() => {
-            setUsers([
-                { id: "1", fullName: "Admin Nadun", email: "admin@sriguide.com", role: "Admin", status: "Active", joinedAt: "2023-01-15" },
-                { id: "2", fullName: "Nuwan Perera", email: "nuwan@guide.lk", role: "Guide", status: "Active", joinedAt: "2023-05-20" },
-                { id: "3", fullName: "John Doe", email: "john@traveler.com", role: "Tourist", status: "Active", joinedAt: "2023-08-10" },
-                { id: "4", fullName: "Lanka Travels", email: "info@lankatravels.lk", role: "TravelAgency", status: "Active", joinedAt: "2023-03-05" },
-                { id: "5", fullName: "Quick Transport", email: "cars@quick.lk", role: "Transport", status: "Inactive", joinedAt: "2023-11-12" },
-            ]);
-            setLoading(false);
-        }, 800);
-    }, []);
+        fetchUsers();
+    }, [fetchUsers]);
 
-    const filteredUsers = users.filter(u => 
-        u.fullName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        u.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const handleTabChange = (role: string) => {
+        setActiveRole(role);
+        setPage(1);
+    };
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        setPage(1);
+        fetchUsers();
+    };
+
+    const totalPages = data ? Math.ceil(data.totalCount / pageSize) : 0;
 
     const getRoleBadge = (role: string) => {
         switch (role) {
-            case "Admin": return "bg-rose-50 text-rose-500";
-            case "Guide": return "bg-indigo-50 text-indigo-500";
-            case "TravelAgency": return "bg-teal-50 text-teal-500";
-            case "Transport": return "bg-amber-50 text-amber-500";
-            default: return "bg-blue-50 text-blue-500";
+            case "Admin": return "bg-rose-50 text-rose-500 border-rose-100";
+            case "Guide": return "bg-indigo-50 text-indigo-500 border-indigo-100";
+            case "TravelAgency": return "bg-teal-50 text-teal-500 border-teal-100";
+            case "Transport": return "bg-amber-50 text-amber-500 border-amber-100";
+            default: return "bg-blue-50 text-blue-500 border-blue-100";
         }
     };
 
@@ -55,87 +88,108 @@ const UserDirectoryPage = () => {
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tighter uppercase italic">
-                        User <span className="text-primary">Directory</span>
+                    <h1 className="text-3xl font-black text-[#5D596C] tracking-tighter">
+                        User <span className="text-[#7367F0]">Directory</span>
                     </h1>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Manage all platform participants and access levels</p>
+                    <p className="text-xs font-bold text-[#A5A3AE] uppercase tracking-widest mt-1">
+                        {data ? `${data.totalCount} total users on platform` : "Loading..."}
+                    </p>
                 </div>
                 
-                <div className="flex items-center gap-3">
+                <form onSubmit={handleSearch} className="flex items-center gap-3">
                     <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A5A3AE]" size={16} />
                         <input 
                             type="text" 
-                            placeholder="Find users..." 
+                            placeholder="Search by name or email..." 
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="bg-white border border-gray-100 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all text-sm w-64 font-bold"
+                            className="bg-white border border-[#DBDADE] rounded-xl py-2.5 pl-12 pr-4 outline-none focus:border-[#7367F0] focus:shadow-[0_2px_12px_rgba(115,103,240,0.15)] transition-all text-sm w-72 font-medium text-[#5D596C]"
                         />
                     </div>
-                    <button className="p-3 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-primary transition-all">
-                        <Filter size={18} />
-                    </button>
-                </div>
+                </form>
             </div>
 
-            <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
+            {/* Role Tabs */}
+            <div className="flex items-center gap-1 bg-[#F8F7FA] p-1.5 rounded-xl w-fit">
+                {ROLE_TABS.map(tab => (
+                    <button
+                        key={tab.value}
+                        onClick={() => handleTabChange(tab.value)}
+                        className={`px-5 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${
+                            activeRole === tab.value
+                                ? "bg-white text-[#7367F0] shadow-sm"
+                                : "text-[#A5A3AE] hover:text-[#6F6B7D]"
+                        }`}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
+
+            {/* Table */}
+            <div className="bg-white rounded-2xl border border-[#DBDADE] shadow-sm overflow-hidden">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="border-b border-gray-50">
-                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">User Identity</th>
-                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Role</th>
-                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Account Status</th>
-                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Actions</th>
+                        <tr className="border-b border-[#DBDADE]/50 bg-[#F8F7FA]">
+                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#A5A3AE]">User</th>
+                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#A5A3AE]">Role</th>
+                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#A5A3AE]">Status</th>
+                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#A5A3AE]">Joined</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="divide-y divide-[#DBDADE]/30">
                         {loading ? (
                             Array(5).fill(0).map((_, i) => (
                                 <tr key={i} className="animate-pulse">
-                                    <td colSpan={4} className="px-8 py-6">
-                                        <div className="h-10 bg-gray-50 rounded-xl w-full" />
+                                    <td colSpan={4} className="px-6 py-5">
+                                        <div className="h-8 bg-[#F8F7FA] rounded-lg w-full" />
                                     </td>
                                 </tr>
                             ))
-                        ) : filteredUsers.map((u, i) => (
-                            <motion.tr 
+                        ) : data?.items.length === 0 ? (
+                            <tr>
+                                <td colSpan={4} className="px-6 py-16 text-center">
+                                    <Users className="mx-auto text-[#DBDADE] mb-4" size={40} />
+                                    <p className="text-sm font-bold text-[#A5A3AE]">No users found matching your criteria</p>
+                                </td>
+                            </tr>
+                        ) : data?.items.map((u, i) => (
+                            <motion.tr
                                 key={u.id}
-                                initial={{ opacity: 0, y: 10 }}
+                                initial={{ opacity: 0, y: 5 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.05 }}
-                                className="group hover:bg-gray-50/50 transition-colors"
+                                transition={{ delay: i * 0.03 }}
+                                className="group hover:bg-[#F8F7FA]/50 transition-colors"
                             >
-                                <td className="px-8 py-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black ${getRoleBadge(u.role)}`}>
+                                <td className="px-6 py-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs ${getRoleBadge(u.role)}`}>
                                             {u.fullName.charAt(0)}
                                         </div>
                                         <div>
-                                            <p className="text-sm font-black text-gray-900 leading-tight">{u.fullName}</p>
-                                            <p className="text-[10px] font-bold text-gray-400">{u.email}</p>
+                                            <p className="text-sm font-bold text-[#5D596C]">{u.fullName}</p>
+                                            <p className="text-[11px] text-[#A5A3AE]">{u.email}</p>
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-8 py-6">
-                                    <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${getRoleBadge(u.role)}`}>
-                                        {u.role}
+                                <td className="px-6 py-4">
+                                    <span className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${getRoleBadge(u.role)}`}>
+                                        {u.role === "TravelAgency" ? "Agency" : u.role}
                                     </span>
                                 </td>
-                                <td className="px-8 py-6">
+                                <td className="px-6 py-4">
                                     <div className="flex items-center gap-2">
-                                        <div className={`w-1.5 h-1.5 rounded-full ${u.status === 'Active' ? 'bg-green-500 shadow-[0_0_8px_theme(colors.green.500)]' : 'bg-gray-300'}`} />
-                                        <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">{u.status}</span>
+                                        <div className={`w-1.5 h-1.5 rounded-full ${u.isVerified ? 'bg-green-500' : 'bg-amber-400'}`} />
+                                        <span className="text-[11px] font-bold text-[#6F6B7D]">
+                                            {u.isVerified ? "Verified" : "Unverified"}
+                                        </span>
                                     </div>
                                 </td>
-                                <td className="px-8 py-6 text-right">
-                                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button className="p-2.5 bg-gray-50 text-gray-400 hover:text-primary rounded-xl transition-all">
-                                            <Edit2 size={16} />
-                                        </button>
-                                        <button className="p-2.5 bg-rose-50 text-rose-400 hover:text-rose-600 rounded-xl transition-all">
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
+                                <td className="px-6 py-4">
+                                    <span className="text-[11px] text-[#A5A3AE] font-medium">
+                                        {new Date(u.createdAt).toLocaleDateString()}
+                                    </span>
                                 </td>
                             </motion.tr>
                         ))}
@@ -143,13 +197,30 @@ const UserDirectoryPage = () => {
                 </table>
             </div>
 
-            <div className="flex items-center justify-between px-8 py-4 bg-gray-900 rounded-[2rem]">
-                <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Showing {filteredUsers.length} of {users.length} users</p>
-                <div className="flex items-center gap-2">
-                    <button className="px-4 py-2 bg-white/5 text-white text-[10px] font-black rounded-lg hover:bg-white/10 transition-all uppercase tracking-widest disabled:opacity-30" disabled>Prev</button>
-                    <button className="px-4 py-2 bg-primary text-white text-[10px] font-black rounded-lg hover:bg-primary/80 transition-all uppercase tracking-widest">Next</button>
+            {/* Pagination */}
+            {totalPages > 0 && (
+                <div className="flex items-center justify-between">
+                    <p className="text-[11px] font-bold text-[#A5A3AE]">
+                        Page {data?.page} of {totalPages} • {data?.totalCount} total
+                    </p>
+                    <div className="flex items-center gap-2">
+                        <button
+                            disabled={page <= 1}
+                            onClick={() => setPage(p => p - 1)}
+                            className="flex items-center gap-1 px-4 py-2 bg-white border border-[#DBDADE] text-[11px] font-bold text-[#6F6B7D] rounded-lg hover:border-[#7367F0] transition-all disabled:opacity-30 disabled:hover:border-[#DBDADE]"
+                        >
+                            <ChevronLeft size={14} /> Prev
+                        </button>
+                        <button
+                            disabled={page >= totalPages}
+                            onClick={() => setPage(p => p + 1)}
+                            className="flex items-center gap-1 px-4 py-2 bg-[#7367F0] text-white text-[11px] font-bold rounded-lg hover:bg-[#685DD8] transition-all disabled:opacity-30"
+                        >
+                            Next <ChevronRight size={14} />
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };

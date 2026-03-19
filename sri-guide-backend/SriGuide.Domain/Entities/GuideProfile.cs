@@ -14,6 +14,7 @@ public class GuideProfile : BaseEntity
     public string? Specialty { get; set; }
     public decimal? DailyRate { get; set; }
     public decimal? HourlyRate { get; set; }
+    public bool ContactForPrice { get; set; }
     
     // Verification details
     public string? RegistrationNumber { get; set; }
@@ -22,6 +23,14 @@ public class GuideProfile : BaseEntity
 
     public VerificationStatus VerificationStatus { get; set; } = VerificationStatus.Pending;
     public bool IsVerified { get; set; }
+
+    // Contact & Social Links
+    public string? PhoneNumber { get; set; }
+    public string? WhatsAppNumber { get; set; }
+    public string? YouTubeLink { get; set; }
+    public string? TikTokLink { get; set; }
+    public string? FacebookLink { get; set; }
+    public string? InstagramLink { get; set; }
 
     public Guid? AgencyId { get; set; }
     public AgencyProfile? Agency { get; set; }

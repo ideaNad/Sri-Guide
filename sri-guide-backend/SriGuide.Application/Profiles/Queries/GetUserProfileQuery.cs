@@ -42,6 +42,7 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
                 guideProfile.DailyRate,
                 guideProfile.HourlyRate,
                 guideProfile.VerificationStatus,
+                guideProfile.ContactForPrice,
                 guideProfile.AgencyId,
                 guideProfile.Agency?.CompanyName
             ) : null,

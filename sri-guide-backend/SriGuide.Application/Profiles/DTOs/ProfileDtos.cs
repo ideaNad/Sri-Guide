@@ -19,6 +19,7 @@ public record GuideProfileDto(
     decimal? DailyRate,
     decimal? HourlyRate,
     VerificationStatus VerificationStatus,
+    bool ContactForPrice,
     Guid? AgencyId,
     string? AgencyName
 );

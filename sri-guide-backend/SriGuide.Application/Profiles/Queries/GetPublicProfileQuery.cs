@@ -27,43 +27,60 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
         if (user == null || user.GuideProfile == null)
             throw new Exception("Guide not found");
 
-        var tripIds = user.GuideProfile.Trips.Select(t => t.Id).ToList();
+        var tripsRaw = await _context.Trips
+            .Include(t => t.Images)
+            .Where(t => t.GuideId == user.Id)
+            .OrderByDescending(t => t.Date ?? t.CreatedAt)
+            .Take(20)
+            .ToListAsync(cancellationToken);
+
+        var tripIds = tripsRaw.Select(t => t.Id).ToList();
         var tripReviews = await _context.Reviews
             .Where(r => r.TargetType == "Trip" && tripIds.Contains(r.TargetId))
             .ToListAsync(cancellationToken);
 
-        var trips = user.GuideProfile.Trips
-            .OrderByDescending(t => t.Date ?? t.CreatedAt)
-            .Take(5)
-            .Select(t => {
-                var reviews = tripReviews.Where(r => r.TargetId == t.Id).ToList();
-                var rating = reviews.Any() ? reviews.Average(r => r.Rating) : 0;
-                var reviewCount = reviews.Count;
+        var trips = tripsRaw.Select(t => {
+            var reviews = tripReviews.Where(r => r.TargetId == t.Id).ToList();
+            var rating = reviews.Any() ? reviews.Average(r => r.Rating) : 0;
+            var reviewCount = reviews.Count;
 
-                return new PublicTripDto(
-                    t.Id,
-                    t.Title,
-                    t.Images.FirstOrDefault()?.ImageUrl ?? "",
-                    t.Date,
-                    t.Description,
-                    t.Location,
-                    rating,
-                    reviewCount,
-                    t.Images.Select(i => i.ImageUrl).ToList()
-                );
-            })
-            .ToList();
+            return new PublicTripDto(
+                t.Id,
+                t.Title,
+                t.Images.OrderBy(i => i.CreatedAt).Select(i => i.ImageUrl != null && !i.ImageUrl.StartsWith("/") && !i.ImageUrl.Contains("://") ? "/" + i.ImageUrl : i.ImageUrl).FirstOrDefault() ?? "",
+                t.Date,
+                t.Description,
+                t.Location,
+                rating,
+                reviewCount,
+                t.Images.Select(i => i.ImageUrl != null && !i.ImageUrl.StartsWith("/") && !i.ImageUrl.Contains("://") ? "/" + i.ImageUrl : i.ImageUrl).Where(url => url != null).Cast<string>().ToList()
+            );
+        }).ToList();
+
+        var guideAverageRating = tripReviews.Any() ? tripReviews.Average(r => r.Rating) : 0;
+        var guideTotalReviews = tripReviews.Count;
 
         return new PublicProfileDto(
             user.Id,
             user.FullName,
-            user.ProfileImageUrl,
+            user.ProfileImageUrl != null && !user.ProfileImageUrl.StartsWith("/") && !user.ProfileImageUrl.StartsWith("http") 
+                ? "/" + user.ProfileImageUrl 
+                : user.ProfileImageUrl,
             user.GuideProfile.Bio,
             user.GuideProfile.Specialty,
             user.GuideProfile.Languages,
             user.GuideProfile.DailyRate ?? 0,
+            user.GuideProfile.ContactForPrice,
             user.GuideProfile.IsLegit,
             user.GuideProfile.VerificationStatus.ToString(),
+            guideAverageRating,
+            guideTotalReviews,
+            user.GuideProfile.PhoneNumber,
+            user.GuideProfile.WhatsAppNumber,
+            user.GuideProfile.YouTubeLink,
+            user.GuideProfile.TikTokLink,
+            user.GuideProfile.FacebookLink,
+            user.GuideProfile.InstagramLink,
             trips
         );
     }

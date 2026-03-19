@@ -17,17 +17,7 @@ const SIDEBAR_GROUPS = [
     {
         label: "Dashboards",
         items: [
-            { name: "Analytics", href: "/admin", icon: <LayoutDashboard size={18} />, badge: "5" },
-            { name: "eCommerce", href: "/admin/ecommerce", icon: <LayoutGrid size={18} /> },
-        ]
-    },
-    {
-        label: "Apps & Pages",
-        items: [
-            { name: "Email", href: "#", icon: <Mail size={18} /> },
-            { name: "Chat", href: "#", icon: <MessageSquare size={18} /> },
-            { name: "Calendar", href: "#", icon: <Calendar size={18} /> },
-            { name: "Kanban", href: "#", icon: <CheckSquare size={18} /> },
+            { name: "Analytics", href: "/admin", icon: <LayoutDashboard size={18} /> },
         ]
     },
     {
@@ -36,16 +26,8 @@ const SIDEBAR_GROUPS = [
             { name: "Users", href: "/admin/users", icon: <Users size={18} /> },
             { name: "Verifications", href: "/admin/verifications", icon: <UserCheck size={18} /> },
             { name: "Upgrade Requests", href: "/admin/upgrades", icon: <TrendingUp size={18} /> },
-            { name: "Roles & Permissions", href: "/admin/roles", icon: <ShieldCheck size={18} /> },
         ]
     },
-    {
-        label: "Settings",
-        items: [
-            { name: "Account", href: "/admin/settings", icon: <Settings size={18} /> },
-            { name: "System Logs", href: "/admin/logs", icon: <FileText size={18} /> },
-        ]
-    }
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -115,12 +97,7 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout }: { pathname: string
                                         </span>
                                         <span className="font-bold text-sm tracking-tight">{item.name}</span>
                                     </div>
-                                    {item.badge && (
-                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${isActive ? "bg-white text-[#7367F0]" : "bg-rose-100 text-rose-500"}`}>
-                                            {item.badge}
-                                        </span>
-                                    )}
-                                    {!item.badge && <ChevronRight size={14} className={isActive ? "text-white/40" : "text-[#A5A3AE] opacity-0 group-hover:opacity-100 transition-all saturate-50"} />}
+                                    <ChevronRight size={14} className={isActive ? "text-white/40" : "text-[#A5A3AE] opacity-0 group-hover:opacity-100 transition-all"} />
                                 </Link>
                             );
                         })}

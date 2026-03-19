@@ -108,8 +108,8 @@ const DashboardSidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
                 {/* Logo Section */}
                 <div className="p-8 pb-10 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-3 group" onClick={() => setIsOpen(false)}>
-                        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/30 group-hover:rotate-12 transition-transform">
-                            <img src="/logo.svg" alt="" className="h-6 w-auto brightness-0 invert" />
+                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center shadow-lg shadow-primary/10 group-hover:rotate-12 transition-transform border border-primary/20 p-1.5">
+                            <img src="/sidebarlogo.png" alt="" className="h-full w-full object-contain" />
                         </div>
                         <span className="text-xl font-black text-gray-900 tracking-tighter uppercase italic">Sri<span className="text-primary">Guide</span></span>
                     </Link>

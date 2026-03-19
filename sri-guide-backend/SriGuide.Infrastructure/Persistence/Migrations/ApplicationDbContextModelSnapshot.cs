@@ -120,14 +120,23 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("ContactForPrice")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal?>("DailyRate")
                         .HasColumnType("numeric");
 
+                    b.Property<string>("FacebookLink")
+                        .HasColumnType("text");
+
                     b.Property<decimal?>("HourlyRate")
                         .HasColumnType("numeric");
+
+                    b.Property<string>("InstagramLink")
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsLegit")
                         .HasColumnType("boolean");
@@ -145,10 +154,16 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                     b.Property<string>("LicenseNumber")
                         .HasColumnType("text");
 
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
+
                     b.Property<string>("RegistrationNumber")
                         .HasColumnType("text");
 
                     b.Property<string>("Specialty")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TikTokLink")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -159,6 +174,12 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
 
                     b.Property<int>("VerificationStatus")
                         .HasColumnType("integer");
+
+                    b.Property<string>("WhatsAppNumber")
+                        .HasColumnType("text");
+
+                    b.Property<string>("YouTubeLink")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -274,6 +295,34 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                     b.HasIndex("TripId");
 
                     b.ToTable("TripImages");
+                });
+
+            modelBuilder.Entity("SriGuide.Domain.Entities.TripLike", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("TripId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TripId");
+
+                    b.HasIndex("UserId", "TripId")
+                        .IsUnique();
+
+                    b.ToTable("TripLikes");
                 });
 
             modelBuilder.Entity("SriGuide.Domain.Entities.User", b =>
@@ -403,6 +452,25 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Trip");
+                });
+
+            modelBuilder.Entity("SriGuide.Domain.Entities.TripLike", b =>
+                {
+                    b.HasOne("SriGuide.Domain.Entities.Trip", "Trip")
+                        .WithMany()
+                        .HasForeignKey("TripId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SriGuide.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Trip");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SriGuide.Domain.Entities.AgencyProfile", b =>

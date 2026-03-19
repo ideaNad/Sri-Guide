@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { Star, MapPin, Clock, ArrowRight } from "lucide-react";
+import { Star, MapPin, Clock, ArrowRight, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import apiClient from "@/lib/api-client";
 
@@ -21,6 +21,7 @@ interface CardProps {
     email?: string;
     whatsapp?: string;
     id?: string | number;
+    isLegit?: boolean;
 }
 
 import ProtectedContact from "./ProtectedContact";
@@ -39,7 +40,8 @@ const Card: React.FC<CardProps> = ({
     phone,
     email,
     whatsapp,
-    id
+    id,
+    isLegit
 }) => {
     const isProfile = type === "guide" || type === "agency";
     const profileLink = id ? `/profile/${id}` : "#";
@@ -53,6 +55,15 @@ const Card: React.FC<CardProps> = ({
             {isProfile && id && (
                 <Link href={profileLink} className="absolute inset-0 z-10" />
             )}
+            
+            {/* Legit Badge */}
+            {type === "guide" && isLegit && (
+                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm border border-emerald-500 text-emerald-600 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg z-20 scale-75 origin-top-right">
+                    <ShieldCheck size={14} className="fill-emerald-500 text-white" />
+                    <span className="font-black text-[8px] uppercase tracking-widest italic tracking-wider">LEGIT</span>
+                </div>
+            )}
+
             {/* Image Container */}
             <div className="relative h-56 w-full overflow-hidden">
                 <img

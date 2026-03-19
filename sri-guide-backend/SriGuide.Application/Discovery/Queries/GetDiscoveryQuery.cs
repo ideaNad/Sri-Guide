@@ -17,7 +17,8 @@ public record DiscoveryItemDto(
     string[] Tags,
     string? Phone,
     string? Email,
-    string? WhatsApp
+    string? WhatsApp,
+    bool IsLegit = false
 );
 
 public record GetDiscoveryQuery(string? Query, string? Type) : IRequest<List<DiscoveryItemDto>>;
@@ -36,35 +37,49 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
         var results = new List<DiscoveryItemDto>();
 
         // If type is guide or null, add guides
-        if (request.Type == null || request.Type == "guide")
+        var isGuideType = string.IsNullOrEmpty(request.Type) || string.Equals(request.Type, "guide", StringComparison.OrdinalIgnoreCase);
+        if (isGuideType)
         {
-            var guides = await _context.GuideProfiles
+            var guidesRaw = await _context.GuideProfiles
                 .Include(g => g.User)
-                .Where(g => g.VerificationStatus == VerificationStatus.Approved) // Only approved
+                .Include(g => g.Trips)
                 .Where(g => string.IsNullOrEmpty(request.Query) || 
                             g.User.FullName.Contains(request.Query) || 
                             (g.Bio != null && g.Bio.Contains(request.Query)))
-                .Select(g => new DiscoveryItemDto(
-                    g.Id,
+                .ToListAsync(cancellationToken);
+
+            foreach (var g in guidesRaw)
+            {
+                var tripIds = g.Trips.Select(t => t.Id).ToList();
+                var reviews = await _context.Reviews
+                    .Where(r => r.TargetType == "Trip" && tripIds.Contains(r.TargetId))
+                    .ToListAsync(cancellationToken);
+                
+                var avgRating = reviews.Any() ? (decimal)reviews.Average(r => r.Rating) : 5.0m;
+                var reviewCount = reviews.Count;
+
+                results.Add(new DiscoveryItemDto(
+                    g.UserId,
                     g.User.FullName,
-                    g.Bio,
-                    g.User.ProfileImageUrl ?? "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=800",
+                    g.Specialty ?? (g.Bio != null && g.Bio.Length > 60 ? g.Bio.Substring(0, 57) + "..." : g.Bio) ?? "Professional Local Guide",
+                    g.User.ProfileImageUrl != null && !g.User.ProfileImageUrl.StartsWith("/") && !g.User.ProfileImageUrl.StartsWith("http") 
+                        ? "/" + g.User.ProfileImageUrl 
+                        : g.User.ProfileImageUrl ?? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(g.User.FullName)}&background=FFCC00&color=000&bold=true",
                     "Sri Lanka",
-                    5.0m,
-                    0,
+                    avgRating,
+                    reviewCount,
                     "guide",
                     g.Languages.ToArray(),
                     g.User.Email,
-                    g.User.Email,
-                    null
-                ))
-                .ToListAsync(cancellationToken);
-            
-            results.AddRange(guides);
+                    g.User.Email, // Email for both fields for now if Phone is not available on User
+                    g.WhatsAppNumber,
+                    g.IsLegit
+                ));
+            }
         }
 
-        // If type is agency or null, add agencies
-        if (request.Type == null || request.Type == "agency")
+        var isAgencyType = string.IsNullOrEmpty(request.Type) || string.Equals(request.Type, "agency", StringComparison.OrdinalIgnoreCase);
+        if (isAgencyType)
         {
             var agencies = await _context.AgencyProfiles
                 .Include(a => a.User)
@@ -76,7 +91,9 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
                     a.Id,
                     a.CompanyName,
                     "Official Travel Agency",
-                    a.User.ProfileImageUrl ?? "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80&w=800",
+                    a.User.ProfileImageUrl != null && !a.User.ProfileImageUrl.StartsWith("/") && !a.User.ProfileImageUrl.StartsWith("http") 
+                        ? "/" + a.User.ProfileImageUrl 
+                        : a.User.ProfileImageUrl ?? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(a.CompanyName)}&background=000&color=fff&bold=true",
                     "Sri Lanka",
                     5.0m,
                     0,
@@ -84,13 +101,14 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
                     new string[] { "Certified", "Premium" },
                     a.Phone,
                     a.CompanyEmail,
-                    a.WhatsApp
+                    a.WhatsApp,
+                    false // Explicitly pass false to avoid CS0854
                 ))
                 .ToListAsync(cancellationToken);
             
             results.AddRange(agencies);
         }
 
-        return results;
+        return results.OrderByDescending(r => r.Rating).ThenByDescending(r => r.Reviews).ToList();
     }
 }

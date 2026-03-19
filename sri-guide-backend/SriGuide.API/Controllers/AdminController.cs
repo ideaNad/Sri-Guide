@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SriGuide.Application.Admin.Commands;
 using SriGuide.Application.Admin.Queries;
+using SriGuide.Application.Admin.DTOs;
 
 namespace SriGuide.API.Controllers;
 
@@ -47,6 +48,20 @@ public class AdminController : ControllerBase
     public async Task<ActionResult<List<PendingVerificationDto>>> GetPendingVerifications()
     {
         var result = await _mediator.Send(new GetPendingVerificationsQuery());
+        return Ok(result);
+    }
+
+    [HttpGet("users")]
+    public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? role = null, [FromQuery] string? search = null)
+    {
+        var result = await _mediator.Send(new GetAllUsersQuery(page, pageSize, role, search));
+        return Ok(result);
+    }
+
+    [HttpGet("stats")]
+    public async Task<ActionResult<AdminStatsDto>> GetStats()
+    {
+        var result = await _mediator.Send(new GetAdminStatsQuery());
         return Ok(result);
     }
 }

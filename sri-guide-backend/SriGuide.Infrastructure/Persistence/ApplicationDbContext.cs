@@ -18,6 +18,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<Trip> Trips => Set<Trip>();
     public DbSet<TripImage> TripImages => Set<TripImage>();
+    public DbSet<TripLike> TripLikes => Set<TripLike>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -75,6 +76,23 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .HasMany(t => t.Images)
             .WithOne(i => i.Trip)
             .HasForeignKey(i => i.TripId);
+
+        // TripLike — unique per user per trip
+        modelBuilder.Entity<TripLike>()
+            .HasIndex(tl => new { tl.UserId, tl.TripId })
+            .IsUnique();
+
+        modelBuilder.Entity<TripLike>()
+            .HasOne(tl => tl.Trip)
+            .WithMany()
+            .HasForeignKey(tl => tl.TripId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<TripLike>()
+            .HasOne(tl => tl.User)
+            .WithMany()
+            .HasForeignKey(tl => tl.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         base.OnModelCreating(modelBuilder);
     }

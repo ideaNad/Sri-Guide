@@ -5,7 +5,7 @@ import {
     User, Mail, Phone, MapPin, Globe, 
     Briefcase, Save, Star, ShieldCheck, 
     X, Plus, Languages, DollarSign, Clock, 
-    Camera, CheckCircle2, AlertCircle
+    Camera, CheckCircle2, AlertCircle, MessageCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/lib/api-client";
@@ -23,10 +23,17 @@ interface ProfileData {
         languages: string[];
         dailyRate: number;
         hourlyRate: number;
+        contactForPrice: boolean;
         verificationStatus: number;
         specialty: string;
         registrationNumber?: string;
         licenseExpirationDate?: string;
+        phoneNumber?: string;
+        whatsAppNumber?: string;
+        youTubeLink?: string;
+        tikTokLink?: string;
+        facebookLink?: string;
+        instagramLink?: string;
     } | null;
 }
 
@@ -46,10 +53,19 @@ export default function GuideProfilePage() {
     const [specialty, setSpecialty] = useState("");
     const [dailyRate, setDailyRate] = useState(0);
     const [hourlyRate, setHourlyRate] = useState(0);
+    const [contactForPrice, setContactForPrice] = useState(false);
     const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
     const [newLanguage, setNewLanguage] = useState("");
     const [registrationNumber, setRegistrationNumber] = useState("");
     const [licenseExpiryDate, setLicenseExpiryDate] = useState("");
+    
+    // Social & Contact
+    const [phoneNumber, setPhoneNumber] = useState("");
+    const [whatsAppNumber, setWhatsAppNumber] = useState("");
+    const [youTubeLink, setYouTubeLink] = useState("");
+    const [tikTokLink, setTikTokLink] = useState("");
+    const [facebookLink, setFacebookLink] = useState("");
+    const [instagramLink, setInstagramLink] = useState("");
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -72,11 +88,18 @@ export default function GuideProfilePage() {
                     setSpecialty(data.guideProfile.specialty || "");
                     setDailyRate(data.guideProfile.dailyRate || 0);
                     setHourlyRate(data.guideProfile.hourlyRate || 0);
+                    setContactForPrice(data.guideProfile.contactForPrice || false);
                     setSelectedLanguages(data.guideProfile.languages || []);
                     setRegistrationNumber(data.guideProfile.registrationNumber || "");
                     if (data.guideProfile.licenseExpirationDate) {
                         setLicenseExpiryDate(new Date(data.guideProfile.licenseExpirationDate).toISOString().split('T')[0]);
                     }
+                    setPhoneNumber(data.guideProfile.phoneNumber || "");
+                    setWhatsAppNumber(data.guideProfile.whatsAppNumber || "");
+                    setYouTubeLink(data.guideProfile.youTubeLink || "");
+                    setTikTokLink(data.guideProfile.tikTokLink || "");
+                    setFacebookLink(data.guideProfile.facebookLink || "");
+                    setInstagramLink(data.guideProfile.instagramLink || "");
                 }
             } catch (error) {
                 console.error("Failed to fetch profile", error);
@@ -106,9 +129,15 @@ export default function GuideProfilePage() {
                 userId: profile.id,
                 bio: bio,
                 specialty: specialty,
-                dailyRate: dailyRate,
                 hourlyRate: hourlyRate,
-                languages: selectedLanguages
+                contactForPrice: contactForPrice,
+                languages: selectedLanguages,
+                phoneNumber,
+                whatsAppNumber,
+                youTubeLink,
+                tikTokLink,
+                facebookLink,
+                instagramLink
             });
 
             setMessage({ type: "success", text: "Profile updated successfully!" });
@@ -387,6 +416,19 @@ export default function GuideProfilePage() {
                                 </div>
                             </div>
 
+                            <div className="flex items-center gap-3 p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                                <input
+                                    type="checkbox"
+                                    id="contactForPrice"
+                                    checked={contactForPrice}
+                                    onChange={e => setContactForPrice(e.target.checked)}
+                                    className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
+                                />
+                                <label htmlFor="contactForPrice" className="text-[11px] font-black uppercase tracking-widest text-gray-900 cursor-pointer">
+                                    Contact for pricing info (Hide fixed rates)
+                                </label>
+                            </div>
+
                             {/* Languages */}
                             <div className="space-y-4">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block flex items-center gap-2">
@@ -431,6 +473,85 @@ export default function GuideProfilePage() {
                                         }}
                                     />
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Contact & Social Links */}
+                    <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm space-y-6">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2.5 bg-gray-50 rounded-xl text-gray-900">
+                                <Globe size={20} />
+                            </div>
+                            <h3 className="text-lg font-black text-gray-900 uppercase italic">Contact & Social Media</h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">Phone Number</label>
+                                <div className="relative">
+                                    <Phone size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={phoneNumber}
+                                        onChange={e => setPhoneNumber(e.target.value)}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
+                                        placeholder="+94 7X XXX XXXX"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">WhatsApp Number</label>
+                                <div className="relative">
+                                    <MessageCircle size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={whatsAppNumber}
+                                        onChange={e => setWhatsAppNumber(e.target.value)}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
+                                        placeholder="+94 7X XXX XXXX"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">YouTube Channel</label>
+                                <input
+                                    type="text"
+                                    value={youTubeLink}
+                                    onChange={e => setYouTubeLink(e.target.value)}
+                                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
+                                    placeholder="youtube.com/@yourchannel"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">TikTok Profile</label>
+                                <input
+                                    type="text"
+                                    value={tikTokLink}
+                                    onChange={e => setTikTokLink(e.target.value)}
+                                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
+                                    placeholder="tiktok.com/@yourprofile"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">Facebook Page</label>
+                                <input
+                                    type="text"
+                                    value={facebookLink}
+                                    onChange={e => setFacebookLink(e.target.value)}
+                                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
+                                    placeholder="facebook.com/yourpage"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">Instagram Profile</label>
+                                <input
+                                    type="text"
+                                    value={instagramLink}
+                                    onChange={e => setInstagramLink(e.target.value)}
+                                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
+                                    placeholder="instagram.com/yourprofile"
+                                />
                             </div>
                         </div>
                     </div>

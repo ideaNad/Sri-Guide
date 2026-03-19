@@ -13,7 +13,7 @@ import {
   VEHICLE_RENTALS
 } from "@/data/mockData";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, Mail, Compass, ShieldCheck, Zap, MapPin, Loader2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Mail, Compass, ShieldCheck, Zap, Heart, MapPin, Loader2 } from "lucide-react";
 import Link from "next/link";
 import apiClient from "@/lib/api-client";
 
@@ -26,12 +26,29 @@ interface DiscoveryItem {
     rating: number;
     reviews: number;
     type: string;
+    isLegit?: boolean;
     tags: string[];
+}
+
+interface RecentTrip {
+    id: string;
+    title: string;
+    description: string;
+    location: string;
+    date: string;
+    imageUrl: string;
+    guideName: string;
+    guideImageUrl: string;
+    guideUserId: string;
+    likeCount: number;
+    isLiked?: boolean;
 }
 
 export default function Home() {
   const [guides, setGuides] = useState<DiscoveryItem[]>([]);
+  const [trips, setTrips] = useState<RecentTrip[]>([]);
   const [loadingGuides, setLoadingGuides] = useState(true);
+  const [loadingTrips, setLoadingTrips] = useState(true);
 
   useEffect(() => {
     const fetchTopGuides = async () => {
@@ -44,8 +61,41 @@ export default function Home() {
         setLoadingGuides(false);
       }
     };
+
+    const fetchRecentTrips = async () => {
+        try {
+            const response = await apiClient.get<RecentTrip[]>("/discovery/recent-trips");
+            setTrips(response.data);
+        } catch (error) {
+            console.error("Failed to fetch recent trips", error);
+        } finally {
+            setLoadingTrips(false);
+        }
+    };
+
     fetchTopGuides();
+    fetchRecentTrips();
   }, []);
+
+  const handleToggleLike = async (tripId: string) => {
+    try {
+        const response = await apiClient.post<{ liked: boolean }>(`/trip/${tripId}/toggle-like`);
+        const { liked } = response.data;
+        
+        setTrips(prev => prev.map(t => {
+            if (t.id === tripId) {
+                return {
+                    ...t,
+                    isLiked: liked,
+                    likeCount: liked ? t.likeCount + 1 : t.likeCount - 1
+                };
+            }
+            return t;
+        }));
+    } catch (error) {
+        console.error("Failed to toggle like", error);
+    }
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -151,44 +201,67 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[1, 2, 3].map((i) => (
+            {loadingTrips ? (
+               Array(3).fill(0).map((_, i) => (
+                   <div key={i} className="h-[500px] bg-gray-100 animate-pulse rounded-[2.5rem]" />
+               ))
+            ) : trips.length > 0 ? trips.map((trip) => (
               <motion.div
-                key={i}
+                key={trip.id}
                 whileHover={{ y: -10 }}
                 className="group relative bg-gray-50 rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm"
               >
                 <div className="h-72 overflow-hidden relative">
                   <img 
-                    src={`https://images.unsplash.com/photo-${i === 1 ? '1588598133416-2da21976a210' : i === 2 ? '1544216717-3bbf52512659' : '1568430462989-44163eb1752f'}?q=80&w=800&auto=format&fit=crop`}
-                    alt="Adventure"
+                    src={trip.imageUrl ? (trip.imageUrl.startsWith("http") ? trip.imageUrl : `${apiClient.defaults.baseURL?.replace('/api', '')}${trip.imageUrl}`) : 'https://images.unsplash.com/photo-1588598133416-2da21976a210?q=80&w=800&auto=format&fit=crop'}
+                    alt={trip.title}
                     className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" 
                   />
                   <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center gap-2 border border-white/50">
                     <MapPin size={12} className="text-primary" />
-                    {i === 1 ? 'Sigiriya' : i === 2 ? 'Ella' : 'Mirissa'}
+                    {trip.location}
                   </div>
+                  
+                  <button 
+                    onClick={() => handleToggleLike(trip.id)}
+                    className={`absolute top-6 right-6 p-3 rounded-full backdrop-blur-md transition-all ${trip.isLiked ? 'bg-rose-500 text-white shadow-lg' : 'bg-white/90 text-gray-400 hover:text-rose-500'}`}
+                  >
+                    <Heart size={16} fill={trip.isLiked ? "currentColor" : "none"} className={trip.isLiked ? "animate-pulse" : ""} />
+                  </button>
                 </div>
                 <div className="p-8">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-black text-[10px]">
-                      {i === 1 ? 'S' : i === 2 ? 'K' : 'I'}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-black text-[10px] text-white">
+                        {trip.guideImageUrl ? (
+                          <img src={`${apiClient.defaults.baseURL?.replace('/api', '')}${trip.guideImageUrl}`} className="w-full h-full rounded-full object-cover" />
+                        ) : trip.guideName.charAt(0)}
+                      </div>
+                      <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest">
+                        {trip.guideName}
+                      </span>
                     </div>
-                    <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest">
-                      {i === 1 ? 'Sunil Perera' : i === 2 ? 'Kasun J.' : 'Isuru F.'}
-                    </span>
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-rose-500 bg-rose-50 px-3 py-1.5 rounded-full">
+                        <Heart size={12} fill="currentColor" />
+                        {trip.likeCount}
+                    </div>
                   </div>
                   <h3 className="text-xl font-black text-gray-900 uppercase italic mb-4 leading-tight group-hover:text-primary transition-colors">
-                    {i === 1 ? 'Hidden Caves of Sigiriya' : i === 2 ? 'Mist Over Ella Gap' : 'Morning with the Whales'}
+                    {trip.title}
                   </h3>
                   <p className="text-gray-500 text-xs font-medium leading-relaxed mb-6 line-clamp-2">
-                    A breathtaking perspective of Sri Lanka&apos;s most iconic landmarks, shared directly from the field.
+                    {trip.description}
                   </p>
-                  <Link href="/guides" className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
+                  <Link href={`/adventures/${trip.id}`} className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
                     Read the Story <ArrowRight size={12} />
                   </Link>
                 </div>
               </motion.div>
-            ))}
+            )) : (
+                <div className="col-span-3 text-center py-20 text-gray-400 uppercase text-[10px] font-black tracking-widest">
+                    No recent adventures shared yet
+                </div>
+            )}
           </div>
         </div>
       </section>
@@ -216,7 +289,7 @@ export default function Home() {
                 >
                   <div className="w-40 h-40 overflow-hidden mb-6 border-8 border-white shadow-xl">
                     <img 
-                      src={guide.image?.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${guide.image}` : guide.image} 
+                      src={guide.image ? (guide.image.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${guide.image}` : guide.image) : `https://ui-avatars.com/api/?name=${guide.title}&background=FFCC00&color=000&bold=true`} 
                       alt={guide.title} 
                       className="w-full h-full object-cover grayscale-[0.5] hover:grayscale-0 transition-all duration-700" 
                     />
@@ -224,7 +297,7 @@ export default function Home() {
                   <h3 className="text-xl font-bold text-gray-900 mb-1">{guide.title}</h3>
                   <p className="text-primary font-bold text-sm mb-4">{guide.subtitle || "Local Guide"}</p>
                   <div className="flex flex-wrap justify-center gap-2 mb-6">
-                    {guide.tags?.slice(0, 3).map(tag => (
+                    {guide.tags?.slice(0, 3).map((tag: string) => (
                       <span key={tag} className="text-[9px] font-black uppercase tracking-widest px-3 py-1 border border-gray-100 text-gray-400">{tag}</span>
                     ))}
                   </div>
