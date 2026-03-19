@@ -18,3 +18,23 @@ C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\obj\Debu
 C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\obj\Debug\net9.0\SriGuide.Infrastructure.pdb
 C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\obj\Debug\net9.0\SriGuide.Infrastructure.genruntimeconfig.cache
 C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\obj\Debug\net9.0\ref\SriGuide.Infrastructure.dll
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\bin\Debug\net9.0\SriGuide.Infrastructure.deps.json
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\bin\Debug\net9.0\SriGuide.Infrastructure.runtimeconfig.json
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\bin\Debug\net9.0\SriGuide.Infrastructure.dll
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\bin\Debug\net9.0\SriGuide.Infrastructure.pdb
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\bin\Debug\net9.0\SriGuide.Application.dll
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\bin\Debug\net9.0\SriGuide.Domain.dll
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\bin\Debug\net9.0\SriGuide.Application.pdb
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\bin\Debug\net9.0\SriGuide.Domain.pdb
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\obj\Debug\net9.0\SriGuide.Infrastructure.csproj.AssemblyReference.cache
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\obj\Debug\net9.0\SriGuide.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\obj\Debug\net9.0\SriGuide.Infrastructure.AssemblyInfoInputs.cache
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\obj\Debug\net9.0\SriGuide.Infrastructure.AssemblyInfo.cs
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\obj\Debug\net9.0\SriGuide.Infrastructure.csproj.CoreCompileInputs.cache
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\obj\Debug\net9.0\SriGuide.Infrastructure.sourcelink.json
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\obj\Debug\net9.0\SriGuide.E9A3B21B.Up2Date
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\obj\Debug\net9.0\SriGuide.Infrastructure.dll
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\obj\Debug\net9.0\refint\SriGuide.Infrastructure.dll
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\obj\Debug\net9.0\SriGuide.Infrastructure.pdb
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\obj\Debug\net9.0\SriGuide.Infrastructure.genruntimeconfig.cache
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\obj\Debug\net9.0\ref\SriGuide.Infrastructure.dll

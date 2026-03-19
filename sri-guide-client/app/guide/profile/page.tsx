@@ -1,158 +1,174 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import apiClient from "@/lib/api-client";
 import { 
-    User, Mail, Phone, MapPin, Globe, 
-    Briefcase, Save, Star, ShieldCheck, 
-    X, Plus, Languages, DollarSign, Clock, 
-    Camera, CheckCircle2, AlertCircle, MessageCircle
+    User, Briefcase, Globe, DollarSign, 
+    Save, AlertCircle, CheckCircle2,
+    ShieldCheck, Award, MapPin, Camera,
+    ChevronDown, ChevronUp, Plus, Instagram, 
+    Twitter, Linkedin, Star, Clock, Languages,
+    X, Phone, MessageCircle, Youtube, Facebook,
+    UserCircle, Settings, HelpCircle,
+    Zap, ExternalLink
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import apiClient from "@/lib/api-client";
-import { useAuth } from "@/context/AuthContext";
+import { Profile } from "@/types";
 
-interface ProfileData {
-    id: string;
-    fullName: string;
-    email: string;
-    role: string;
-    isVerified: boolean;
-    profileImageUrl?: string;
-    guideProfile: {
-        bio: string;
-        languages: string[];
-        dailyRate: number;
-        hourlyRate: number;
-        contactForPrice: boolean;
-        verificationStatus: number;
-        specialty: string;
-        registrationNumber?: string;
-        licenseExpirationDate?: string;
-        phoneNumber?: string;
-        whatsAppNumber?: string;
-        youTubeLink?: string;
-        tikTokLink?: string;
-        facebookLink?: string;
-        instagramLink?: string;
-    } | null;
-}
+// --- Dummy Data ---
+const DUMMY_FEEDBACK: { id: string; user: string; date: string; text: string; rating: number }[] = [];
+
+
 
 const COMMON_LANGUAGES = ["English", "Sinhala", "Tamil", "German", "French", "Italian", "Japanese", "Chinese", "Russian", "Arabic"];
 
+// --- Helper Components ---
+
+interface SectionCardProps {
+    icon: React.ElementType;
+    title: string;
+    children: React.ReactNode;
+}
+
+const SectionCard = ({ icon: Icon, title, children }: SectionCardProps) => (
+    <div className="bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden shadow-sm shadow-gray-200/50">
+        <div className="flex items-center gap-4 p-8 border-b border-gray-50 bg-gray-50/30">
+            <div className="p-3 rounded-2xl bg-primary/10 text-primary">
+                <Icon size={24} />
+            </div>
+            <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">{title}</h3>
+        </div>
+        <div className="p-8">
+            {children}
+        </div>
+    </div>
+);
+
+// --- Main Page Component ---
+
 export default function GuideProfilePage() {
     const { user, login } = useAuth();
-    const [profile, setProfile] = useState<ProfileData | null>(null);
+    const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-    const [dashboardData, setDashboardData] = useState<any>(null);
+    const [dashboardData, setDashboardData] = useState<{ averageRating: number; totalBookings: number } | null>(null);
 
     // Form states
-    const [fullName, setFullName] = useState("");
-    const [bio, setBio] = useState("");
-    const [specialty, setSpecialty] = useState("");
-    const [dailyRate, setDailyRate] = useState(0);
-    const [hourlyRate, setHourlyRate] = useState(0);
-    const [contactForPrice, setContactForPrice] = useState(false);
-    const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
-    const [newLanguage, setNewLanguage] = useState("");
-    const [registrationNumber, setRegistrationNumber] = useState("");
-    const [licenseExpiryDate, setLicenseExpiryDate] = useState("");
-    
-    // Social & Contact
-    const [phoneNumber, setPhoneNumber] = useState("");
-    const [whatsAppNumber, setWhatsAppNumber] = useState("");
-    const [youTubeLink, setYouTubeLink] = useState("");
-    const [tikTokLink, setTikTokLink] = useState("");
-    const [facebookLink, setFacebookLink] = useState("");
-    const [instagramLink, setInstagramLink] = useState("");
+    const [formData, setFormData] = useState({
+        fullName: "",
+        bio: "",
+        specialty: "",
+        dailyRate: 0,
+        hourlyRate: 0,
+        contactForPrice: false,
+        languages: [] as string[],
+        operatingAreas: ["Colombo", "Kandy", "Galle"], 
+        phoneNumber: "",
+        whatsAppNumber: "",
+        youTubeLink: "",
+        tikTokLink: "",
+        facebookLink: "",
+        instagramLink: "",
+        twitterLink: "",
+        linkedinLink: "",
+        registrationNumber: "",
+        licenseExpirationDate: "",
+    });
 
     useEffect(() => {
-        const fetchProfile = async () => {
+        const fetchProfileData = async () => {
             try {
-                const response = await apiClient.get<ProfileData>("/profile/me");
+                const response = await apiClient.get<Profile>("/profile/me");
                 const data = response.data;
                 setProfile(data);
 
                 try {
-                    const dashboardRes = await apiClient.get("/profile/guide-dashboard");
+                    const dashboardRes = await apiClient.get<{ averageRating: number; totalBookings: number }>("/profile/guide-dashboard");
                     setDashboardData(dashboardRes.data);
                 } catch (e) {
                     console.error("Failed to fetch dashboard stats", e);
                 }
                 
                 // Initialize form states
-                setFullName(data.fullName || "");
-                if (data.guideProfile) {
-                    setBio(data.guideProfile.bio || "");
-                    setSpecialty(data.guideProfile.specialty || "");
-                    setDailyRate(data.guideProfile.dailyRate || 0);
-                    setHourlyRate(data.guideProfile.hourlyRate || 0);
-                    setContactForPrice(data.guideProfile.contactForPrice || false);
-                    setSelectedLanguages(data.guideProfile.languages || []);
-                    setRegistrationNumber(data.guideProfile.registrationNumber || "");
-                    if (data.guideProfile.licenseExpirationDate) {
-                        setLicenseExpiryDate(new Date(data.guideProfile.licenseExpirationDate).toISOString().split('T')[0]);
-                    }
-                    setPhoneNumber(data.guideProfile.phoneNumber || "");
-                    setWhatsAppNumber(data.guideProfile.whatsAppNumber || "");
-                    setYouTubeLink(data.guideProfile.youTubeLink || "");
-                    setTikTokLink(data.guideProfile.tikTokLink || "");
-                    setFacebookLink(data.guideProfile.facebookLink || "");
-                    setInstagramLink(data.guideProfile.instagramLink || "");
-                }
+                setFormData(prev => ({
+                    ...prev,
+                    fullName: data.fullName || "",
+                    bio: data.guideProfile?.bio || "",
+                    specialty: data.guideProfile?.specialty || "",
+                    dailyRate: data.guideProfile?.dailyRate || 0,
+                    hourlyRate: data.guideProfile?.hourlyRate || 0,
+                    contactForPrice: data.guideProfile?.contactForPrice || false,
+                    languages: data.guideProfile?.languages || [],
+                    phoneNumber: data.guideProfile?.phoneNumber || "",
+                    whatsAppNumber: data.guideProfile?.whatsAppNumber || "",
+                    youTubeLink: data.guideProfile?.youTubeLink || "",
+                    tikTokLink: data.guideProfile?.tikTokLink || "",
+                    facebookLink: data.guideProfile?.facebookLink || "",
+                    instagramLink: data.guideProfile?.instagramLink || "",
+                    twitterLink: data.guideProfile?.twitterLink || "",
+                    linkedinLink: data.guideProfile?.linkedinLink || "",
+                    registrationNumber: data.guideProfile?.registrationNumber || "",
+                    licenseExpirationDate: data.guideProfile?.licenseExpirationDate 
+                        ? new Date(data.guideProfile.licenseExpirationDate).toISOString().split('T')[0] 
+                        : "",
+                }));
             } catch (error) {
                 console.error("Failed to fetch profile", error);
-                setMessage({ type: "error", text: "Failed to load profile data." });
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchProfile();
+        fetchProfileData();
     }, []);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value, type } = e.target;
+        const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+        setFormData(prev => ({ ...prev, [name]: val }));
+    };
 
     const handleSave = async () => {
         if (!profile) return;
         setSaving(true);
         setMessage(null);
-
         try {
-            // 1. Update User Profile (FullName)
-            await apiClient.post("/profile/update-user", {
+            // 1. Update User Profile
+            await apiClient.post("/profile/update-user", { 
                 userId: profile.id,
-                fullName: fullName
+                fullName: formData.fullName 
             });
 
             // 2. Update Guide Profile
-            await apiClient.post("/profile/update-guide", {
+            const updatePayload = {
                 userId: profile.id,
-                bio: bio,
-                specialty: specialty,
-                hourlyRate: hourlyRate,
-                contactForPrice: contactForPrice,
-                languages: selectedLanguages,
-                phoneNumber,
-                whatsAppNumber,
-                youTubeLink,
-                tikTokLink,
-                facebookLink,
-                instagramLink
-            });
+                bio: formData.bio,
+                specialty: formData.specialty,
+                hourlyRate: Number(formData.hourlyRate),
+                contactForPrice: formData.contactForPrice,
+                languages: formData.languages,
+                phoneNumber: formData.phoneNumber,
+                whatsAppNumber: formData.whatsAppNumber,
+                youTubeLink: formData.youTubeLink,
+                tikTokLink: formData.tikTokLink,
+                facebookLink: formData.facebookLink,
+                instagramLink: formData.instagramLink
+            };
+            
+            await apiClient.post("/profile/update-guide", updatePayload);
 
             setMessage({ type: "success", text: "Profile updated successfully!" });
             
-            // Update local user context if name changed
             if (user) {
-                login({ ...user, fullName, profileImageUrl: profile.profileImageUrl });
+                login({ ...user, fullName: formData.fullName });
             }
-
-            // Scroll to top to see message
+            
             window.scrollTo({ top: 0, behavior: "smooth" });
         } catch (error: unknown) {
-            const axiosError = error as { response?: { data?: { message?: string } } };
-            console.error("Failed to update profile", error);
-            setMessage({ type: "error", text: axiosError.response?.data?.message || "Something went wrong while saving." });
+            const err = error as { response?: { data?: { message?: string } } };
+            setMessage({ type: "error", text: err.response?.data?.message || "Failed to update profile." });
         } finally {
             setSaving(false);
         }
@@ -162,31 +178,18 @@ export default function GuideProfilePage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        const formData = new FormData();
-        formData.append("file", file);
+        const formDataFile = new FormData();
+        formDataFile.append("file", file);
 
         setSaving(true);
-        setMessage(null);
-
         try {
-            const response = await apiClient.post<string>("/profile/upload-photo", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
+            const response = await apiClient.post<string>("/profile/upload-photo", formDataFile, {
+                headers: { "Content-Type": "multipart/form-data" }
             });
-            
-            if (profile) {
-                setProfile({ ...profile, profileImageUrl: response.data });
-            }
-
-            // Update AuthContext user state to reflect new photo across the site
-            if (user) {
-                login({ ...user, profileImageUrl: response.data });
-            }
-
+            if (profile) setProfile({ ...profile, profileImageUrl: response.data });
+            if (user) login({ ...user, profileImageUrl: response.data });
             setMessage({ type: "success", text: "Profile picture updated!" });
         } catch (error) {
-            console.error("Failed to upload photo", error);
             setMessage({ type: "error", text: "Failed to upload photo." });
         } finally {
             setSaving(false);
@@ -194,14 +197,12 @@ export default function GuideProfilePage() {
     };
 
     const handleRequestVerification = async () => {
-        if (!profile) return;
         setSaving(true);
         setMessage(null);
-
         try {
             await apiClient.post("/profile/request-verification", {
-                registrationNumber,
-                licenseExpirationDate: licenseExpiryDate
+                registrationNumber: formData.registrationNumber,
+                licenseExpirationDate: formData.licenseExpirationDate
             });
             setMessage({ type: "success", text: "Verification request submitted! Admin will review it soon." });
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -213,17 +214,6 @@ export default function GuideProfilePage() {
         }
     };
 
-    const addLanguage = (lang: string) => {
-        if (lang && !selectedLanguages.includes(lang)) {
-            setSelectedLanguages([...selectedLanguages, lang]);
-            setNewLanguage("");
-        }
-    };
-
-    const removeLanguage = (lang: string) => {
-        setSelectedLanguages(selectedLanguages.filter(l => l !== lang));
-    };
-
     if (loading) {
         return (
             <div className="min-h-[60vh] flex items-center justify-center">
@@ -233,390 +223,306 @@ export default function GuideProfilePage() {
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 pb-20">
-            {/* Header */}
-            <div>
-                <h1 className="text-3xl font-black text-gray-900 tracking-tighter uppercase italic">My Profile</h1>
-                <p className="text-gray-500 font-bold mt-2">Manage your identity and professional information.</p>
-            </div>
+        <div className="max-w-[1400px] mx-auto space-y-8 pb-32">
+            {/* --- TOP Banner --- */}
 
-            {/* Notification */}
-            <AnimatePresence>
-                {message && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className={`p-6 rounded-3xl border flex items-center gap-4 ${
-                            message.type === "success" 
-                                ? "bg-emerald-50 border-emerald-100 text-emerald-700" 
-                                : "bg-rose-50 border-rose-100 text-rose-700"
-                        }`}
-                    >
-                        {message.type === "success" ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
-                        <p className="font-black text-sm uppercase tracking-widest">{message.text}</p>
-                        <button onClick={() => setMessage(null)} className="ml-auto p-2 hover:bg-black/5 rounded-full">
-                            <X size={16} />
-                        </button>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Profile Image & Summary */}
-                <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm text-center relative overflow-hidden group">
-                        <div className="relative w-32 h-32 mx-auto mb-6">
-                            {profile?.profileImageUrl ? (
-                                <img 
-                                    src={`${apiClient.defaults.baseURL?.replace('/api', '')}${profile.profileImageUrl}`} 
-                                    alt={fullName}
-                                    className="w-full h-full rounded-full object-cover border-4 border-white shadow-xl"
-                                />
-                            ) : (
-                                <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-4xl font-black text-gray-300 border-4 border-white shadow-xl">
-                                    {fullName.charAt(0)}
-                                </div>
-                            )}
-                            <input 
-                                type="file" 
-                                id="profile-upload" 
-                                className="hidden" 
-                                accept="image/*"
-                                onChange={handlePhotoUpload}
-                            />
-                            <label 
-                                htmlFor="profile-upload"
-                                className="absolute bottom-0 right-0 p-3 bg-primary text-white rounded-full shadow-lg hover:bg-secondary transition-all cursor-pointer"
-                            >
-                                <Camera size={18} />
-                            </label>
-                        </div>
-                        <h2 className="text-xl font-black text-gray-900 leading-none">{fullName}</h2>
-                        <p className="text-primary font-black text-[10px] uppercase tracking-[0.2em] mt-2 mb-4">Certified Local Guide</p>
-                        
-                        <div className="flex items-center justify-center gap-2 py-2 px-4 bg-gray-50 rounded-2xl w-fit mx-auto">
-                            <ShieldCheck size={14} className={profile?.isVerified ? "text-primary" : "text-gray-300"} />
-                            <span className={`text-[9px] font-black uppercase tracking-widest ${profile?.isVerified ? "text-gray-900" : "text-gray-400"}`}>
-                                {profile?.isVerified ? "Verified Professional" : "Verification Pending"}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div className="bg-gray-900 rounded-[2.5rem] p-8 text-white">
-                        <h3 className="text-sm font-black uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                             Platform Reputation
-                        </h3>
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs text-white/50 font-bold uppercase tracking-widest">Public Rating</span>
-                                <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/5">
-                                    <Star size={14} className="text-primary fill-primary" />
-                                    <span className="font-black text-sm italic">{dashboardData?.averageRating?.toFixed(1) || "0.0"}</span>
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs text-white/50 font-bold uppercase tracking-widest">Tours Completed</span>
-                                <span className="font-black text-lg italic">{dashboardData?.totalBookings || 0}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Form Fields */}
-                <div className="lg:col-span-2 space-y-8">
-                    {/* Basic Info */}
-                    <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm space-y-6">
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2.5 bg-gray-50 rounded-xl text-gray-900">
-                                <User size={20} />
-                            </div>
-                            <h3 className="text-lg font-black text-gray-900 uppercase italic">Basic Information</h3>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">Full Legal Name</label>
-                                <input
-                                    type="text"
-                                    value={fullName}
-                                    onChange={e => setFullName(e.target.value)}
-                                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
-                                    placeholder="e.g. Kasun Perera"
-                                />
-                            </div>
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">Email Address (Read-only)</label>
-                                <input
-                                    type="email"
-                                    value={profile?.email || ""}
-                                    readOnly
-                                    className="w-full bg-gray-50 border border-transparent rounded-2xl py-4 px-6 font-bold text-gray-400 cursor-not-allowed"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Guiding Details */}
-                    <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm space-y-6">
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2.5 bg-gray-50 rounded-xl text-gray-900">
-                                <Briefcase size={20} />
-                            </div>
-                            <h3 className="text-lg font-black text-gray-900 uppercase italic">Professional Details</h3>
-                        </div>
-
-                        <div className="space-y-6">
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">Primary Specialty</label>
-                                <input
-                                    type="text"
-                                    value={specialty}
-                                    onChange={e => setSpecialty(e.target.value)}
-                                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
-                                    placeholder="e.g. Wildlife, Ancient History, Surfing"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">Your Bio (Profile Headline)</label>
-                                <textarea
-                                    value={bio}
-                                    onChange={e => setBio(e.target.value)}
-                                    rows={4}
-                                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700 resize-none leading-relaxed"
-                                    placeholder="Tell potential tourists about your knowledge and passion..."
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">Daily Rate (USD)</label>
-                                    <div className="relative">
-                                        <DollarSign size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400" />
-                                        <input
-                                            type="number"
-                                            value={dailyRate}
-                                            onChange={e => setDailyRate(Number(e.target.value))}
-                                            className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
+        <div className="max-w-[1000px] mx-auto space-y-12">
+            {/* Guide Identity Section */}
+            <SectionCard icon={User} title="Guide Identity">
+                            <div className="flex flex-col md:flex-row gap-8 items-start">
+                                <div className="relative group mx-auto md:mx-0">
+                                    <div className="w-40 h-40 rounded-[2.5rem] overflow-hidden bg-gray-100 border-4 border-white shadow-xl">
+                                        <img 
+                                            src={profile?.profileImageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${profile.profileImageUrl}` : `https://ui-avatars.com/api/?name=${formData.fullName}&background=random`} 
+                                            alt={formData.fullName} 
+                                            className="w-full h-full object-cover"
                                         />
                                     </div>
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">Hourly Rate (USD)</label>
-                                    <div className="relative">
-                                        <Clock size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400" />
-                                        <input
-                                            type="number"
-                                            value={hourlyRate}
-                                            onChange={e => setHourlyRate(Number(e.target.value))}
-                                            className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-3 p-4 bg-primary/5 rounded-2xl border border-primary/10">
-                                <input
-                                    type="checkbox"
-                                    id="contactForPrice"
-                                    checked={contactForPrice}
-                                    onChange={e => setContactForPrice(e.target.checked)}
-                                    className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
-                                />
-                                <label htmlFor="contactForPrice" className="text-[11px] font-black uppercase tracking-widest text-gray-900 cursor-pointer">
-                                    Contact for pricing info (Hide fixed rates)
-                                </label>
-                            </div>
-
-                            {/* Languages */}
-                            <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block flex items-center gap-2">
-                                    <Languages size={10} /> Languages You Speak
-                                </label>
-                                
-                                <div className="flex flex-wrap gap-2 mb-4">
-                                    {selectedLanguages.map(lang => (
-                                        <span key={lang} className="bg-primary/5 text-primary border border-primary/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 group">
-                                            {lang}
-                                            <button onClick={() => removeLanguage(lang)} className="hover:text-rose-500 transition-colors">
-                                                <X size={12} />
-                                            </button>
-                                        </span>
-                                    ))}
-                                </div>
-
-                                <div className="flex gap-2">
-                                    <select
-                                        className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 outline-none font-bold text-xs"
-                                        value={newLanguage}
-                                        onChange={e => addLanguage(e.target.value)}
+                                    <input type="file" id="photo-upload" className="hidden" onChange={handlePhotoUpload} />
+                                    <label 
+                                        htmlFor="photo-upload"
+                                        className="absolute bottom-2 right-2 p-3 bg-gray-900 text-white rounded-2xl shadow-lg border-4 border-white opacity-0 group-hover:opacity-100 transition-all hover:bg-primary cursor-pointer"
                                     >
-                                        <option value="">Add a language...</option>
-                                        {COMMON_LANGUAGES.filter(l => !selectedLanguages.includes(l)).map(l => (
-                                            <option key={l} value={l}>{l}</option>
-                                        ))}
-                                    </select>
-                                    <div className="flex items-center px-4 bg-gray-100 rounded-xl text-gray-400 text-[10px] font-black">
-                                        OR ENTER
+                                        <Camera size={18} />
+                                    </label>
+                                </div>
+                                <div className="flex-1 space-y-6 w-full">
+                                    <div>
+                                        <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 ml-1 mb-2 block">Full Name</label>
+                                        <input 
+                                            type="text" 
+                                            name="fullName"
+                                            value={formData.fullName}
+                                            onChange={handleChange}
+                                            placeholder="Alex Rivers"
+                                            className="w-full bg-gray-50 border border-transparent rounded-2xl py-4 px-6 font-bold text-gray-900 outline-none focus:bg-white focus:border-primary/20 transition-all text-sm"
+                                        />
                                     </div>
-                                    <input 
-                                        type="text" 
-                                        className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 outline-none font-bold text-xs"
-                                        placeholder="e.g. Spanish"
-                                        onKeyDown={e => {
-                                            if (e.key === 'Enter') {
-                                                e.preventDefault();
-                                                addLanguage((e.target as HTMLInputElement).value);
-                                                (e.target as HTMLInputElement).value = "";
-                                            }
-                                        }}
-                                    />
+                                    <div>
+                                        <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 ml-1 mb-2 block">Professional Bio</label>
+                                        <textarea 
+                                            name="bio"
+                                            rows={4}
+                                            value={formData.bio}
+                                            onChange={handleChange}
+                                            placeholder="Tell potential tourists about your knowledge and passion..."
+                                            className="w-full bg-gray-50 border border-transparent rounded-[2rem] p-6 font-medium text-gray-700 outline-none focus:bg-white focus:border-primary/20 transition-all text-sm resize-none leading-relaxed"
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    
-                    {/* Contact & Social Links */}
-                    <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm space-y-6">
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2.5 bg-gray-50 rounded-xl text-gray-900">
-                                <Globe size={20} />
-                            </div>
-                            <h3 className="text-lg font-black text-gray-900 uppercase italic">Contact & Social Media</h3>
-                        </div>
+            </SectionCard>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">Phone Number</label>
-                                <div className="relative">
-                                    <Phone size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400" />
-                                    <input
-                                        type="text"
-                                        value={phoneNumber}
-                                        onChange={e => setPhoneNumber(e.target.value)}
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
-                                        placeholder="+94 7X XXX XXXX"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">WhatsApp Number</label>
-                                <div className="relative">
-                                    <MessageCircle size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400" />
-                                    <input
-                                        type="text"
-                                        value={whatsAppNumber}
-                                        onChange={e => setWhatsAppNumber(e.target.value)}
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
-                                        placeholder="+94 7X XXX XXXX"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">YouTube Channel</label>
-                                <input
-                                    type="text"
-                                    value={youTubeLink}
-                                    onChange={e => setYouTubeLink(e.target.value)}
-                                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
-                                    placeholder="youtube.com/@yourchannel"
-                                />
-                            </div>
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">TikTok Profile</label>
-                                <input
-                                    type="text"
-                                    value={tikTokLink}
-                                    onChange={e => setTikTokLink(e.target.value)}
-                                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
-                                    placeholder="tiktok.com/@yourprofile"
-                                />
-                            </div>
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">Facebook Page</label>
-                                <input
-                                    type="text"
-                                    value={facebookLink}
-                                    onChange={e => setFacebookLink(e.target.value)}
-                                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
-                                    placeholder="facebook.com/yourpage"
-                                />
-                            </div>
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">Instagram Profile</label>
-                                <input
-                                    type="text"
-                                    value={instagramLink}
-                                    onChange={e => setInstagramLink(e.target.value)}
-                                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
-                                    placeholder="instagram.com/yourprofile"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Verification & Badge */}
-                    <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm space-y-6">
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2.5 bg-gray-50 rounded-xl text-gray-900">
-                                <ShieldCheck size={20} />
-                            </div>
-                            <h3 className="text-lg font-black text-gray-900 uppercase italic">Verification (Legit Badge)</h3>
-                        </div>
-
-                        <div className="space-y-4">
-                            <p className="text-xs text-gray-500 font-medium leading-relaxed px-4">
-                                Provide your official registration details to receive the <span className="text-emerald-600 font-bold italic">LEGIT</span> badge. Admin will verify these details manually.
-                            </p>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Professional Details Section */}
+            <SectionCard icon={Briefcase} title="Professional Details">
+                            <div className="space-y-8">
+                                {/* Languages */}
                                 <div>
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">Registration Number</label>
-                                    <input
-                                        type="text"
-                                        value={registrationNumber}
-                                        onChange={e => setRegistrationNumber(e.target.value)}
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
-                                        placeholder="SLTDA/G/..."
-                                    />
+                                    <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 ml-1 mb-4 block flex items-center gap-2">
+                                        <Globe size={12} className="text-primary" /> Languages
+                                    </label>
+                                    <div className="flex flex-wrap gap-2 mb-4">
+                                        {formData.languages.map(lang => (
+                                            <span key={lang} className="bg-gray-100 text-gray-700 border border-gray-200 px-4 py-2 rounded-xl text-[11px] font-bold flex items-center gap-2">
+                                                {lang}
+                                                <button 
+                                                    onClick={() => setFormData(prev => ({ ...prev, languages: prev.languages.filter(l => l !== lang) }))}
+                                                    className="text-gray-400 hover:text-rose-500"
+                                                >
+                                                    <X size={14} />
+                                                </button>
+                                            </span>
+                                        ))}
+                                        <select 
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val && !formData.languages.includes(val)) {
+                                                    setFormData(prev => ({ ...prev, languages: [...prev.languages, val] }));
+                                                }
+                                            }}
+                                            className="bg-gray-50 border border-dashed border-gray-300 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider text-gray-500 outline-none cursor-pointer hover:border-primary transition-colors"
+                                        >
+                                            <option value="">+ Add Language</option>
+                                            {COMMON_LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
+                                        </select>
+                                    </div>
                                 </div>
+
+                                {/* Operating Areas */}
                                 <div>
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 mb-2 block">License Expiry Date</label>
-                                    <input
-                                        type="date"
-                                        value={licenseExpiryDate}
-                                        onChange={e => setLicenseExpiryDate(e.target.value)}
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
-                                    />
+                                    <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 ml-1 mb-4 block flex items-center gap-2">
+                                        <MapPin size={12} className="text-primary" /> Operating Areas
+                                    </label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {formData.operatingAreas.map(area => (
+                                            <span key={area} className="bg-gray-100 text-gray-700 border border-gray-200 px-4 py-2 rounded-xl text-[11px] font-bold">
+                                                {area}
+                                            </span>
+                                        ))}
+                                        <button className="bg-gray-50 border border-dashed border-gray-300 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider text-gray-400">
+                                            + Add Area
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Specialties */}
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 ml-1 mb-4 block flex items-center gap-2">
+                                        <Star size={12} className="text-primary" /> Specialties
+                                    </label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {formData.specialty.split(',').filter(s => s.trim()).map((s, i) => (
+                                            <span key={i} className="bg-blue-50 text-blue-600 border border-blue-100 px-4 py-2 rounded-xl text-[11px] font-bold">
+                                                {s.trim()}
+                                            </span>
+                                        ))}
+                                        <button className="bg-white border border-dashed border-primary/40 text-primary px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider flex items-center gap-2 hover:bg-primary/5 transition-colors">
+                                            <Plus size={14} /> Add Specialty
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
+            </SectionCard>
 
-                            <button
-                                onClick={handleRequestVerification}
-                                disabled={saving || !registrationNumber || !licenseExpiryDate}
-                                className="w-full bg-emerald-50 text-emerald-700 border border-emerald-100 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-emerald-500 hover:text-white transition-all disabled:opacity-50"
-                            >
-                                {saving ? "Processing..." : "Submit for Verification"}
+            {/* Service Rates Section */}
+            <SectionCard icon={DollarSign} title="Service Rates">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 ml-1 mb-2 block">Pricing Model</label>
+                                    <div className="flex flex-col gap-3">
+                                        {[
+                                            { id: 'hourly', label: 'Hourly Rate', icon: Clock },
+                                            { id: 'daily', label: 'Daily Rate', icon: Zap },
+                                            { id: 'negotiable', label: 'Contact for Rates', icon: MessageCircle }
+                                        ].map((model) => (
+                                            <label 
+                                                key={model.id}
+                                                className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all cursor-pointer ${
+                                                    (model.id === 'negotiable' && formData.contactForPrice) || 
+                                                    (model.id !== 'negotiable' && !formData.contactForPrice && (model.id === 'hourly' ? formData.hourlyRate > 0 : formData.dailyRate > 0))
+                                                    ? 'bg-blue-50/50 border-primary text-primary' 
+                                                    : 'bg-gray-50/50 border-transparent text-gray-500 hover:border-gray-200'
+                                                }`}
+                                            >
+                                                <input 
+                                                    type="radio" 
+                                                    name="pricing" 
+                                                    className="hidden"
+                                                    checked={model.id === 'negotiable' ? formData.contactForPrice : !formData.contactForPrice}
+                                                    onChange={() => setFormData(prev => ({ ...prev, contactForPrice: model.id === 'negotiable' }))}
+                                                />
+                                                <div className="w-5 h-5 rounded-full border-2 border-current flex items-center justify-center">
+                                                    {((model.id === 'negotiable' && formData.contactForPrice) || 
+                                                    (model.id !== 'negotiable' && !formData.contactForPrice && (model.id === 'hourly' ? formData.hourlyRate > 0 : formData.dailyRate > 0))) && 
+                                                    <div className="w-2.5 h-2.5 bg-current rounded-full" />}
+                                                </div>
+                                                <model.icon size={18} />
+                                                <span className="text-xs font-black uppercase tracking-widest">{model.label}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="space-y-6">
+                                    <div>
+                                        <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 ml-1 mb-2 block">Daily Rate (USD)</label>
+                                        <div className="relative">
+                                            <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-gray-300">$</span>
+                                            <input 
+                                                type="number" 
+                                                name="dailyRate"
+                                                value={formData.dailyRate}
+                                                onChange={handleChange}
+                                                className="w-full bg-gray-50 border border-transparent rounded-3xl py-6 px-12 text-3xl font-black text-gray-900 outline-none focus:bg-white focus:border-primary/20 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 ml-1 mb-2 block">Hourly Rate (USD)</label>
+                                        <div className="relative">
+                                            <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-gray-300">$</span>
+                                            <input 
+                                                type="number" 
+                                                name="hourlyRate"
+                                                value={formData.hourlyRate}
+                                                onChange={handleChange}
+                                                className="w-full bg-gray-50 border border-transparent rounded-3xl py-6 px-12 text-3xl font-black text-gray-900 outline-none focus:bg-white focus:border-primary/20 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                            />
+                                        </div>
+                                    </div>
+                                    <p className="text-[10px] font-medium text-gray-400 leading-relaxed px-2">
+                                        These rates will be displayed on your public profile. Select &quot;Contact for Rates&quot; if you prefer to negotiate.
+                                    </p>
+                                </div>
+                            </div>
+            </SectionCard>
+
+            {/* Verification Section */}
+            <SectionCard icon={ShieldCheck} title="Verification (Legit Badge)">
+                            <div className="space-y-6">
+                                <p className="text-xs text-gray-500 font-medium leading-relaxed italic">
+                                    Provide your official registration details to receive the <span className="text-emerald-600 font-bold">LEGIT</span> badge.
+                                </p>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 ml-1 mb-2 block">Registration Number</label>
+                                        <input
+                                            type="text"
+                                            name="registrationNumber"
+                                            value={formData.registrationNumber}
+                                            onChange={handleChange}
+                                            className="w-full bg-gray-50 border border-transparent rounded-2xl py-4 px-6 font-bold text-gray-900 outline-none focus:bg-white focus:border-primary/20 transition-all text-sm"
+                                            placeholder="SLTDA/G/..."
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 ml-1 mb-2 block">License Expiry Date</label>
+                                        <input
+                                            type="date"
+                                            name="licenseExpirationDate"
+                                            value={formData.licenseExpirationDate}
+                                            onChange={handleChange}
+                                            className="w-full bg-gray-50 border border-transparent rounded-2xl py-4 px-6 font-bold text-gray-900 outline-none focus:bg-white focus:border-primary/20 transition-all text-sm"
+                                        />
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={handleRequestVerification}
+                                    disabled={saving || !formData.registrationNumber || !formData.licenseExpirationDate}
+                                    className="w-full bg-emerald-50 text-emerald-700 border border-emerald-100 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-emerald-500 hover:text-white transition-all disabled:opacity-50"
+                                >
+                                    {saving ? "Processing..." : "Submit for Verification"}
+                                </button>
+                            </div>
+            </SectionCard>
+
+            {/* Social Presence Section */}
+            <SectionCard icon={Instagram} title="Social Presence">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {[
+                                    { name: 'instagramLink', label: 'Instagram Profile URL', icon: Instagram },
+                                    { name: 'twitterLink', label: 'Twitter / X Profile URL', icon: Twitter },
+                                    { name: 'linkedinLink', label: 'LinkedIn Profile URL', icon: Linkedin },
+                                    { name: 'youTubeLink', label: 'YouTube Channel URL', icon: Youtube },
+                                    { name: 'facebookLink', label: 'Facebook Page URL', icon: Facebook },
+                                    { name: 'tikTokLink', label: 'TikTok Profile URL', icon: MessageCircle }
+                                ].map((social) => (
+                                    <div key={social.name}>
+                                        <div className="relative group">
+                                            <div className="absolute left-6 top-1/2 -translate-y-1/2 p-2 bg-gray-100 rounded-xl text-gray-400 group-focus-within:bg-primary/10 group-focus-within:text-primary transition-all">
+                                                <social.icon size={16} />
+                                            </div>
+                                            <input 
+                                                type="text" 
+                                                name={social.name}
+                                                value={formData[social.name as keyof typeof formData] as string}
+                                                onChange={handleChange}
+                                                placeholder={social.label}
+                                                className="w-full bg-gray-50 border border-transparent rounded-2xl py-4 pl-16 pr-6 font-bold text-gray-900 outline-none focus:bg-white focus:border-primary/20 transition-all text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+            </SectionCard>
+
+
+                <AnimatePresence>
+                    {message && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className={`p-5 rounded-3xl border flex items-center gap-4 ${
+                                message.type === "success" 
+                                    ? "bg-emerald-50 border-emerald-100 text-emerald-700" 
+                                    : "bg-rose-50 border-rose-100 text-rose-700"
+                            }`}
+                        >
+                            {message.type === "success" ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
+                            <p className="font-bold text-sm">{message.text}</p>
+                            <button onClick={() => setMessage(null)} className="ml-auto p-2 hover:bg-black/5 rounded-full">
+                                <X size={16} />
                             </button>
-                        </div>
-                    </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
-                    {/* Save Button */}
-                    <div className="flex justify-end pt-4">
-                        <button
+                {/* Bottom Actions */}
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-10 border-t border-gray-100">
+                    <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest text-center md:text-left">
+                        © 2026 SriGuide • Premium Global Travel
+                    </p>
+                    <div className="flex items-center gap-6">
+                        <button className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] hover:text-rose-500 transition-colors">Discard</button>
+                        <button 
                             onClick={handleSave}
                             disabled={saving}
-                            className="bg-gray-900 text-white font-black px-12 py-5 rounded-[2rem] shadow-xl hover:bg-primary transition-all flex items-center gap-3 group active:scale-[0.98] disabled:opacity-50 uppercase text-xs tracking-[0.2em]"
+                            className="bg-primary text-white px-10 py-5 rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-secondary transition-all flex items-center gap-3 active:scale-[0.98] disabled:opacity-50"
                         >
-                            {saving ? (
-                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            ) : (
-                                <>
-                                    <span>Save Profile</span>
-                                    <Save size={18} className="group-hover:scale-110 transition-transform" />
-                                </>
-                            )}
+                            {saving ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <Save size={18} />}
+                            <span>Save Profile Changes</span>
                         </button>
                     </div>
                 </div>

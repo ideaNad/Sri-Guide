@@ -129,7 +129,7 @@ export default function Home() {
               title="Our Most Popular Tours"
               subtitle="From ancient wonders to tropical surfing, find your next adventure."
             />
-            <Link href="/tours" className="mb-12 bg-gray-900 text-white px-8 py-3 font-black text-xs uppercase tracking-[0.2em] hover:bg-primary transition-all shadow-xl">
+            <Link href="/tours" className="mb-12 bg-primary text-white px-8 py-3 font-bold text-sm rounded-full hover:bg-secondary transition-all shadow-md">
               View All Tours
             </Link>
           </div>
@@ -165,7 +165,7 @@ export default function Home() {
               <motion.div
                 key={place.id}
                 whileHover={{ scale: 0.99 }}
-                className={`relative overflow-hidden group border-2 border-white shadow-2xl ${idx === 0 ? "md:col-span-2 md:row-span-2" :
+                className={`relative overflow-hidden rounded-3xl group shadow-lg ${idx === 0 ? "md:col-span-2 md:row-span-2" :
                   idx === 1 ? "md:col-span-2 md:row-span-1" :
                     "md:col-span-1 md:row-span-1"
                   }`}
@@ -177,8 +177,8 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="absolute bottom-6 left-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform">
-                  <p className="text-xs font-bold uppercase tracking-widest text-highlight mb-1">{place.region}</p>
-                  <h3 className="text-2xl font-black">{place.name}</h3>
+                  <p className="text-xs font-bold uppercase tracking-widest text-primary mb-1">{place.region}</p>
+                  <h3 className="text-2xl font-bold">{place.name}</h3>
                 </div>
               </motion.div>
             ))}
@@ -195,36 +195,36 @@ export default function Home() {
               title="Recent Adventures"
               subtitle="Real experiences shared by our certified guides across the island."
             />
-            <Link href="/guides" className="mb-12 text-[10px] font-black text-gray-900 uppercase tracking-[0.3em] flex items-center gap-2 group">
-              Meet All Guides <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform" />
+            <Link href="/guides" className="mb-12 text-sm font-bold text-primary flex items-center gap-2 group hover:text-secondary transition-colors">
+              Meet All Guides <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
             </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {loadingTrips ? (
                Array(3).fill(0).map((_, i) => (
-                   <div key={i} className="h-[500px] bg-gray-100 animate-pulse rounded-[2.5rem]" />
+                   <div key={i} className="h-[500px] bg-gray-100 animate-pulse rounded-3xl" />
                ))
             ) : trips.length > 0 ? trips.map((trip) => (
               <motion.div
                 key={trip.id}
                 whileHover={{ y: -10 }}
-                className="group relative bg-gray-50 rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm"
+                className="group relative bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100 hover:shadow-xl transition-shadow"
               >
                 <div className="h-72 overflow-hidden relative">
                   <img 
                     src={trip.imageUrl ? (trip.imageUrl.startsWith("http") ? trip.imageUrl : `${apiClient.defaults.baseURL?.replace('/api', '')}${trip.imageUrl}`) : 'https://images.unsplash.com/photo-1588598133416-2da21976a210?q=80&w=800&auto=format&fit=crop'}
                     alt={trip.title}
-                    className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" 
                   />
-                  <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center gap-2 border border-white/50">
+                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm text-secondary">
                     <MapPin size={12} className="text-primary" />
                     {trip.location}
                   </div>
                   
                   <button 
                     onClick={() => handleToggleLike(trip.id)}
-                    className={`absolute top-6 right-6 p-3 rounded-full backdrop-blur-md transition-all ${trip.isLiked ? 'bg-rose-500 text-white shadow-lg' : 'bg-white/90 text-gray-400 hover:text-rose-500'}`}
+                    className={`absolute top-4 right-4 p-3 rounded-full backdrop-blur-md transition-all shadow-sm ${trip.isLiked ? 'bg-rose-500 text-white shadow-lg' : 'bg-white/90 text-gray-400 hover:text-rose-500'}`}
                   >
                     <Heart size={16} fill={trip.isLiked ? "currentColor" : "none"} className={trip.isLiked ? "animate-pulse" : ""} />
                   </button>
@@ -232,28 +232,28 @@ export default function Home() {
                 <div className="p-8">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-black text-[10px] text-white">
+                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-bold text-xs text-white">
                         {trip.guideImageUrl ? (
                           <img src={`${apiClient.defaults.baseURL?.replace('/api', '')}${trip.guideImageUrl}`} className="w-full h-full rounded-full object-cover" />
                         ) : trip.guideName.charAt(0)}
                       </div>
-                      <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest">
+                      <span className="text-xs font-bold text-gray-900">
                         {trip.guideName}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-[10px] font-black text-rose-500 bg-rose-50 px-3 py-1.5 rounded-full">
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-rose-500 bg-rose-50 px-3 py-1.5 rounded-full">
                         <Heart size={12} fill="currentColor" />
                         {trip.likeCount}
                     </div>
                   </div>
-                  <h3 className="text-xl font-black text-gray-900 uppercase italic mb-4 leading-tight group-hover:text-primary transition-colors">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 leading-snug group-hover:text-primary transition-colors">
                     {trip.title}
                   </h3>
-                  <p className="text-gray-500 text-xs font-medium leading-relaxed mb-6 line-clamp-2">
+                  <p className="text-gray-500 text-sm font-medium leading-relaxed mb-6 line-clamp-2">
                     {trip.description}
                   </p>
-                  <Link href={`/adventures/${trip.id}`} className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
-                    Read the Story <ArrowRight size={12} />
+                  <Link href={`/adventures/${trip.id}`} className="text-xs font-bold text-primary flex items-center gap-2 group-hover:gap-3 transition-all">
+                    Read the Story <ArrowRight size={14} />
                   </Link>
                 </div>
               </motion.div>
@@ -285,31 +285,31 @@ export default function Home() {
                 <motion.div
                   key={guide.id}
                   whileHover={{ y: -10 }}
-                  className="bg-white p-8 border border-gray-100 flex flex-col items-center text-center shadow-sm hover:shadow-2xl transition-all"
+                  className="bg-white p-8 rounded-3xl border border-gray-100 flex flex-col items-center text-center shadow-lg hover:shadow-xl transition-shadow"
                 >
-                  <div className="w-40 h-40 overflow-hidden mb-6 border-8 border-white shadow-xl">
+                  <div className="w-32 h-32 rounded-full overflow-hidden mb-6 border-4 border-white shadow-md">
                     <img 
                       src={guide.image ? (guide.image.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${guide.image}` : guide.image) : `https://ui-avatars.com/api/?name=${guide.title}&background=FFCC00&color=000&bold=true`} 
                       alt={guide.title} 
-                      className="w-full h-full object-cover grayscale-[0.5] hover:grayscale-0 transition-all duration-700" 
+                      className="w-full h-full object-cover transition-all duration-700" 
                     />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-1">{guide.title}</h3>
-                  <p className="text-primary font-bold text-sm mb-4">{guide.subtitle || "Local Guide"}</p>
+                  <p className="text-primary font-medium text-sm mb-4">{guide.subtitle || "Local Guide"}</p>
                   <div className="flex flex-wrap justify-center gap-2 mb-6">
                     {guide.tags?.slice(0, 3).map((tag: string) => (
-                      <span key={tag} className="text-[9px] font-black uppercase tracking-widest px-3 py-1 border border-gray-100 text-gray-400">{tag}</span>
+                      <span key={tag} className="text-[10px] font-bold px-3 py-1 bg-gray-50 rounded-full text-secondary">{tag}</span>
                     ))}
                   </div>
-                  <div className="flex items-center space-x-2 text-sm text-gray-500 mb-6">
+                  <div className="flex items-center space-x-2 text-sm mb-6">
                     <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 italic">
+                    <span className="text-xs font-semibold text-emerald-600">
                       Legit Partner
                     </span>
                   </div>
                   <Link 
                     href={`/profile/${guide.id}`}
-                    className="w-full py-4 bg-gray-900 text-white font-black text-xs uppercase tracking-[0.2em] hover:bg-primary transition-all text-center"
+                    className="w-full py-3.5 bg-primary/10 text-primary font-bold text-sm rounded-xl hover:bg-primary hover:text-white transition-colors text-center"
                   >
                     View Profile
                   </Link>

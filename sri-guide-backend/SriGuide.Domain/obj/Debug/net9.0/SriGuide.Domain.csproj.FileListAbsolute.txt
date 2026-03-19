@@ -10,3 +10,15 @@ C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.Domain\obj\Debug\net9.0
 C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.Domain\obj\Debug\net9.0\refint\SriGuide.Domain.dll
 C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.Domain\obj\Debug\net9.0\SriGuide.Domain.pdb
 C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.Domain\obj\Debug\net9.0\ref\SriGuide.Domain.dll
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Domain\bin\Debug\net9.0\SriGuide.Domain.deps.json
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Domain\bin\Debug\net9.0\SriGuide.Domain.dll
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Domain\bin\Debug\net9.0\SriGuide.Domain.pdb
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Domain\obj\Debug\net9.0\SriGuide.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Domain\obj\Debug\net9.0\SriGuide.Domain.AssemblyInfoInputs.cache
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Domain\obj\Debug\net9.0\SriGuide.Domain.AssemblyInfo.cs
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Domain\obj\Debug\net9.0\SriGuide.Domain.csproj.CoreCompileInputs.cache
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Domain\obj\Debug\net9.0\SriGuide.Domain.sourcelink.json
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Domain\obj\Debug\net9.0\SriGuide.Domain.dll
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Domain\obj\Debug\net9.0\refint\SriGuide.Domain.dll
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Domain\obj\Debug\net9.0\SriGuide.Domain.pdb
+D:\My Projects\IdeaNad\Sri-Guide\sri-guide-backend\SriGuide.Domain\obj\Debug\net9.0\ref\SriGuide.Domain.dll

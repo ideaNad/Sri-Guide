@@ -18,9 +18,21 @@ export interface GuideProfile {
     languages: string[];
     specialty: string;
     dailyRate: number;
+    hourlyRate?: number;
     yearsOfExperience: number;
     isGovernmentLicensed: boolean;
     isFirstAidCertified: boolean;
+    contactForPrice?: boolean;
+    phoneNumber?: string;
+    whatsAppNumber?: string;
+    youTubeLink?: string;
+    tikTokLink?: string;
+    facebookLink?: string;
+    instagramLink?: string;
+    twitterLink?: string;
+    linkedinLink?: string;
+    registrationNumber?: string;
+    licenseExpirationDate?: string;
 }
 
 export interface Profile extends User {

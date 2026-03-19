@@ -26,15 +26,15 @@ const ToursPage = () => {
                     {/* Quick Search Bar */}
                     <div className="mt-8 flex flex-wrap gap-4 items-center">
                         <div className="flex-1 min-w-[300px] relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                             <input
                                 type="text"
                                 placeholder="Search for tours, activities..."
-                                className="w-full pl-12 pr-4 py-5 bg-white border-2 border-gray-900 focus:border-primary outline-none transition-all font-black uppercase text-xs tracking-widest shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)]"
+                                className="w-full pl-14 pr-6 py-4 bg-white border border-gray-100 rounded-full focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-medium text-sm shadow-md"
                             />
                         </div>
-                        <button className="bg-gray-900 text-white p-5 hover:bg-primary transition-all shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)]">
-                            <SlidersHorizontal className="w-6 h-6" />
+                        <button className="bg-primary text-white p-4 rounded-full hover:bg-secondary transition-all shadow-md">
+                            <SlidersHorizontal className="w-5 h-5" />
                         </button>
                     </div>
                 </div>
@@ -44,21 +44,21 @@ const ToursPage = () => {
                 <div className="flex flex-col lg:flex-row gap-12">
                     {/* Sidebar Filters */}
                     <aside className="lg:w-1/4 space-y-8">
-                        <div className="bg-white p-10 border border-gray-100 shadow-sm transition-all hover:shadow-2xl">
-                            <h3 className="text-xl font-black mb-8 flex items-center uppercase tracking-tighter italic">
+                        <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-lg transition-all hover:shadow-xl">
+                            <h3 className="text-lg font-bold mb-6 flex items-center text-gray-900">
                                 <Filter className="w-5 h-5 mr-3 text-primary" />
                                 Filters
                             </h3>
 
                             <div className="space-y-6">
                                 <div>
-                                    <h4 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-4">Categories</h4>
+                                    <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Categories</h4>
                                     <div className="flex flex-wrap gap-2">
                                         {categories.map(cat => (
                                             <button
                                                 key={cat}
                                                 onClick={() => setActiveCategory(cat)}
-                                                className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${activeCategory === cat ? "bg-gray-900 text-white" : "bg-white border border-gray-100 text-gray-400 hover:border-gray-900"
+                                                className={`px-4 py-2 text-xs font-bold rounded-full transition-all ${activeCategory === cat ? "bg-primary text-white shadow-sm" : "bg-gray-50 text-gray-500 hover:bg-primary/10 hover:text-primary"
                                                     }`}
                                             >
                                                 {cat}
@@ -77,12 +77,12 @@ const ToursPage = () => {
                                 </div>
 
                                 <div>
-                                    <h4 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-4">Duration</h4>
-                                    <div className="space-y-2">
+                                    <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Duration</h4>
+                                    <div className="space-y-3">
                                         {["1-3 Hours", "Full Day", "Multi-day"].map((item) => (
                                             <label key={item} className="flex items-center space-x-3 cursor-pointer group">
-                                                <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" />
-                                                <span className="text-sm text-gray-600 group-hover:text-primary transition-colors">{item}</span>
+                                                <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0" />
+                                                <span className="text-sm text-gray-600 font-medium group-hover:text-primary transition-colors">{item}</span>
                                             </label>
                                         ))}
                                     </div>
@@ -91,11 +91,11 @@ const ToursPage = () => {
                         </div>
 
                         {/* Support Promo */}
-                        <div className="bg-primary p-10 text-white relative overflow-hidden group shadow-2xl">
-                            <Compass className="absolute -right-8 -bottom-8 w-40 h-40 text-white/10 group-hover:rotate-45 transition-transform duration-700" />
-                            <h3 className="text-xl font-black mb-4 uppercase italic">Professional Help?</h3>
-                            <p className="text-white/70 text-sm mb-10 leading-relaxed font-medium">Let our travel experts plan your perfect itinerary tailored to your needs.</p>
-                            <button className="bg-white text-gray-900 px-8 py-4 font-black text-xs uppercase tracking-widest w-full hover:bg-gray-900 hover:text-white transition-all">
+                        <div className="bg-gradient-to-br from-primary to-secondary p-8 rounded-3xl text-white relative overflow-hidden group shadow-xl">
+                            <Compass className="absolute -right-4 -bottom-4 w-32 h-32 text-white/10 group-hover:rotate-45 transition-transform duration-700" />
+                            <h3 className="text-xl font-bold mb-3 relative z-10">Professional Help?</h3>
+                            <p className="text-white/80 text-sm mb-8 leading-relaxed font-medium relative z-10">Let our travel experts plan your perfect itinerary tailored to your needs.</p>
+                            <button className="bg-white text-primary px-6 py-3 font-bold text-sm rounded-xl w-full hover:bg-gray-50 hover:shadow-md transition-all relative z-10">
                                 Talk to an Expert
                             </button>
                         </div>
@@ -140,10 +140,10 @@ const ToursPage = () => {
                         </div>
 
                         {/* Pagination UI */}
-                        <div className="mt-16 flex justify-center space-x-3">
-                            <button className="w-12 h-12 flex items-center justify-center bg-white border border-gray-100 text-gray-400 hover:border-gray-900 hover:text-gray-900 transition-all font-black text-xs">1</button>
-                            <button className="w-12 h-12 flex items-center justify-center bg-gray-900 text-white font-black text-xs">2</button>
-                            <button className="w-12 h-12 flex items-center justify-center bg-white border border-gray-100 text-gray-400 hover:border-gray-900 hover:text-gray-900 transition-all font-black text-xs">3</button>
+                        <div className="mt-16 flex justify-center space-x-2">
+                            <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-gray-100 text-gray-500 hover:border-primary hover:text-primary transition-all font-bold text-sm shadow-sm">1</button>
+                            <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-primary text-white font-bold text-sm shadow-md">2</button>
+                            <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-gray-100 text-gray-500 hover:border-primary hover:text-primary transition-all font-bold text-sm shadow-sm">3</button>
                         </div>
                     </div>
                 </div>
