@@ -1,18 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Plus_Jakarta_Sans, Comfortaa } from "next/font/google";
+import { Plus_Jakarta_Sans, Comfortaa } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import { AuthProvider } from "@/context/AuthContext";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -27,11 +16,9 @@ const comfortaa = Comfortaa({
 });
 
 export const metadata: Metadata = {
-  title: "SRIGuide | Your Premium Gateway to Sri Lanka",
-  description: "Discover the hidden gems of Sri Lanka. Authentic tours, expert guides, and unforgettable experiences.",
+  title: "SriGuide — Discover Sri Lanka with Expert Local Guides",
+  description: "Find certified local guides, explore curated tours and travel the authentic Sri Lanka.",
 };
-
-import { AuthProvider } from "@/context/AuthContext";
 
 export default function RootLayout({
   children,
@@ -40,11 +27,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${geistSans.variable} ${geistMono.variable} ${jakarta.variable} ${comfortaa.variable} antialiased selection:bg-primary selection:text-white`}>
+      <body className={`${jakarta.variable} ${comfortaa.variable} antialiased selection:bg-primary selection:text-white font-jakarta`}>
         <AuthProvider>
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
+          {children}
         </AuthProvider>
       </body>
     </html>
