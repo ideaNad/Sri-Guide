@@ -68,11 +68,10 @@ export default function AgencyDashboardPage() {
             {/* Header section with welcome */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-black text-gray-900 tracking-tight flex items-center gap-4">
-                        <Building2 className="text-teal-600" size={36} />
-                        Agency Hub
+                    <h1 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tighter uppercase italic leading-none">
+                        AYUBOWAN, <span className="text-teal-600">{user?.fullName?.split(" ")[0]}</span>
                     </h1>
-                    <p className="text-gray-500 font-medium mt-2 max-w-md">Overseeing first-class Sri Lankan experiences for {user?.fullName}</p>
+                    <p className="text-gray-500 font-bold mt-2">Overseeing first-class Sri Lankan experiences for your agency.</p>
                 </div>
                 <div className="flex gap-4">
                     <button className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-secondary transition-all shadow-xl shadow-primary/20 flex items-center gap-2">

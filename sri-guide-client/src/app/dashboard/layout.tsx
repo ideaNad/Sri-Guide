@@ -37,7 +37,12 @@ export default function DashboardLayout({
             <DashboardSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
             
             <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 lg:ml-80`}>
-                <DashboardTopbar onMenuClick={() => setIsSidebarOpen(true)} />
+                <button 
+                    onClick={() => setIsSidebarOpen(true)}
+                    className="lg:hidden fixed top-4 left-4 z-[45] p-3 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-gray-100 text-gray-500 hover:text-primary transition-all active:scale-95"
+                >
+                    <Menu size={24} />
+                </button>
                 
                 <main className="flex-1 p-4 md:p-8 lg:p-10 max-w-[1600px] w-full mx-auto">
                     <AnimatePresence mode="wait">

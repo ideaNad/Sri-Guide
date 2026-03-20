@@ -7,7 +7,8 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     LayoutDashboard, Briefcase, Map, Users,
-    Building2, LogOut, Menu, X, Compass, Bell, Plus
+    Building2, LogOut, Menu, X, Compass, Bell, Plus,
+    X as CloseIcon
 } from "lucide-react";
 import apiClient from "@/services/api-client";
 
@@ -43,17 +44,22 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
         {/* Background Accent */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50/50 blur-3xl rounded-full -mr-16 -mt-16 -z-10" />
         
-        <div className="p-8 mb-6">
-            <Link href="/" className="flex items-center gap-3 group">
-                <div className="w-10 h-10 bg-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-teal-600/20 group-hover:scale-110 transition-transform">
-                    <Building2 size={20} className="text-white" />
-                </div>
-                <div>
-                    <span className="font-black text-gray-900 text-xl tracking-tighter uppercase italic block leading-none">Sri<span className="text-teal-600">Guide</span></span>
-                    <span className="text-[9px] font-black text-teal-600 uppercase tracking-[0.3em] mt-1 block">Travel Agency</span>
-                </div>
+        <div className="sticky top-0 bg-white z-10 px-8 py-8 border-b border-gray-50 flex items-center justify-between mb-4">
+            <Link href="/" className="relative flex items-center h-8 md:h-10 z-10 px-1" onClick={() => setSidebarOpen(false)}>
+                <img
+                    src="/logo.svg"
+                    alt="Sri Guide Logo"
+                    className="absolute left-0 h-40 md:h-44 w-auto transition-all duration-500 object-contain max-w-none"
+                />
             </Link>
+            <button 
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden p-2 text-gray-400 hover:text-gray-900 transition-colors bg-gray-50 rounded-xl"
+            >
+                <CloseIcon size={20} />
+            </button>
         </div>
+        <span className="text-[9px] font-black text-teal-600 uppercase tracking-[0.3em] px-8 block mb-4">Travel Agency</span>
 
         <nav className="flex-1 px-6 space-y-3">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-4 mb-4">Main Navigation</p>
@@ -82,29 +88,14 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
             })}
         </nav>
 
-        <div className="p-6 mt-auto">
-            <div className="bg-gray-50 rounded-3xl p-6 mb-6 border border-gray-100">
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-white shadow-sm">
-                        <img 
-                            src={user.profileImageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${user.profileImageUrl}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.fullName}`} 
-                            alt={user.fullName}
-                            className="w-full h-full object-cover"
-                        />
-                    </div>
-                    <div className="overflow-hidden">
-                        <p className="text-xs font-black text-gray-900 truncate">{user.fullName}</p>
-                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Agency Owner</p>
-                    </div>
-                </div>
-                <button
-                    onClick={logout}
-                    className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white text-rose-500 hover:bg-rose-50 transition-all font-black text-[10px] uppercase tracking-widest border border-rose-100 shadow-sm"
-                >
-                    <LogOut size={16} />
-                    <span>Logout</span>
-                </button>
-            </div>
+        <div className="p-6 mt-auto border-t border-gray-50 bg-white">
+            <button
+                onClick={logout}
+                className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-rose-500 hover:bg-rose-50 transition-all font-bold text-sm"
+            >
+                <LogOut size={18} />
+                <span>Logout</span>
+            </button>
         </div>
     </div>
 );
@@ -140,38 +131,12 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
             </AnimatePresence>
 
             <div className="flex-1 flex flex-col lg:pl-80">
-                <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 -ml-2 text-gray-400 hover:text-gray-900 transition-colors">
-                            <Menu size={24} />
-                        </button>
-                        <div className="hidden lg:flex items-center gap-2 text-gray-400">
-                            <Compass size={16} />
-                            <span className="text-[10px] font-black uppercase tracking-widest">Sri Lanka Operations</span>
-                        </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-6">
-                        <button className="relative p-2 text-gray-400 hover:text-teal-600 transition-colors">
-                            <Bell size={20} />
-                            <span className="absolute top-2 right-2 w-2 h-2 bg-teal-500 rounded-full border-2 border-white" />
-                        </button>
-                        <div className="h-8 w-px bg-gray-100" />
-                        <div className="flex items-center gap-3">
-                            <div className="text-right hidden sm:block">
-                                <p className="text-[10px] font-black text-gray-900 uppercase leading-none">{user.fullName}</p>
-                                <p className="text-[9px] font-bold text-teal-600/70 uppercase tracking-tighter mt-1 italic">Verified Agency</p>
-                            </div>
-                            <div className="w-10 h-10 rounded-2xl overflow-hidden border-2 border-teal-50 shadow-sm">
-                                <img 
-                                    src={user.profileImageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${user.profileImageUrl}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.fullName}`} 
-                                    alt={user.fullName}
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </header>
+                <button 
+                    onClick={() => setSidebarOpen(true)}
+                    className="lg:hidden fixed top-4 left-4 z-[45] p-3 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-gray-100 text-gray-500 hover:text-primary transition-all active:scale-95"
+                >
+                    <Menu size={24} />
+                </button>
 
                 <main className="flex-1 p-6 lg:p-12 w-full">
                     {children}

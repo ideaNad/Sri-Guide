@@ -258,22 +258,14 @@ const GuidesPage = () => {
                                     </div>
                                 </div>
 
-                                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-50 relative z-10">
-                                    <button className="flex-1 flex items-center justify-center py-3.5 rounded-xl bg-gray-50 hover:bg-primary/5 hover:text-primary transition-all text-secondary font-bold text-xs">
-                                        <MessageCircle className="w-4 h-4 mr-2" />
-                                        Chat
-                                    </button>
+                                <div className="pt-4 border-t border-gray-50 relative z-10">
                                     <Link 
                                         href={`/profile/${guide.id}`}
-                                        className="flex-1 flex items-center justify-center py-3.5 rounded-xl bg-gray-50 hover:bg-primary/5 hover:text-primary transition-all text-secondary font-bold text-xs"
+                                        className="w-full flex items-center justify-center py-4 rounded-2xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all font-black text-xs uppercase tracking-[0.2em] shadow-sm hover:shadow-xl hover:shadow-primary/20"
                                     >
                                         <UserCircle className="w-4 h-4 mr-2" />
-                                        Profile
+                                        View Profile
                                     </Link>
-                                    <button className="flex-1 flex items-center justify-center py-3.5 rounded-xl bg-primary text-white hover:bg-secondary transition-all font-bold text-xs shadow-md shadow-primary/20">
-                                        <Calendar className="w-4 h-4 mr-2" />
-                                        Book
-                                    </button>
                                 </div>
                             </motion.div>
                         ))}

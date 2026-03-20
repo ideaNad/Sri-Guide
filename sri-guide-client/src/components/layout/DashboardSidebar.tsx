@@ -3,10 +3,11 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/providers/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
     LayoutDashboard, User, Settings, ShieldCheck, 
-    MessageSquare, Heart, Compass
+    MessageSquare, Heart, Compass, LogOut, X as CloseIcon
 } from "lucide-react";
 
 interface DashboardSidebarProps {
@@ -23,20 +24,25 @@ const DASHBOARD_LINKS = [
 
 export default function DashboardSidebar({ isOpen, setIsOpen }: DashboardSidebarProps) {
     const pathname = usePathname();
+    const { logout } = useAuth();
 
     const SidebarContent = () => (
         <div className="flex flex-col h-full bg-white border-r border-gray-100 overflow-y-auto w-80 relative">
             {/* Header */}
-            <div className="sticky top-0 bg-white z-10 px-8 py-8 border-b border-gray-50">
-                <Link href="/" className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-primary to-highlight rounded-xl flex items-center justify-center shadow-lg shadow-primary/30">
-                        <ShieldCheck size={22} className="text-white" />
-                    </div>
-                    <div>
-                        <span className="font-black text-secondary text-xl tracking-tight uppercase">Sri<span className="text-primary">Guide</span></span>
-                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none">Traveler Hub</div>
-                    </div>
+            <div className="sticky top-0 bg-white z-10 px-8 py-8 border-b border-gray-50 flex items-center justify-between">
+                <Link href="/" className="relative flex flex-col items-start h-8 md:h-10 z-10 px-1">
+                    <img
+                        src="/logo.svg"
+                        alt="Sri Guide Logo"
+                        className="absolute left-0 h-40 md:h-44 w-auto transition-all duration-500 object-contain max-w-none"
+                    />
                 </Link>
+                <button 
+                    onClick={() => setIsOpen(false)}
+                    className="lg:hidden p-2 text-gray-400 hover:text-gray-900 transition-colors bg-gray-50 rounded-xl"
+                >
+                    <CloseIcon size={20} />
+                </button>
             </div>
 
             {/* Menu */}
@@ -66,10 +72,14 @@ export default function DashboardSidebar({ isOpen, setIsOpen }: DashboardSidebar
                 })}
             </nav>
             
-            <div className="p-8 border-t border-gray-50 text-center">
-                <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest leading-relaxed">
-                    © 2026 SriGuide.<br/>Crafted with Passion.
-                </p>
+            <div className="p-6 mt-auto border-t border-gray-50 bg-white">
+                <button
+                    onClick={logout}
+                    className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-rose-500 hover:bg-rose-50 transition-all font-bold text-sm"
+                >
+                    <LogOut size={18} />
+                    <span>Logout</span>
+                </button>
             </div>
         </div>
     );

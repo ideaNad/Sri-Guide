@@ -7,7 +7,8 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     LayoutDashboard, User, Star, TrendingUp,
-    ChevronRight, LogOut, Menu, X, Compass, Bell, ShieldCheck
+    ChevronRight, LogOut, Menu, X, Compass, Bell, ShieldCheck, 
+    X as CloseIcon
 } from "lucide-react";
 import apiClient from "@/services/api-client";
 
@@ -56,13 +57,21 @@ export default function GuideLayout({ children }: { children: React.ReactNode })
 
 const SidebarContent = ({ pathname, setSidebarOpen, logout, user, photoUrl }: { pathname: string, setSidebarOpen: (open: boolean) => void, logout: () => void, user: any, photoUrl: string | null }) => (
     <div className="flex flex-col h-full bg-white border-r border-gray-100">
-        <div className="p-8 border-b border-gray-50 mb-4">
-            <Link href="/" className="flex items-center gap-3 mb-6" onClick={() => setSidebarOpen(false)}>
-                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
-                    <ShieldCheck size={20} />
-                </div>
-                <span className="font-black text-gray-900 text-xl tracking-tight uppercase">Sri<span className="text-primary">Guide</span></span>
+        <div className="sticky top-0 bg-white z-10 px-8 py-8 border-b border-gray-50 flex items-center justify-between mb-4">
+            <Link href="/" className="relative flex items-center h-8 md:h-10 z-10 px-2" onClick={() => setSidebarOpen(false)}>
+                <img
+                    src="/logo.svg"
+                    alt="Sri Guide Logo"
+                    className="absolute left-0 h-40 md:h-40 w-auto transition-all duration-500 object-contain max-w-none"
+                />
             </Link>
+            <button 
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden p-2 text-gray-400 hover:text-gray-900 transition-colors bg-gray-50 rounded-xl"
+            >
+                <CloseIcon size={20} />
+            </button>
+        </div>
             <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl">
                 {photoUrl ? (
                     <img
@@ -80,7 +89,6 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user, photoUrl }: { 
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Local Guide</p>
                 </div>
             </div>
-        </div>
 
         <nav className="flex-1 px-4 space-y-1">
             {GUIDE_NAV.map((link) => {
@@ -105,10 +113,10 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user, photoUrl }: { 
             })}
         </nav>
 
-        <div className="p-4 border-t border-gray-50">
+        <div className="p-6 mt-auto border-t border-gray-50 bg-white">
             <button
                 onClick={logout}
-                className="w-full flex items-center gap-3 px-6 py-4 rounded-2xl text-rose-500 hover:bg-rose-50 transition-all font-bold text-sm"
+                className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-rose-500 hover:bg-rose-50 transition-all font-bold text-sm"
             >
                 <LogOut size={18} />
                 <span>Logout</span>
@@ -148,27 +156,12 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user, photoUrl }: { 
             </AnimatePresence>
 
             <div className="flex-1 flex flex-col lg:pl-80">
-                <header className="lg:hidden sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-                    <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-2 text-gray-400 hover:text-gray-900 transition-colors">
-                        <Menu size={24} />
-                    </button>
-                    <Link href="/" className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                            <Compass size={18} className="text-white" />
-                        </div>
-                    </Link>
-                    {livePhotoUrl ? (
-                        <img
-                            src={livePhotoUrl}
-                            alt={user.fullName}
-                            className="w-10 h-10 rounded-full object-cover border border-primary/20"
-                        />
-                    ) : (
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-xs border border-primary/20">
-                            {user.fullName.charAt(0)}
-                        </div>
-                    )}
-                </header>
+                <button 
+                    onClick={() => setSidebarOpen(true)}
+                    className="lg:hidden fixed top-4 left-4 z-[45] p-3 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-gray-100 text-gray-500 hover:text-primary transition-all active:scale-95"
+                >
+                    <Menu size={24} />
+                </button>
 
                 <main className="flex-1 p-6 lg:p-12 max-w-6xl mx-auto w-full">
                     {children}

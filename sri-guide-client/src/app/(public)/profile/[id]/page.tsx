@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { 
-    Star, ShieldCheck, MapPin, 
+import {
+    Star, ShieldCheck, MapPin,
     MessageCircle, Globe, Share2, AtSign,
-    Instagram, Youtube, Link as LinkIcon, Phone
+    Instagram, Youtube, Link as LinkIcon, Phone,
+    Facebook, Twitter, Linkedin
 } from "lucide-react";
 import { motion } from "framer-motion";
 import apiClient from "@/services/api-client";
@@ -126,7 +127,7 @@ export default function PublicProfilePage() {
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 blur-3xl rounded-full -z-10 animate-pulse" />
                 <h1 className="text-5xl lg:text-7xl font-black text-secondary mb-4 tracking-tighter uppercase">Profile <span className="text-primary">Not Found</span></h1>
                 <p className="text-gray-500 mb-8 max-w-md mx-auto font-medium">This guide profile may have been removed, or the link is incorrect.</p>
-                <button 
+                <button
                     onClick={() => router.push("/guides")}
                     className="bg-primary text-white px-10 py-5 font-black text-xs uppercase tracking-[0.3em] hover:bg-primary transition-all"
                 >
@@ -138,16 +139,16 @@ export default function PublicProfilePage() {
 
     return (
         <div className="bg-white min-h-screen font-sans text-secondary pb-32 overflow-x-hidden">
-            
+
             {/* HERO SECTION */}
             <div className="bg-primary/5 pt-32 pb-24 relative overflow-hidden border-b border-gray-100">
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 blur-3xl -z-10 animate-pulse" />
-                
+
                 <div className="container mx-auto px-4">
                     <div className="flex flex-col-reverse lg:flex-row items-center justify-between gap-12 lg:gap-16 max-w-6xl mx-auto">
-                        
+
                         {/* Left Content */}
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
                             className="flex-1 text-center lg:text-left space-y-8"
@@ -167,11 +168,11 @@ export default function PublicProfilePage() {
                                         </div>
                                     )}
                                 </div>
-                                
+
                                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 leading-[1.1] mb-6">
                                     {profile.fullName}
                                 </h1>
-                                
+
                                 <div className="flex items-center justify-center lg:justify-start gap-4">
                                     <div className="flex bg-primary px-4 py-1.5 rounded-full shadow-md shadow-primary/20">
                                         <div className="flex items-center">
@@ -215,12 +216,12 @@ export default function PublicProfilePage() {
                                     <div>
                                         <h3 className="text-[11px] font-bold tracking-widest text-gray-900 uppercase mb-3">Languages</h3>
                                         <div className="flex flex-wrap gap-2">
-                                        {profile.languages.map((lang, i) => (
-                                            <span key={i} className="bg-gray-50 text-secondary text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-100">
-                                                {lang.trim()}
-                                            </span>
-                                        ))}
-                                        {profile.languages.length === 0 && <span className="text-secondary text-sm font-semibold">English</span>}
+                                            {profile.languages.map((lang, i) => (
+                                                <span key={i} className="bg-gray-50 text-secondary text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-100">
+                                                    {lang.trim()}
+                                                </span>
+                                            ))}
+                                            {profile.languages.length === 0 && <span className="text-secondary text-sm font-semibold">English</span>}
                                         </div>
                                     </div>
 
@@ -257,35 +258,39 @@ export default function PublicProfilePage() {
                                                 )}
                                                 */}
                                                 {profile.instagramLink && (
-                                                    <a href={profile.instagramLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-gray-50 hover:bg-[#E1306C] px-4 py-2 rounded-xl transition-all border border-gray-100 hover:border-[#E1306C] shadow-sm">
-                                                        <Instagram size={14} className="text-gray-500 group-hover:text-white transition-colors" />
-                                                        <span className="font-semibold text-xs text-gray-700 group-hover:text-white transition-colors">Instagram</span>
+                                                    <a href={profile.instagramLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-[#E1306C]/10 hover:bg-[#E1306C] px-4 py-2 rounded-xl transition-all border border-[#E1306C]/20 hover:border-[#E1306C] shadow-sm">
+                                                        <Instagram size={14} className="text-[#E1306C] group-hover:text-white transition-colors" />
+                                                        <span className="font-semibold text-xs text-[#E1306C] group-hover:text-white transition-colors">Instagram</span>
                                                     </a>
                                                 )}
                                                 {profile.youTubeLink && (
-                                                    <a href={profile.youTubeLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-gray-50 hover:bg-[#FF0000] px-4 py-2 rounded-xl transition-all border border-gray-100 hover:border-[#FF0000] shadow-sm">
-                                                        <Youtube size={14} className="text-gray-500 group-hover:text-white transition-colors" />
-                                                        <span className="font-semibold text-xs text-gray-700 group-hover:text-white transition-colors">YouTube</span>
+                                                    <a href={profile.youTubeLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-[#FF0000]/10 hover:bg-[#FF0000] px-4 py-2 rounded-xl transition-all border border-[#FF0000]/20 hover:border-[#FF0000] shadow-sm">
+                                                        <Youtube size={14} className="text-[#FF0000] group-hover:text-white transition-colors" />
+                                                        <span className="font-semibold text-xs text-[#FF0000] group-hover:text-white transition-colors">YouTube</span>
                                                     </a>
                                                 )}
                                                 {profile.facebookLink && (
-                                                    <a href={profile.facebookLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-gray-50 hover:bg-[#1877F2] px-4 py-2 rounded-xl transition-all border border-gray-100 hover:border-[#1877F2] shadow-sm">
-                                                        <span className="font-semibold text-xs text-gray-700 group-hover:text-white transition-colors">Facebook</span>
+                                                    <a href={profile.facebookLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-[#1877F2]/10 hover:bg-[#1877F2] px-4 py-2 rounded-xl transition-all border border-[#1877F2]/20 hover:border-[#1877F2] shadow-sm">
+                                                        <Facebook size={14} className="text-[#1877F2] group-hover:text-white transition-colors" />
+                                                        <span className="font-semibold text-xs text-[#1877F2] group-hover:text-white transition-colors">Facebook</span>
                                                     </a>
                                                 )}
                                                 {profile.tikTokLink && (
-                                                    <a href={profile.tikTokLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-gray-50 hover:bg-[#000000] px-4 py-2 rounded-xl transition-all border border-gray-100 hover:border-[#000000] shadow-sm">
-                                                        <span className="font-semibold text-xs text-gray-700 group-hover:text-white transition-colors">TikTok</span>
+                                                    <a href={profile.tikTokLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-black/5 hover:bg-black px-4 py-2 rounded-xl transition-all border border-black/10 hover:border-black shadow-sm">
+                                                        <MessageCircle size={14} className="text-black group-hover:text-white transition-colors" />
+                                                        <span className="font-semibold text-xs text-black group-hover:text-white transition-colors">TikTok</span>
                                                     </a>
                                                 )}
                                                 {profile.twitterLink && (
-                                                    <a href={profile.twitterLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-gray-50 hover:bg-[#1DA1F2] px-4 py-2 rounded-xl transition-all border border-gray-100 hover:border-[#1DA1F2] shadow-sm">
-                                                        <span className="font-semibold text-xs text-gray-700 group-hover:text-white transition-colors">Twitter (X)</span>
+                                                    <a href={profile.twitterLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-[#1DA1F2]/10 hover:bg-[#1DA1F2] px-4 py-2 rounded-xl transition-all border border-[#1DA1F2]/20 hover:border-[#1DA1F2] shadow-sm">
+                                                        <Twitter size={14} className="text-[#1DA1F2] group-hover:text-white transition-colors" />
+                                                        <span className="font-semibold text-xs text-[#1DA1F2] group-hover:text-white transition-colors">Twitter (X)</span>
                                                     </a>
                                                 )}
                                                 {profile.linkedinLink && (
-                                                    <a href={profile.linkedinLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-gray-50 hover:bg-[#0A66C2] px-4 py-2 rounded-xl transition-all border border-gray-100 hover:border-[#0A66C2] shadow-sm">
-                                                        <span className="font-semibold text-xs text-gray-700 group-hover:text-white transition-colors">LinkedIn</span>
+                                                    <a href={profile.linkedinLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-[#0A66C2]/10 hover:bg-[#0A66C2] px-4 py-2 rounded-xl transition-all border border-[#0A66C2]/20 hover:border-[#0A66C2] shadow-sm">
+                                                        <Linkedin size={14} className="text-[#0A66C2] group-hover:text-white transition-colors" />
+                                                        <span className="font-semibold text-xs text-[#0A66C2] group-hover:text-white transition-colors">LinkedIn</span>
                                                     </a>
                                                 )}
                                             </div>
@@ -312,7 +317,7 @@ export default function PublicProfilePage() {
                                                 <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">/day</span>
                                             </div>
                                         </div>
-                                        
+
                                         {/* Bespoke Quote hidden for now
                                         {profile.contactForPrice && (
                                             <a href="#" className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-primary px-3 py-2 mt-1 rounded-lg hover:bg-secondary transition-colors w-full sm:w-fit shadow-md shadow-primary/20">
@@ -345,19 +350,19 @@ export default function PublicProfilePage() {
                         </motion.div>
 
                         {/* Right Image */}
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             className="relative w-full max-w-[320px] lg:max-w-[400px] shrink-0 mx-auto lg:mx-0"
                         >
                             <div className="w-full aspect-[4/5] overflow-hidden shadow-2xl rounded-[3rem] border-8 border-white group relative">
-                                <img 
+                                <img
                                     src={profile.profileImageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${profile.profileImageUrl}` : `https://ui-avatars.com/api/?name=${profile.fullName}&background=F5F4F0&color=2563eb`}
                                     alt={profile.fullName}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                                 />
                             </div>
-                            
+
                             {/* Actions Box */}
                             <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white p-3 rounded-2xl border border-gray-100 shadow-xl flex gap-3 z-10 w-max">
                                 <button className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-50 text-gray-600 hover:bg-primary hover:text-white transition-all shadow-sm"><Globe size={18} /></button>
@@ -383,19 +388,19 @@ export default function PublicProfilePage() {
                             View All <span className="group-hover:translate-x-1 transition-transform" aria-hidden="true">→</span>
                         </Link>
                     </div>
-                    
+
                     {profile.recentTrips.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {profile.recentTrips.map(trip => (
                                 <Link href={`/adventures/${trip.id}`} key={trip.id} className="group bg-white border border-gray-100 rounded-3xl p-5 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 relative overflow-hidden flex flex-col">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
                                     <div className="relative aspect-[4/3] overflow-hidden rounded-2xl mb-6 shadow-sm group-hover:shadow-md transition-shadow">
-                                        <img 
-                                            src={trip.primaryImageUrl?.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${trip.primaryImageUrl}` : trip.primaryImageUrl || "https://images.unsplash.com/photo-1588267240364-706d8848db9a"} 
-                                            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105" 
+                                        <img
+                                            src={trip.primaryImageUrl?.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${trip.primaryImageUrl}` : trip.primaryImageUrl || "https://images.unsplash.com/photo-1588267240364-706d8848db9a"}
+                                            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
                                             alt={trip.title}
                                         />
-                                        
+
                                         {trip.location && (
                                             <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-secondary px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider shadow-sm rounded-full">
                                                 {trip.location}
@@ -418,13 +423,13 @@ export default function PublicProfilePage() {
                 {/* 4. RECENT FEEDBACK */}
                 <div className="bg-primary/5 p-8 md:p-16 mb-24 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-secondary to-highlight" />
-                    
+
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 relative z-10">
                         {/* Rating Summary */}
                         <div className="lg:col-span-1">
                             <h3 className="text-xs font-bold tracking-widest text-primary uppercase mb-3">Social Proof</h3>
-                            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-8 leading-tight">Traveler<br/>Feedback</h2>
-                            
+                            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-8 leading-tight">Traveler<br />Feedback</h2>
+
                             <div className="flex items-baseline gap-3 mb-4">
                                 <span className="font-black text-gray-900 text-6xl md:text-7xl leading-none tracking-tighter">{profile.averageRating.toFixed(1)}</span>
                                 <span className="text-gray-400 font-bold text-xl md:text-2xl">/5</span>
@@ -438,7 +443,7 @@ export default function PublicProfilePage() {
                                 Based on {profile.totalReviews} verified reviews
                             </p>
                         </div>
-                        
+
                         {/* Testimonials */}
                         <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
                             {/* Write Review Action */}
@@ -447,7 +452,7 @@ export default function PublicProfilePage() {
                                     <h4 className="font-bold text-gray-900">Had a great trip with {profile.fullName.split(' ')[0]}?</h4>
                                     <p className="text-xs text-gray-500">Share your experience with other travelers.</p>
                                 </div>
-                                <button 
+                                <button
                                     onClick={() => {
                                         if (!user) {
                                             setIsAuthModalOpen(true);
@@ -466,43 +471,43 @@ export default function PublicProfilePage() {
                                     <h4 className="font-black text-gray-900 uppercase tracking-widest text-sm mb-6">Write your review</h4>
                                     <div className="flex text-highlight gap-2 mb-6 cursor-pointer">
                                         {[1, 2, 3, 4, 5].map((star) => (
-                                            <Star 
-                                                key={star} 
-                                                size={24} 
-                                                className={star <= reviewRating ? "fill-current" : "opacity-30"} 
+                                            <Star
+                                                key={star}
+                                                size={24}
+                                                className={star <= reviewRating ? "fill-current" : "opacity-30"}
                                                 onClick={() => setReviewRating(star)}
                                             />
                                         ))}
                                     </div>
-                                    <textarea 
+                                    <textarea
                                         className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm font-medium mb-6 min-h-[120px] focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                                         placeholder="Share the details of your experience..."
                                         value={reviewComment}
                                         onChange={(e) => setReviewComment(e.target.value)}
                                     />
                                     <div className="flex gap-4 justify-end">
-                                        <button 
+                                        <button
                                             onClick={() => setReviewFormOpen(false)}
                                             className="px-6 py-3 font-bold text-xs uppercase tracking-widest text-gray-500 hover:text-gray-900 transition-colors"
                                         >
                                             Cancel
                                         </button>
-                                        <button 
+                                        <button
                                             disabled={submittingReview || !reviewComment.trim()}
                                             onClick={async () => {
                                                 setSubmittingReview(true);
                                                 try {
-                                                    await apiClient.post('/review', { 
-                                                        targetId: id as string, 
-                                                        targetType: 'Guide', 
-                                                        rating: reviewRating, 
-                                                        comment: reviewComment 
+                                                    await apiClient.post('/review', {
+                                                        targetId: id as string,
+                                                        targetType: 'Guide',
+                                                        rating: reviewRating,
+                                                        comment: reviewComment
                                                     });
                                                     setReviewComment("");
                                                     setReviewRating(5);
                                                     setReviewFormOpen(false);
                                                     fetchReviews();
-                                                } catch(error) {
+                                                } catch (error) {
                                                     console.error("Failed to post review", error);
                                                 } finally {
                                                     setSubmittingReview(false);
@@ -547,14 +552,14 @@ export default function PublicProfilePage() {
 
 
             </div>
-            
-            <AuthModal 
-                isOpen={isAuthModalOpen} 
-                onClose={() => setIsAuthModalOpen(false)} 
-                onSuccess={(userData) => { 
-                    login(userData); 
-                    setIsAuthModalOpen(false); 
-                }} 
+
+            <AuthModal
+                isOpen={isAuthModalOpen}
+                onClose={() => setIsAuthModalOpen(false)}
+                onSuccess={(userData) => {
+                    login(userData);
+                    setIsAuthModalOpen(false);
+                }}
             />
         </div>
     );

@@ -569,29 +569,42 @@ export default function GuideProfilePage() {
             <SectionCard icon={Instagram} title="Social Presence">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {[
-                                    { name: 'instagramLink', label: 'Instagram Profile URL', icon: Instagram },
-                                    { name: 'twitterLink', label: 'Twitter / X Profile URL', icon: Twitter },
-                                    { name: 'linkedinLink', label: 'LinkedIn Profile URL', icon: Linkedin },
-                                    { name: 'youTubeLink', label: 'YouTube Channel URL', icon: Youtube },
-                                    { name: 'facebookLink', label: 'Facebook Page URL', icon: Facebook },
-                                    { name: 'tikTokLink', label: 'TikTok Profile URL', icon: MessageCircle }
-                                ].map((social) => (
-                                    <div key={social.name}>
-                                        <div className="relative group">
-                                            <div className="absolute left-6 top-1/2 -translate-y-1/2 p-2 bg-gray-100 rounded-xl text-gray-400 group-focus-within:bg-primary/10 group-focus-within:text-primary transition-all">
-                                                <social.icon size={16} />
+                                    { name: 'instagramLink', label: 'Instagram Profile URL', icon: Instagram, hex: '#E1306C' },
+                                    { name: 'twitterLink', label: 'Twitter / X Profile URL', icon: Twitter, hex: '#1DA1F2' },
+                                    { name: 'linkedinLink', label: 'LinkedIn Profile URL', icon: Linkedin, hex: '#0A66C2' },
+                                    { name: 'youTubeLink', label: 'YouTube Channel URL', icon: Youtube, hex: '#FF0000' },
+                                    { name: 'facebookLink', label: 'Facebook Page URL', icon: Facebook, hex: '#1877F2' },
+                                    { name: 'tikTokLink', label: 'TikTok Profile URL', icon: MessageCircle, hex: '#000000' }
+                                ].map((social) => {
+                                    return (
+                                        <div key={social.name}>
+                                            <div className="relative group">
+                                                <div 
+                                                    className="absolute left-6 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-all"
+                                                    style={{ backgroundColor: `${social.hex}15`, color: social.hex }}
+                                                >
+                                                    <social.icon size={16} />
+                                                </div>
+                                                <input 
+                                                    type="text" 
+                                                    name={social.name}
+                                                    value={formData[social.name as keyof typeof formData] as string}
+                                                    onChange={handleChange}
+                                                    placeholder={social.label}
+                                                    className="w-full bg-gray-50 border rounded-2xl py-4 pl-16 pr-6 font-bold text-gray-900 outline-none focus:bg-white transition-all text-sm border-transparent"
+                                                    onFocus={(e) => {
+                                                        e.currentTarget.style.borderColor = social.hex;
+                                                        e.currentTarget.style.backgroundColor = 'white';
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        e.currentTarget.style.borderColor = 'transparent';
+                                                        e.currentTarget.style.backgroundColor = '';
+                                                    }}
+                                                />
                                             </div>
-                                            <input 
-                                                type="text" 
-                                                name={social.name}
-                                                value={formData[social.name as keyof typeof formData] as string}
-                                                onChange={handleChange}
-                                                placeholder={social.label}
-                                                className="w-full bg-gray-50 border border-transparent rounded-2xl py-4 pl-16 pr-6 font-bold text-gray-900 outline-none focus:bg-white focus:border-primary/20 transition-all text-sm"
-                                            />
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
             </SectionCard>
 

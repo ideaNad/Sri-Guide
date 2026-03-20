@@ -59,14 +59,13 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout }: { pathname: string
     <div className="flex flex-col h-full bg-white border-r border-[#DBDADE] overflow-y-auto no-scrollbar">
         {/* Header */}
         <div className="sticky top-0 bg-white z-10 px-6 py-6 border-b border-[#DBDADE]/50">
-            <Link href="/" className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-gradient-to-br from-[#7367F0] to-[#9E95F5] rounded-xl flex items-center justify-center shadow-lg shadow-[#7367F0]/30">
-                    <ShieldCheck size={20} className="text-white" />
-                </div>
-                <div>
-                    <span className="font-black text-[#6F6B7D] text-lg tracking-tight uppercase">Sri<span className="text-[#7367F0]">Guide</span></span>
-                    <div className="text-[9px] font-black text-[#A5A3AE] uppercase tracking-[0.2em] leading-none">Admin Panel</div>
-                </div>
+            <Link href="/" className="relative flex flex-col items-start h-10 md:h-12 z-10 mb-4 px-2">
+                <img
+                    src="/logo.svg"
+                    alt="Sri Guide Logo"
+                    className="absolute left-0 h-40 md:h-44 w-auto transition-all duration-500 object-contain max-w-none"
+                />
+                <div className="text-[9px] font-black text-[#A5A3AE] uppercase tracking-[0.2em] leading-none px-1 mt-8">Admin Panel</div>
             </Link>
         </div>
 
