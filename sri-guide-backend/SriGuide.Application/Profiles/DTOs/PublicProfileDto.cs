@@ -5,7 +5,8 @@ public record PublicProfileDto(
     string FullName,
     string? ProfileImageUrl,
     string? Bio,
-    string? Specialty,
+    List<string> Specialties,
+    List<string> OperatingAreas,
     List<string> Languages,
     decimal DailyRate,
     bool ContactForPrice,
@@ -22,7 +23,8 @@ public record PublicProfileDto(
     string? FacebookLink,
     string? InstagramLink,
 
-    List<PublicTripDto> RecentTrips
+    List<PublicTripDto> RecentTrips,
+    string Role = "Guide"
 );
 
 public record PublicTripDto(

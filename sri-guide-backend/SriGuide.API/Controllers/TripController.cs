@@ -74,6 +74,34 @@ public class TripController : ControllerBase
         return Ok();
     }
 
+    [HttpDelete("{tripId}/photo")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Guide")]
+    public async Task<IActionResult> DeleteTripImage(Guid tripId, [FromQuery] string imageUrl)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var success = await _mediator.Send(new DeleteTripImageCommand(tripId, Guid.Parse(userId), imageUrl));
+        if (!success) return NotFound("Trip not found or image not found.");
+
+        return Ok();
+    }
+
+    [HttpPut("{tripId}")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Guide")]
+    public async Task<IActionResult> UpdateTrip(Guid tripId, [FromBody] UpdateTripCommand command)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        if (tripId != command.TripId) return BadRequest("Trip ID mismatch");
+
+        var success = await _mediator.Send(command with { GuideId = Guid.Parse(userId) });
+        if (!success) return NotFound("Trip not found or you don't have permission to update it.");
+
+        return Ok();
+    }
+
     [HttpPost("{tripId}/toggle-like")]
     [Authorize]
     public async Task<IActionResult> ToggleLike(Guid tripId)

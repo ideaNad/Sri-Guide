@@ -38,4 +38,12 @@ public class ReviewController : ControllerBase
         var result = await _mediator.Send(new SriGuide.Application.Reviews.Queries.GetGuideReviewsQuery(Guid.Parse(userId)));
         return Ok(result);
     }
+
+    [HttpGet("guide/{id}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetGuideReviewsPublic(Guid id)
+    {
+        var result = await _mediator.Send(new SriGuide.Application.Reviews.Queries.GetGuideReviewsQuery(id));
+        return Ok(result);
+    }
 }

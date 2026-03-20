@@ -44,7 +44,17 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
                 guideProfile.VerificationStatus,
                 guideProfile.ContactForPrice,
                 guideProfile.AgencyId,
-                guideProfile.Agency?.CompanyName
+                guideProfile.Agency?.CompanyName,
+                guideProfile.Specialties,
+                guideProfile.OperatingAreas,
+                guideProfile.PhoneNumber,
+                guideProfile.WhatsAppNumber,
+                guideProfile.YouTubeLink,
+                guideProfile.TikTokLink,
+                guideProfile.FacebookLink,
+                guideProfile.InstagramLink,
+                guideProfile.TwitterLink,
+                guideProfile.LinkedinLink
             ) : null,
             agencyProfile != null ? new AgencyProfileDto(
                 agencyProfile.CompanyName,

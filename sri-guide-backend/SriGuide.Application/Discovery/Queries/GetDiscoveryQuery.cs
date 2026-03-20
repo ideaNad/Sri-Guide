@@ -21,7 +21,13 @@ public record DiscoveryItemDto(
     bool IsLegit = false
 );
 
-public record GetDiscoveryQuery(string? Query, string? Type) : IRequest<List<DiscoveryItemDto>>;
+public record GetDiscoveryQuery(
+    string? Query, 
+    string? Type,
+    List<string>? Languages = null,
+    List<string>? Specialties = null,
+    List<string>? Areas = null
+) : IRequest<List<DiscoveryItemDto>>;
 
 public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<DiscoveryItemDto>>
 {
@@ -48,6 +54,19 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
                             (g.Bio != null && g.Bio.Contains(request.Query)))
                 .ToListAsync(cancellationToken);
 
+            if (request.Languages != null && request.Languages.Any())
+            {
+                guidesRaw = guidesRaw.Where(g => g.Languages != null && request.Languages.Any(l => g.Languages.Contains(l))).ToList();
+            }
+            if (request.Specialties != null && request.Specialties.Any())
+            {
+                guidesRaw = guidesRaw.Where(g => g.Specialties != null && request.Specialties.Any(s => g.Specialties.Contains(s))).ToList();
+            }
+            if (request.Areas != null && request.Areas.Any())
+            {
+                guidesRaw = guidesRaw.Where(g => g.OperatingAreas != null && request.Areas.Any(a => g.OperatingAreas.Contains(a))).ToList();
+            }
+
             foreach (var g in guidesRaw)
             {
                 var tripIds = g.Trips.Select(t => t.Id).ToList();
@@ -61,14 +80,14 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
                 results.Add(new DiscoveryItemDto(
                     g.UserId,
                     g.User.FullName,
-                    g.Specialty ?? (g.Bio != null && g.Bio.Length > 60 ? g.Bio.Substring(0, 57) + "..." : g.Bio) ?? "Professional Local Guide",
+                    g.Specialties != null && g.Specialties.Any() ? string.Join(", ", g.Specialties) : (g.Bio != null && g.Bio.Length > 60 ? g.Bio.Substring(0, 57) + "..." : g.Bio) ?? "Professional Local Guide",
                     g.User.ProfileImageUrl != null && !g.User.ProfileImageUrl.StartsWith("/") && !g.User.ProfileImageUrl.StartsWith("http") 
                         ? "/" + g.User.ProfileImageUrl 
                         : g.User.ProfileImageUrl ?? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(g.User.FullName)}&background=FFCC00&color=000&bold=true",
                     "Sri Lanka",
                     avgRating,
                     reviewCount,
-                    "guide",
+                    g.User!.Role == UserRole.TravelAgency ? "agency" : "guide",
                     g.Languages.ToArray(),
                     g.User.Email,
                     g.User.Email, // Email for both fields for now if Phone is not available on User

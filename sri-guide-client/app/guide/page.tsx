@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { 
     Users, Star, MapPin, Calendar, 
     ArrowUpRight, AlertCircle, CheckCircle2,
-    Briefcase, MessageCircle, TrendingUp, ShieldCheck, Clock
+    Briefcase, MessageCircle, TrendingUp, ShieldCheck, Clock, X
 } from "lucide-react";
 import { motion } from "framer-motion";
 import apiClient from "@/lib/api-client";
@@ -59,7 +59,7 @@ export default function GuideDashboardPage() {
     const statCards = [
         { label: "Bookings", value: stats.totalBookings, icon: <Calendar className="text-blue-500" />, trend: "Total confirmed" },
         { label: "Avg. Rating", value: stats.averageRating.toFixed(1), icon: <Star className="text-yellow-500 fill-yellow-500" />, trend: `${stats.totalReviews} reviews` },
-        { label: "Legit Status", value: stats.isLegit ? "Verified" : "Unverified", icon: <ShieldCheck className={stats.isLegit ? "text-emerald-500" : "text-gray-400"} />, trend: stats.verificationStatus },
+        { label: "License Status", value: stats.isLegit ? "Verified" : "Unverified", icon: <ShieldCheck className={stats.isLegit ? "text-emerald-500" : "text-gray-400"} />, trend: stats.verificationStatus },
         { label: "Profile", value: `${stats.profileCompleteness}%`, icon: <Users className="text-primary" />, trend: "Completeness" },
     ];
 
@@ -102,7 +102,7 @@ export default function GuideDashboardPage() {
                 {stats.isLegit && (
                     <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-2xl border border-emerald-100 shadow-sm animate-pulse-slow">
                         <ShieldCheck size={20} className="fill-emerald-500 text-white" />
-                        <span className="font-black text-xs uppercase tracking-widest italic">Legit Partner</span>
+                        <span className="font-black text-xs uppercase tracking-widest italic">Licensed Guide</span>
                     </div>
                 )}
             </header>
@@ -169,52 +169,38 @@ export default function GuideDashboardPage() {
                         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[80px] -mr-32 -mt-32" />
                     </div>
 
-                    {/* Recent Activity List */}
-                    <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm">
-                        <div className="flex items-center justify-between mb-8">
-                            <h3 className="text-xl font-black text-gray-900 uppercase italic">Recent Activity</h3>
-                            <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">View All</button>
-                        </div>
-                        <div className="space-y-6">
-                            {stats.recentActivities.length > 0 ? (
-                                stats.recentActivities.map((activity, i) => (
-                                    <div key={i} className="flex items-center gap-6 p-4 rounded-2xl hover:bg-gray-50 transition-colors group cursor-pointer border border-transparent hover:border-gray-100">
-                                        <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center font-black text-gray-400">
-                                            {activity.type === "Review" ? <Star size={20} className="text-yellow-500" /> : <Calendar size={20} className="text-blue-500" />}
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-sm font-black text-gray-900">{activity.message} <span className="text-primary italic">from {activity.targetName}</span></p>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{activity.timeAgo}</p>
-                                        </div>
-                                        <ArrowUpRight size={18} className="text-gray-300 group-hover:text-primary transition-all group-hover:translate-x-1 group-hover:-translate-y-1" />
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="text-center text-gray-400 font-bold py-10 uppercase text-xs tracking-widest">No recent activity yet.</p>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Verification Section */}
+                    {/* Recent Activity List (Hidden) */}
+                    {/* Verification & Global Reach Combined */}
                     {!stats.isLegit && (
-                        <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm">
-                            <div className="flex items-center gap-3 mb-6">
-                                <ShieldCheck size={24} className="text-primary" />
-                                <h3 className="text-xl font-black text-gray-900 uppercase italic">Get Legit Badge</h3>
+                        <div className="bg-gradient-to-br from-primary to-orange-400 rounded-3xl p-8 text-white shadow-xl shadow-primary/20 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-2xl -mr-16 -mt-16" />
+                            <div className="flex items-center gap-3 mb-4 relative z-10">
+                                <ShieldCheck size={28} className="text-white drop-shadow-md" />
+                                <h3 className="text-2xl font-black text-white uppercase italic">Global Reach & Verification</h3>
                             </div>
-                            <p className="text-gray-500 text-sm mb-6 font-medium leading-relaxed">
-                                Upload your SLSports or SLTDA registration details to get the <span className="text-emerald-600 font-bold italic">LEGIT</span> badge. This increases your visibility to premium tourists.
+                            <p className="text-white/90 text-sm mb-8 font-medium leading-relaxed max-w-lg relative z-10">
+                                Verified guides get promoted to European and US agencies this tourist season. Upload your SLSports or SLTDA registration details to get your <span className="text-white font-black italic">LICENSED GUIDE</span> badge.
                             </p>
-                            <div className="flex gap-4">
+                            <div className="flex items-center gap-4 relative z-10">
                                 <button 
-                                    onClick={() => router.push("/guide/profile")}
-                                    className="px-6 py-3 bg-primary text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 transition-all"
+                                    onClick={() => router.push("/guide/profile#verification")}
+                                    className="px-8 py-3 bg-white text-primary rounded-xl font-black text-xs uppercase tracking-widest shadow-lg hover:bg-gray-50 transition-colors"
                                 >
                                     Verify Now
                                 </button>
                                 {stats.verificationStatus === "Pending" && (
-                                    <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-orange-500 bg-orange-50 px-4 rounded-xl">
-                                        <Clock size={14} /> Verification Requested
+                                    <span className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-white/80 bg-black/20 px-4 py-2.5 rounded-xl backdrop-blur-sm">
+                                        <Clock size={16} /> Under Review
+                                    </span>
+                                )}
+                                {stats.verificationStatus === "Approved" && (
+                                    <span className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-emerald-700 bg-emerald-100 px-4 py-2.5 rounded-xl">
+                                        <ShieldCheck size={16} /> Approved
+                                    </span>
+                                )}
+                                {stats.verificationStatus === "Rejected" && (
+                                    <span className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-rose-700 bg-rose-100 px-4 py-2.5 rounded-xl">
+                                        <X size={16} /> Rejected
                                     </span>
                                 )}
                             </div>
@@ -246,22 +232,7 @@ export default function GuideDashboardPage() {
                         </div>
                     </div>
 
-                    {/* Announcement */}
-                    <div className="bg-gradient-to-br from-primary to-orange-400 rounded-3xl p-6 text-white shadow-lg shadow-primary/20">
-                        <div className="flex items-center gap-3 mb-4">
-                            <TrendingUp size={24} />
-                            <h4 className="font-black text-sm uppercase tracking-widest leading-none">Global Reach</h4>
-                        </div>
-                        <p className="text-[11px] font-bold text-white/90 leading-relaxed mb-4">
-                            Verified guides get promoted to European and US agencies this tourist season. Get your legit badge today!
-                        </p>
-                        <button 
-                            onClick={() => router.push("/guide/profile")}
-                            className="w-full py-3 bg-white text-primary rounded-xl font-black text-[10px] uppercase tracking-widest shadow-md hover:bg-gray-50 transition-colors"
-                        >
-                            Learn More
-                        </button>
-                    </div>
+
                 </div>
             </div>
         </div>

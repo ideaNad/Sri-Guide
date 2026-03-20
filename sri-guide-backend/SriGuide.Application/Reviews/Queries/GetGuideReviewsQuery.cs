@@ -35,7 +35,7 @@ public class GetGuideReviewsQueryHandler : IRequestHandler<GetGuideReviewsQuery,
         // Fetch guide profile reviews
         var guideReviews = await _context.Reviews
             .Include(r => r.User)
-            .Where(r => r.TargetId == guideProfile.Id && r.TargetType == "Guide")
+            .Where(r => r.TargetId == request.GuideUserId && r.TargetType == "Guide")
             .ToListAsync(cancellationToken);
 
         // Fetch trips made by this guide

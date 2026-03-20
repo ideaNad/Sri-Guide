@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import apiClient from "@/lib/api-client";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
+import AuthModal from "@/features/auth/components/AuthModal";
 
 interface OtherTrip {
     id: string;
@@ -37,9 +38,10 @@ interface TripDetail {
 
 const AdventureSimplePage = () => {
     const { id } = useParams();
-    const { user } = useAuth();
+    const { user, login } = useAuth();
     const [tour, setTour] = useState<TripDetail | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
     const fetchTour = async () => {
         try {
@@ -57,7 +59,10 @@ const AdventureSimplePage = () => {
     }, [id]);
 
     const handleToggleLike = async () => {
-        if (!user) return;
+        if (!user) {
+            setIsAuthModalOpen(true);
+            return;
+        }
         try {
             const response = await apiClient.post<{ liked: boolean }>(`/trip/${id}/toggle-like`);
             if (tour) {
@@ -95,6 +100,7 @@ const AdventureSimplePage = () => {
     };
 
     return (
+        <>
         <div className="pb-24 bg-white">
             {/* Minimal Hero / Title Section */}
             <div className="container mx-auto px-4 pt-32 pb-12">
@@ -256,6 +262,12 @@ const AdventureSimplePage = () => {
                 </div>
             </div>
         </div>
+        <AuthModal
+            isOpen={isAuthModalOpen}
+            onClose={() => setIsAuthModalOpen(false)}
+            onSuccess={(userData) => { login(userData); setIsAuthModalOpen(false); }}
+        />
+        </>
     );
 };
 

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SriGuide.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fe640dc0d99594143e882b0f3bfea2a1a2c5abe5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1446e8ef393f22c73c1291740f451788286826d9")]
 [assembly: System.Reflection.AssemblyProductAttribute("SriGuide.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SriGuide.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

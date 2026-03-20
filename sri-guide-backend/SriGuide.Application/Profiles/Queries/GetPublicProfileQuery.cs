@@ -57,8 +57,13 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
             );
         }).ToList();
 
-        var guideAverageRating = tripReviews.Any() ? tripReviews.Average(r => r.Rating) : 0;
-        var guideTotalReviews = tripReviews.Count;
+        var guideReviews = await _context.Reviews
+            .Where(r => r.TargetId == user.Id && r.TargetType == "Guide")
+            .ToListAsync(cancellationToken);
+
+        var allReviews = tripReviews.Concat(guideReviews).ToList();
+        var guideAverageRating = allReviews.Any() ? allReviews.Average(r => r.Rating) : 0;
+        var guideTotalReviews = allReviews.Count;
 
         return new PublicProfileDto(
             user.Id,
@@ -67,7 +72,8 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
                 ? "/" + user.ProfileImageUrl 
                 : user.ProfileImageUrl,
             user.GuideProfile.Bio,
-            user.GuideProfile.Specialty,
+            user.GuideProfile.Specialties,
+            user.GuideProfile.OperatingAreas,
             user.GuideProfile.Languages,
             user.GuideProfile.DailyRate ?? 0,
             user.GuideProfile.ContactForPrice,
@@ -81,7 +87,8 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
             user.GuideProfile.TikTokLink,
             user.GuideProfile.FacebookLink,
             user.GuideProfile.InstagramLink,
-            trips
+            trips,
+            user.Role.ToString()
         );
     }
 }

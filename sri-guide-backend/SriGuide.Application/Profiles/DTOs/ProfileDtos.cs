@@ -21,7 +21,17 @@ public record GuideProfileDto(
     VerificationStatus VerificationStatus,
     bool ContactForPrice,
     Guid? AgencyId,
-    string? AgencyName
+    string? AgencyName,
+    List<string> Specialties,
+    List<string> OperatingAreas,
+    string? PhoneNumber,
+    string? WhatsAppNumber,
+    string? YouTubeLink,
+    string? TikTokLink,
+    string? FacebookLink,
+    string? InstagramLink,
+    string? TwitterLink,
+    string? LinkedinLink
 );
 
 public record AgencyProfileDto(

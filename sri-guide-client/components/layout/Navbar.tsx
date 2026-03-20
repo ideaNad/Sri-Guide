@@ -70,6 +70,7 @@ const NavItems = ({ mobile = false, textColor, navLinks, setIsMobileMenuOpen }: 
     };
 
     return (
+        <>
         <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${navBackground}`}>
             <div className="container mx-auto px-6 md:px-12 lg:px-24 flex items-center justify-between">
 
@@ -219,6 +220,8 @@ const NavItems = ({ mobile = false, textColor, navLinks, setIsMobileMenuOpen }: 
                 )}
             </AnimatePresence>
 
+            </nav>
+
             {/* Auth Modal */}
             <AuthModal
                 isOpen={isAuthModalOpen}
@@ -232,7 +235,7 @@ const NavItems = ({ mobile = false, textColor, navLinks, setIsMobileMenuOpen }: 
                     else router.push("/dashboard");
                 }}
             />
-        </nav>
+        </>
     );
 };
 

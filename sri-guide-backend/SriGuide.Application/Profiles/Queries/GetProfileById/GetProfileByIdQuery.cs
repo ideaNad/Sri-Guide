@@ -41,7 +41,8 @@ public class GetProfileByIdQueryHandler : IRequestHandler<GetProfileByIdQuery, P
             user.Role,
             user.GuideProfile?.Bio ?? user.AgencyProfile?.CompanyName, // Basic bio fallback
             user.GuideProfile?.Languages,
-            user.GuideProfile?.Specialty,
+            user.GuideProfile?.Specialties,
+            user.GuideProfile?.OperatingAreas,
             user.GuideProfile?.DailyRate,
             user.AgencyProfile?.CompanyName,
             user.AgencyProfile?.RegistrationNumber,

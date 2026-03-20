@@ -31,10 +31,22 @@ public class GetGuideDashboardQueryHandler : IRequestHandler<GetGuideDashboardQu
             .Where(b => b.GuideId == request.UserId)
             .ToListAsync(cancellationToken);
 
-        var reviews = await _context.Reviews
+        var guideReviews = await _context.Reviews
             .Include(r => r.User)
-            .Where(r => r.TargetId == guideProfile.Id && r.TargetType == "Guide")
+            .Where(r => r.TargetId == request.UserId && r.TargetType == "Guide")
             .ToListAsync(cancellationToken);
+
+        var allTripIds = await _context.Trips
+            .Where(t => t.GuideId == request.UserId)
+            .Select(t => t.Id)
+            .ToListAsync(cancellationToken);
+
+        var tripReviews = await _context.Reviews
+            .Include(r => r.User)
+            .Where(r => r.TargetType == "Trip" && allTripIds.Contains(r.TargetId))
+            .ToListAsync(cancellationToken);
+
+        var allReviews = guideReviews.Concat(tripReviews).ToList();
 
         var trips = await _context.Trips
             .Include(t => t.Images)
@@ -45,8 +57,8 @@ public class GetGuideDashboardQueryHandler : IRequestHandler<GetGuideDashboardQu
 
         // Calculate statistics
         var totalBookings = bookings.Count;
-        var totalReviews = reviews.Count;
-        var averageRating = totalReviews > 0 ? reviews.Average(r => r.Rating) : 0;
+        var totalReviews = allReviews.Count;
+        var averageRating = totalReviews > 0 ? allReviews.Average(r => r.Rating) : 0;
 
         // Calculate Profile Completeness
         int completeness = 0;
@@ -60,7 +72,7 @@ public class GetGuideDashboardQueryHandler : IRequestHandler<GetGuideDashboardQu
         // Recent Activities
         var activities = new List<DashboardActivityDto>();
         
-        foreach (var review in reviews.OrderByDescending(r => r.CreatedAt).Take(3))
+        foreach (var review in allReviews.OrderByDescending(r => r.CreatedAt).Take(3))
         {
             activities.Add(new DashboardActivityDto(
                 "Review",
@@ -91,8 +103,8 @@ public class GetGuideDashboardQueryHandler : IRequestHandler<GetGuideDashboardQu
         )).ToList();
 
         return new GuideDashboardDto(
-            guideProfile.User.FullName,
-            guideProfile.User.ProfileImageUrl,
+            guideProfile.User!.FullName,
+            guideProfile.User!.ProfileImageUrl,
             totalBookings,
             averageRating,
             totalReviews,

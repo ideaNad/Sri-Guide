@@ -16,7 +16,8 @@ export interface GuideProfile {
     userId: string;
     bio: string;
     languages: string[];
-    specialty: string;
+    specialties: string[];
+    operatingAreas: string[];
     dailyRate: number;
     hourlyRate?: number;
     yearsOfExperience: number;

@@ -11,7 +11,8 @@ public class GuideProfile : BaseEntity
     public string Bio { get; set; } = string.Empty;
     public List<string> Languages { get; set; } = new();
     public string? LicenseNumber { get; set; }
-    public string? Specialty { get; set; }
+    public List<string>? Specialties { get; set; } = new();
+    public List<string>? OperatingAreas { get; set; } = new();
     public decimal? DailyRate { get; set; }
     public decimal? HourlyRate { get; set; }
     public bool ContactForPrice { get; set; }
@@ -31,6 +32,8 @@ public class GuideProfile : BaseEntity
     public string? TikTokLink { get; set; }
     public string? FacebookLink { get; set; }
     public string? InstagramLink { get; set; }
+    public string? TwitterLink { get; set; }
+    public string? LinkedinLink { get; set; }
 
     public Guid? AgencyId { get; set; }
     public AgencyProfile? Agency { get; set; }

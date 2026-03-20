@@ -17,9 +17,14 @@ public class DiscoveryController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] string? query, [FromQuery] string? type)
+    public async Task<IActionResult> Get(
+        [FromQuery] string? query, 
+        [FromQuery] string? type,
+        [FromQuery] List<string>? languages,
+        [FromQuery] List<string>? specialties,
+        [FromQuery] List<string>? areas)
     {
-        var result = await _mediator.Send(new GetDiscoveryQuery(query, type));
+        var result = await _mediator.Send(new GetDiscoveryQuery(query, type, languages, specialties, areas));
         return Ok(result);
     }
 

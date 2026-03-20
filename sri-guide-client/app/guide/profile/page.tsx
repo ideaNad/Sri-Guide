@@ -22,6 +22,7 @@ const DUMMY_FEEDBACK: { id: string; user: string; date: string; text: string; ra
 
 
 const COMMON_LANGUAGES = ["English", "Sinhala", "Tamil", "German", "French", "Italian", "Japanese", "Chinese", "Russian", "Arabic"];
+const COMMON_AREAS = ["Colombo", "Kandy", "Galle", "Ella", "Nuwara Eliya", "Mirissa", "Sigiriya", "Anuradhapura", "Polonnaruwa", "Yala", "Trincomalee", "Jaffna"];
 
 // --- Helper Components ---
 
@@ -59,12 +60,12 @@ export default function GuideProfilePage() {
     const [formData, setFormData] = useState({
         fullName: "",
         bio: "",
-        specialty: "",
+        specialties: [] as string[],
         dailyRate: 0,
         hourlyRate: 0,
         contactForPrice: false,
         languages: [] as string[],
-        operatingAreas: ["Colombo", "Kandy", "Galle"], 
+        operatingAreas: [] as string[], 
         phoneNumber: "",
         whatsAppNumber: "",
         youTubeLink: "",
@@ -96,11 +97,12 @@ export default function GuideProfilePage() {
                     ...prev,
                     fullName: data.fullName || "",
                     bio: data.guideProfile?.bio || "",
-                    specialty: data.guideProfile?.specialty || "",
+                    specialties: data.guideProfile?.specialties || [],
                     dailyRate: data.guideProfile?.dailyRate || 0,
                     hourlyRate: data.guideProfile?.hourlyRate || 0,
                     contactForPrice: data.guideProfile?.contactForPrice || false,
                     languages: data.guideProfile?.languages || [],
+                    operatingAreas: data.guideProfile?.operatingAreas || [],
                     phoneNumber: data.guideProfile?.phoneNumber || "",
                     whatsAppNumber: data.guideProfile?.whatsAppNumber || "",
                     youTubeLink: data.guideProfile?.youTubeLink || "",
@@ -124,6 +126,17 @@ export default function GuideProfilePage() {
         fetchProfileData();
     }, []);
 
+    useEffect(() => {
+        if (!loading && window.location.hash === '#verification') {
+            setTimeout(() => {
+                const element = document.getElementById('verification');
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 300);
+        }
+    }, [loading]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
         const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
@@ -134,6 +147,32 @@ export default function GuideProfilePage() {
         if (!profile) return;
         setSaving(true);
         setMessage(null);
+
+        // Validation for URLs and Phones
+        const urlRegex = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
+        const phoneRegex = /^\+?[0-9\s\-()]{7,20}$/;
+
+        if (formData.phoneNumber && !phoneRegex.test(formData.phoneNumber)) {
+            setMessage({ type: "error", text: "Invalid Phone Number format. Use +CountryCode format." });
+            setSaving(false);
+            return;
+        }
+        if (formData.whatsAppNumber && !phoneRegex.test(formData.whatsAppNumber)) {
+            setMessage({ type: "error", text: "Invalid WhatsApp Number format. Use +CountryCode format." });
+            setSaving(false);
+            return;
+        }
+
+        const socialFields = ['youTubeLink', 'tikTokLink', 'facebookLink', 'instagramLink', 'twitterLink', 'linkedinLink'] as const;
+        for (const field of socialFields) {
+            const val = formData[field];
+            if (val && !urlRegex.test(val)) {
+                setMessage({ type: "error", text: `Invalid URL format for ${field.replace('Link', '')}. Please include https://` });
+                setSaving(false);
+                return;
+            }
+        }
+
         try {
             // 1. Update User Profile
             await apiClient.post("/profile/update-user", { 
@@ -145,8 +184,10 @@ export default function GuideProfilePage() {
             const updatePayload = {
                 userId: profile.id,
                 bio: formData.bio,
-                specialty: formData.specialty,
+                specialties: formData.specialties,
+                operatingAreas: formData.operatingAreas,
                 hourlyRate: Number(formData.hourlyRate),
+                dailyRate: Number(formData.dailyRate),
                 contactForPrice: formData.contactForPrice,
                 languages: formData.languages,
                 phoneNumber: formData.phoneNumber,
@@ -154,7 +195,9 @@ export default function GuideProfilePage() {
                 youTubeLink: formData.youTubeLink,
                 tikTokLink: formData.tikTokLink,
                 facebookLink: formData.facebookLink,
-                instagramLink: formData.instagramLink
+                instagramLink: formData.instagramLink,
+                twitterLink: formData.twitterLink,
+                linkedinLink: formData.linkedinLink
             };
             
             await apiClient.post("/profile/update-guide", updatePayload);
@@ -269,6 +312,36 @@ export default function GuideProfilePage() {
                                             className="w-full bg-gray-50 border border-transparent rounded-[2rem] p-6 font-medium text-gray-700 outline-none focus:bg-white focus:border-primary/20 transition-all text-sm resize-none leading-relaxed"
                                         />
                                     </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 ml-1 mb-2 block">Mobile (+94...)</label>
+                                            <div className="relative group">
+                                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                                                <input 
+                                                    type="tel" 
+                                                    name="phoneNumber"
+                                                    value={formData.phoneNumber}
+                                                    onChange={handleChange}
+                                                    placeholder="+94 77 123 4567"
+                                                    className="w-full bg-gray-50 border border-transparent rounded-2xl py-4 pl-12 pr-4 font-bold text-gray-900 outline-none focus:bg-white focus:border-primary/20 transition-all text-sm"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 ml-1 mb-2 block">WhatsApp (+94...)</label>
+                                            <div className="relative group">
+                                                <MessageCircle className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                                                <input 
+                                                    type="tel" 
+                                                    name="whatsAppNumber"
+                                                    value={formData.whatsAppNumber}
+                                                    onChange={handleChange}
+                                                    placeholder="+94 77 123 4567"
+                                                    className="w-full bg-gray-50 border border-transparent rounded-2xl py-4 pl-12 pr-4 font-bold text-gray-900 outline-none focus:bg-white focus:border-primary/20 transition-all text-sm"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
             </SectionCard>
@@ -315,13 +388,29 @@ export default function GuideProfilePage() {
                                     </label>
                                     <div className="flex flex-wrap gap-2">
                                         {formData.operatingAreas.map(area => (
-                                            <span key={area} className="bg-gray-100 text-gray-700 border border-gray-200 px-4 py-2 rounded-xl text-[11px] font-bold">
+                                            <span key={area} className="bg-emerald-50 text-emerald-700 border border-emerald-100 px-4 py-2 rounded-xl text-[11px] font-bold flex items-center gap-2">
                                                 {area}
+                                                <button 
+                                                    onClick={() => setFormData(prev => ({ ...prev, operatingAreas: prev.operatingAreas.filter(a => a !== area) }))}
+                                                    className="text-emerald-400 hover:text-emerald-600"
+                                                >
+                                                    <X size={14} />
+                                                </button>
                                             </span>
                                         ))}
-                                        <button className="bg-gray-50 border border-dashed border-gray-300 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider text-gray-400">
-                                            + Add Area
-                                        </button>
+                                        <select 
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val && !formData.operatingAreas.includes(val)) {
+                                                    setFormData(prev => ({ ...prev, operatingAreas: [...prev.operatingAreas, val] }));
+                                                }
+                                                e.target.value = ''; // reset after selection
+                                            }}
+                                            className="bg-gray-50 border border-dashed border-gray-300 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider text-gray-500 outline-none cursor-pointer hover:border-primary transition-colors"
+                                        >
+                                            <option value="">+ Add Area</option>
+                                            {COMMON_AREAS.map(a => <option key={a} value={a}>{a}</option>)}
+                                        </select>
                                     </div>
                                 </div>
 
@@ -331,14 +420,31 @@ export default function GuideProfilePage() {
                                         <Star size={12} className="text-primary" /> Specialties
                                     </label>
                                     <div className="flex flex-wrap gap-2">
-                                        {formData.specialty.split(',').filter(s => s.trim()).map((s, i) => (
-                                            <span key={i} className="bg-blue-50 text-blue-600 border border-blue-100 px-4 py-2 rounded-xl text-[11px] font-bold">
-                                                {s.trim()}
+                                        {formData.specialties.map((s, i) => (
+                                            <span key={i} className="bg-blue-50 text-blue-600 border border-blue-100 px-4 py-2 rounded-xl text-[11px] font-bold flex items-center gap-2">
+                                                {s}
+                                                <button 
+                                                    onClick={() => setFormData(prev => ({ ...prev, specialties: prev.specialties.filter((_, idx) => idx !== i) }))}
+                                                    className="text-blue-400 hover:text-blue-600"
+                                                >
+                                                    <X size={14} />
+                                                </button>
                                             </span>
                                         ))}
-                                        <button className="bg-white border border-dashed border-primary/40 text-primary px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider flex items-center gap-2 hover:bg-primary/5 transition-colors">
-                                            <Plus size={14} /> Add Specialty
-                                        </button>
+                                        <input 
+                                            placeholder="Type Specialty & Press Enter"
+                                            className="bg-gray-50 border border-dashed border-gray-300 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider text-gray-500 outline-none hover:border-primary transition-colors flex-1 min-w-[200px]"
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    const val = e.currentTarget.value.trim();
+                                                    if (val && !formData.specialties.includes(val)) {
+                                                        setFormData(prev => ({ ...prev, specialties: [...prev.specialties, val] }));
+                                                    }
+                                                    e.currentTarget.value = '';
+                                                }
+                                            }}
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -417,10 +523,11 @@ export default function GuideProfilePage() {
             </SectionCard>
 
             {/* Verification Section */}
-            <SectionCard icon={ShieldCheck} title="Verification (Legit Badge)">
+            <div id="verification">
+                <SectionCard icon={ShieldCheck} title="Verification (Licensed Guide Badge)">
                             <div className="space-y-6">
                                 <p className="text-xs text-gray-500 font-medium leading-relaxed italic">
-                                    Provide your official registration details to receive the <span className="text-emerald-600 font-bold">LEGIT</span> badge.
+                                    Provide your official registration details to receive the <span className="text-emerald-600 font-bold">LICENSED GUIDE</span> badge.
                                 </p>
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -455,7 +562,8 @@ export default function GuideProfilePage() {
                                     {saving ? "Processing..." : "Submit for Verification"}
                                 </button>
                             </div>
-            </SectionCard>
+                </SectionCard>
+            </div>
 
             {/* Social Presence Section */}
             <SectionCard icon={Instagram} title="Social Presence">

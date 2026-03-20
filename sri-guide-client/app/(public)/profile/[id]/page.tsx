@@ -11,12 +11,25 @@ import apiClient from "@/lib/api-client";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
+import AuthModal from "@/features/auth/components/AuthModal";
+
+export const dynamic = "force-dynamic";
+
+interface Review {
+    id: string;
+    userId: string;
+    userName: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
+}
 
 interface PublicProfile {
     id: string;
     fullName: string;
     bio: string;
-    specialty: string;
+    specialties: string[];
+    operatingAreas: string[];
     languages: string[];
     dailyRate: number;
     contactForPrice: boolean;
@@ -24,6 +37,7 @@ interface PublicProfile {
     verificationStatus: string;
     averageRating: number;
     totalReviews: number;
+    role?: string;
     profileImageUrl?: string;
     phoneNumber?: string;
     whatsAppNumber?: string;
@@ -31,6 +45,8 @@ interface PublicProfile {
     tikTokLink?: string;
     facebookLink?: string;
     instagramLink?: string;
+    twitterLink?: string;
+    linkedinLink?: string;
     recentTrips: {
         id: string;
         title: string;
@@ -47,9 +63,26 @@ interface PublicProfile {
 export default function PublicProfilePage() {
     const { id } = useParams();
     const router = useRouter();
-    const { user } = useAuth();
+    const { user, login } = useAuth();
     const [profile, setProfile] = useState<PublicProfile | null>(null);
+    const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
+    const [reviewFormOpen, setReviewFormOpen] = useState(false);
+    const [reviewRating, setReviewRating] = useState(5);
+    const [reviewComment, setReviewComment] = useState("");
+    const [submittingReview, setSubmittingReview] = useState(false);
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+    const fetchReviews = async () => {
+        try {
+            const response = await apiClient.get(`/review/guide/${id}`);
+            const data = response.data as any;
+            const combined = [...(data.profileReviews || []), ...(data.tripReviews || [])].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            setReviews(combined);
+        } catch (error) {
+            console.error("Failed to fetch public reviews", error);
+        }
+    };
 
     const formatBio = (text: string) => {
         return text.split('\n').map((line, i) => (
@@ -72,7 +105,10 @@ export default function PublicProfilePage() {
             }
         };
 
-        if (id) fetchProfile();
+        if (id) {
+            fetchProfile();
+            fetchReviews();
+        }
     }, [id]);
 
     if (loading) {
@@ -117,12 +153,20 @@ export default function PublicProfilePage() {
                             className="flex-1 text-center lg:text-left space-y-8"
                         >
                             <div>
-                                {profile.isLegit && (
-                                    <div className="inline-flex items-center bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-4 py-1.5 rounded-full mb-6 shadow-sm">
-                                        <ShieldCheck size={16} className="mr-2" />
-                                        Verified Lead Guide
-                                    </div>
-                                )}
+                                <div className="flex flex-wrap gap-2 mb-6">
+                                    {profile.role === 'Agency' && (
+                                        <div className="inline-flex items-center text-xs font-bold px-4 py-1.5 rounded-full shadow-sm bg-blue-50 text-blue-700 border border-blue-200">
+                                            <ShieldCheck size={16} className="mr-2" />
+                                            Travel Agency
+                                        </div>
+                                    )}
+                                    {profile.isLegit && (
+                                        <div className="inline-flex items-center text-xs font-bold px-4 py-1.5 rounded-full shadow-sm bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            <ShieldCheck size={16} className="mr-2" />
+                                            Licensed Guide
+                                        </div>
+                                    )}
+                                </div>
                                 
                                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 leading-[1.1] mb-6">
                                     {profile.fullName}
@@ -159,7 +203,7 @@ export default function PublicProfilePage() {
                                     <div>
                                         <h3 className="text-[11px] font-bold tracking-widest text-gray-900 uppercase mb-3">Expertise</h3>
                                         <div className="flex flex-wrap gap-2">
-                                            {profile.specialty ? profile.specialty.split(',').map((spec, i) => (
+                                            {profile.specialties && profile.specialties.length > 0 ? profile.specialties.map((spec, i) => (
                                                 <span key={i} className="bg-primary/5 text-primary text-xs font-semibold px-3 py-1.5 rounded-full">
                                                     {spec.trim()}
                                                 </span>
@@ -184,39 +228,77 @@ export default function PublicProfilePage() {
                                     <div className="sm:col-span-2 lg:col-span-1 border-t border-gray-100 pt-4 lg:pt-0 lg:border-t-0 lg:border-l lg:pl-6">
                                         <h3 className="text-[11px] font-bold tracking-widest text-gray-900 uppercase mb-3">Operating Regions</h3>
                                         <ul className="space-y-2">
-                                            {profile.recentTrips.length > 0 ? (
-                                                Array.from(new Set(profile.recentTrips.map(t => t.location).filter(Boolean))).slice(0, 2).map((loc, i) => (
+                                            {profile.operatingAreas && profile.operatingAreas.length > 0 ? (
+                                                profile.operatingAreas.slice(0, 4).map((loc, i) => (
                                                     <li key={i} className="flex items-center text-sm font-semibold text-secondary gap-2">
                                                         <MapPin className="w-4 h-4 text-primary" />
-                                                        <span className="truncate">{loc}</span>
+                                                        <span className="truncate">{loc.trim()}</span>
                                                     </li>
                                                 ))
                                             ) : (
                                                 <li className="flex items-center text-sm font-semibold text-secondary gap-2">
-                                                    <MapPin className="w-4 h-4 text-primary" /> Sri Lanka Base
+                                                    <MapPin className="w-4 h-4 text-primary" /> Sri Lanka
                                                 </li>
                                             )}
                                         </ul>
                                     </div>
 
                                     {/* Social Connect */}
-                                    <div className="sm:col-span-2 lg:col-span-2 mt-4 sm:mt-0 lg:mt-4">
-                                        <h3 className="text-[11px] font-bold tracking-widest text-gray-900 uppercase mb-4">Social Presence</h3>
-                                        <div className="flex flex-wrap gap-3">
-                                            {profile.instagramLink && (
-                                                <a href={profile.instagramLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-gray-50 hover:bg-primary px-4 py-2 rounded-xl transition-all border border-gray-100 hover:border-primary shadow-sm">
-                                                    <Instagram size={14} className="text-gray-500 group-hover:text-white transition-colors" />
-                                                    <span className="font-semibold text-xs text-gray-700 group-hover:text-white transition-colors">Instagram</span>
-                                                </a>
-                                            )}
-                                            {profile.youTubeLink && (
-                                                <a href={profile.youTubeLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-gray-50 hover:bg-primary px-4 py-2 rounded-xl transition-all border border-gray-100 hover:border-primary shadow-sm">
-                                                    <Youtube size={14} className="text-gray-500 group-hover:text-white transition-colors" />
-                                                    <span className="font-semibold text-xs text-gray-700 group-hover:text-white transition-colors">YouTube</span>
-                                                </a>
-                                            )}
+                                    {user ? (
+                                        <div className="sm:col-span-2 lg:col-span-2 mt-4 sm:mt-0 lg:mt-4" id="contact-section">
+                                            <h3 className="text-[11px] font-bold tracking-widest text-gray-900 uppercase mb-4">Social Presence</h3>
+                                            <div className="flex flex-wrap gap-3">
+                                                {profile.whatsAppNumber && (
+                                                    <a href={`https://wa.me/${profile.whatsAppNumber.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-gray-50 hover:bg-[#25D366] px-4 py-2 rounded-xl transition-all border border-gray-100 hover:border-[#25D366] shadow-sm">
+                                                        <MessageCircle size={14} className="text-gray-500 group-hover:text-white transition-colors" />
+                                                        <span className="font-semibold text-xs text-gray-700 group-hover:text-white transition-colors">WhatsApp</span>
+                                                    </a>
+                                                )}
+                                                {profile.instagramLink && (
+                                                    <a href={profile.instagramLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-gray-50 hover:bg-[#E1306C] px-4 py-2 rounded-xl transition-all border border-gray-100 hover:border-[#E1306C] shadow-sm">
+                                                        <Instagram size={14} className="text-gray-500 group-hover:text-white transition-colors" />
+                                                        <span className="font-semibold text-xs text-gray-700 group-hover:text-white transition-colors">Instagram</span>
+                                                    </a>
+                                                )}
+                                                {profile.youTubeLink && (
+                                                    <a href={profile.youTubeLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-gray-50 hover:bg-[#FF0000] px-4 py-2 rounded-xl transition-all border border-gray-100 hover:border-[#FF0000] shadow-sm">
+                                                        <Youtube size={14} className="text-gray-500 group-hover:text-white transition-colors" />
+                                                        <span className="font-semibold text-xs text-gray-700 group-hover:text-white transition-colors">YouTube</span>
+                                                    </a>
+                                                )}
+                                                {profile.facebookLink && (
+                                                    <a href={profile.facebookLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-gray-50 hover:bg-[#1877F2] px-4 py-2 rounded-xl transition-all border border-gray-100 hover:border-[#1877F2] shadow-sm">
+                                                        <span className="font-semibold text-xs text-gray-700 group-hover:text-white transition-colors">Facebook</span>
+                                                    </a>
+                                                )}
+                                                {profile.tikTokLink && (
+                                                    <a href={profile.tikTokLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-gray-50 hover:bg-[#000000] px-4 py-2 rounded-xl transition-all border border-gray-100 hover:border-[#000000] shadow-sm">
+                                                        <span className="font-semibold text-xs text-gray-700 group-hover:text-white transition-colors">TikTok</span>
+                                                    </a>
+                                                )}
+                                                {profile.twitterLink && (
+                                                    <a href={profile.twitterLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-gray-50 hover:bg-[#1DA1F2] px-4 py-2 rounded-xl transition-all border border-gray-100 hover:border-[#1DA1F2] shadow-sm">
+                                                        <span className="font-semibold text-xs text-gray-700 group-hover:text-white transition-colors">Twitter (X)</span>
+                                                    </a>
+                                                )}
+                                                {profile.linkedinLink && (
+                                                    <a href={profile.linkedinLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-gray-50 hover:bg-[#0A66C2] px-4 py-2 rounded-xl transition-all border border-gray-100 hover:border-[#0A66C2] shadow-sm">
+                                                        <span className="font-semibold text-xs text-gray-700 group-hover:text-white transition-colors">LinkedIn</span>
+                                                    </a>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
+                                    ) : (
+                                        <div className="sm:col-span-2 lg:col-span-2 mt-4 p-6 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-4">
+                                            <div>
+                                                <h3 className="text-sm font-bold text-gray-900 mb-1">Want to contact {profile.fullName.split(' ')[0]}?</h3>
+                                                <p className="text-xs text-gray-500 font-medium">Log in to view social media links and phone numbers.</p>
+                                            </div>
+                                            <button onClick={() => setIsAuthModalOpen(true)} className="bg-primary text-white font-bold text-[10px] tracking-widest uppercase px-6 py-3 rounded-xl hover:bg-secondary hover:-translate-y-0.5 transition-all shadow-md shadow-primary/20 whitespace-nowrap">
+                                                Log In
+                                            </button>
+                                        </div>
+                                    )}
 
                                     {/* Investment */}
                                     <div className="sm:col-span-2 lg:col-span-1 border-t border-gray-100 pt-4 lg:pt-0 lg:border-t-0 lg:border-l lg:pl-6 sm:mt-4 flex flex-col justify-center">
@@ -239,10 +321,20 @@ export default function PublicProfilePage() {
                             </div>
 
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-4 mx-auto lg:mx-0">
-                                <button className="flex-1 sm:flex-none flex items-center justify-center bg-primary text-white text-center px-8 py-4 font-bold text-sm rounded-xl shadow-lg shadow-primary/20 hover:bg-secondary hover:-translate-y-0.5 transition-all">
-                                    <MessageCircle className="w-5 h-5 mr-2" />
-                                    Contact Guide
-                                </button>
+                                {user ? (
+                                    <button 
+                                        onClick={() => document.getElementById('contact-section')?.scrollIntoView({ behavior: 'smooth' })}
+                                        className="flex-1 sm:flex-none flex items-center justify-center bg-primary text-white text-center px-8 py-4 font-bold text-sm rounded-xl shadow-lg shadow-primary/20 hover:bg-secondary hover:-translate-y-0.5 transition-all"
+                                    >
+                                        <MessageCircle className="w-5 h-5 mr-2" />
+                                        Contact Guide
+                                    </button>
+                                ) : (
+                                    <button onClick={() => setIsAuthModalOpen(true)} className="flex-1 sm:flex-none flex items-center justify-center bg-gray-900 text-white text-center px-8 py-4 font-bold text-sm rounded-xl shadow-lg shadow-gray-900/20 hover:bg-secondary hover:-translate-y-0.5 transition-all">
+                                        <MessageCircle className="w-5 h-5 mr-2" />
+                                        Log In to Contact
+                                    </button>
+                                )}
                             </div>
                         </motion.div>
 
@@ -343,28 +435,104 @@ export default function PublicProfilePage() {
                         
                         {/* Testimonials */}
                         <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {profile.recentTrips.length > 0 ? profile.recentTrips.slice(0, 2).map((trip, idx) => (
-                                <div key={trip.id} className="bg-white p-8 md:p-10 rounded-3xl border border-gray-100 shadow-lg hover:shadow-xl transition-shadow flex flex-col justify-between">
+                            {/* Write Review Action */}
+                            <div className="col-span-1 md:col-span-2 flex flex-col items-center sm:flex-row justify-between mb-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                                <div>
+                                    <h4 className="font-bold text-gray-900">Had a great trip with {profile.fullName.split(' ')[0]}?</h4>
+                                    <p className="text-xs text-gray-500">Share your experience with other travelers.</p>
+                                </div>
+                                <button 
+                                    onClick={() => {
+                                        if (!user) {
+                                            setIsAuthModalOpen(true);
+                                            return;
+                                        }
+                                        setReviewFormOpen(!reviewFormOpen);
+                                    }}
+                                    className="mt-4 sm:mt-0 bg-secondary text-white px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-primary transition-colors"
+                                >
+                                    Write a Review
+                                </button>
+                            </div>
+
+                            {reviewFormOpen && user && (
+                                <div className="col-span-1 md:col-span-2 bg-white p-8 rounded-3xl border border-primary/20 shadow-xl mb-4">
+                                    <h4 className="font-black text-gray-900 uppercase tracking-widest text-sm mb-6">Write your review</h4>
+                                    <div className="flex text-highlight gap-2 mb-6 cursor-pointer">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <Star 
+                                                key={star} 
+                                                size={24} 
+                                                className={star <= reviewRating ? "fill-current" : "opacity-30"} 
+                                                onClick={() => setReviewRating(star)}
+                                            />
+                                        ))}
+                                    </div>
+                                    <textarea 
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm font-medium mb-6 min-h-[120px] focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                        placeholder="Share the details of your experience..."
+                                        value={reviewComment}
+                                        onChange={(e) => setReviewComment(e.target.value)}
+                                    />
+                                    <div className="flex gap-4 justify-end">
+                                        <button 
+                                            onClick={() => setReviewFormOpen(false)}
+                                            className="px-6 py-3 font-bold text-xs uppercase tracking-widest text-gray-500 hover:text-gray-900 transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button 
+                                            disabled={submittingReview || !reviewComment.trim()}
+                                            onClick={async () => {
+                                                setSubmittingReview(true);
+                                                try {
+                                                    await apiClient.post('/review', { 
+                                                        targetId: id as string, 
+                                                        targetType: 'Guide', 
+                                                        rating: reviewRating, 
+                                                        comment: reviewComment 
+                                                    });
+                                                    setReviewComment("");
+                                                    setReviewRating(5);
+                                                    setReviewFormOpen(false);
+                                                    fetchReviews();
+                                                } catch(error) {
+                                                    console.error("Failed to post review", error);
+                                                } finally {
+                                                    setSubmittingReview(false);
+                                                }
+                                            }}
+                                            className="bg-primary text-white px-8 py-3 rounded-full font-bold text-xs uppercase tracking-widest hover:-translate-y-0.5 transition-all shadow-md shadow-primary/20 disabled:opacity-50 disabled:hover:translate-y-0"
+                                        >
+                                            {submittingReview ? "Submitting..." : "Submit Review"}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {reviews.length > 0 ? reviews.map((review, idx) => (
+                                <div key={review.id} className="bg-white p-8 md:p-10 rounded-3xl border border-gray-100 shadow-lg hover:shadow-xl transition-shadow flex flex-col justify-between">
                                     <div className="flex text-highlight gap-1 mb-6">
-                                        {[1, 2, 3, 4, 5].map((star) => <Star key={star} size={16} className="fill-current" />)}
+                                        {[1, 2, 3, 4, 5].map((star) => <Star key={star} size={16} className={star <= review.rating ? "fill-current" : "opacity-30"} />)}
                                     </div>
                                     <p className="text-gray-700 text-lg font-medium mb-8 leading-relaxed italic">
-                                        "{trip.title.substring(0, 30)}... was spectacular. The guide's knowledge and storytelling were the absolute highlight of our entire trip. Highly recommended."
+                                        "{review.comment}"
                                     </p>
                                     <div className="flex items-center gap-4 mt-auto pt-6 border-t border-gray-50">
-                                        <div className="w-12 h-12 shrink-0 rounded-full overflow-hidden border-2 border-gray-100 shadow-sm">
-                                            <img src={`https://ui-avatars.com/api/?name=Traveler+${idx}&background=random`} alt="Avatar" className="w-full h-full object-cover" />
+                                        <div className="w-12 h-12 shrink-0 rounded-full overflow-hidden border-2 border-gray-100 shadow-sm bg-gray-100 flex items-center justify-center text-gray-500 font-bold">
+                                            {review.userName.charAt(0)}
                                         </div>
                                         <div>
-                                            <p className="text-sm font-bold text-gray-900">Verified Traveler</p>
-                                            <p className="text-xs font-semibold text-primary mt-0.5">{trip.location || "Sri Lanka"}</p>
+                                            <p className="text-sm font-bold text-gray-900">{review.userName}</p>
+                                            <p className="text-xs font-semibold text-gray-500 mt-0.5">{new Date(review.createdAt).toLocaleDateString()}</p>
                                         </div>
                                     </div>
                                 </div>
                             )) : (
                                 <div className="col-span-1 md:col-span-2 rounded-3xl border border-gray-100 shadow-sm p-12 text-center flex flex-col items-center justify-center bg-white">
                                     <MessageCircle className="w-12 h-12 text-gray-300 mb-4" />
-                                    <p className="text-gray-500 font-bold text-sm">Awaiting first review</p>
+                                    <p className="text-gray-500 font-bold text-sm">No reviews yet.</p>
+                                    <p className="text-gray-400 text-xs mt-2">Be the first to share your experience!</p>
                                 </div>
                             )}
                         </div>
@@ -373,6 +541,15 @@ export default function PublicProfilePage() {
 
 
             </div>
+            
+            <AuthModal 
+                isOpen={isAuthModalOpen} 
+                onClose={() => setIsAuthModalOpen(false)} 
+                onSuccess={(userData) => { 
+                    login(userData); 
+                    setIsAuthModalOpen(false); 
+                }} 
+            />
         </div>
     );
 }

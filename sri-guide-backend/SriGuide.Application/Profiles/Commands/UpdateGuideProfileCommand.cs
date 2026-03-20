@@ -12,13 +12,16 @@ public record UpdateGuideProfileCommand(
     decimal? DailyRate,
     decimal? HourlyRate,
     bool? ContactForPrice,
-    string? Specialty,
+    List<string>? Specialties,
+    List<string>? OperatingAreas,
     string? PhoneNumber,
     string? WhatsAppNumber,
     string? YouTubeLink,
     string? TikTokLink,
     string? FacebookLink,
-    string? InstagramLink
+    string? InstagramLink,
+    string? TwitterLink,
+    string? LinkedinLink
 ) : IRequest<bool>;
 
 public class UpdateGuideProfileCommandHandler : IRequestHandler<UpdateGuideProfileCommand, bool>
@@ -50,13 +53,16 @@ public class UpdateGuideProfileCommandHandler : IRequestHandler<UpdateGuideProfi
         guideProfile.DailyRate = request.DailyRate ?? guideProfile.DailyRate;
         guideProfile.HourlyRate = request.HourlyRate ?? guideProfile.HourlyRate;
         guideProfile.ContactForPrice = request.ContactForPrice ?? guideProfile.ContactForPrice;
-        guideProfile.Specialty = request.Specialty ?? guideProfile.Specialty;
+        if (request.Specialties != null) guideProfile.Specialties = request.Specialties;
+        if (request.OperatingAreas != null) guideProfile.OperatingAreas = request.OperatingAreas;
         guideProfile.PhoneNumber = request.PhoneNumber ?? guideProfile.PhoneNumber;
         guideProfile.WhatsAppNumber = request.WhatsAppNumber ?? guideProfile.WhatsAppNumber;
         guideProfile.YouTubeLink = request.YouTubeLink ?? guideProfile.YouTubeLink;
         guideProfile.TikTokLink = request.TikTokLink ?? guideProfile.TikTokLink;
         guideProfile.FacebookLink = request.FacebookLink ?? guideProfile.FacebookLink;
         guideProfile.InstagramLink = request.InstagramLink ?? guideProfile.InstagramLink;
+        guideProfile.TwitterLink = request.TwitterLink ?? guideProfile.TwitterLink;
+        guideProfile.LinkedinLink = request.LinkedinLink ?? guideProfile.LinkedinLink;
 
         await _context.SaveChangesAsync(cancellationToken);
         return true;

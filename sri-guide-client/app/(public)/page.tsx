@@ -16,6 +16,8 @@ import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle2, Mail, Compass, ShieldCheck, Zap, Heart, MapPin, Loader2 } from "lucide-react";
 import Link from "next/link";
 import apiClient from "@/lib/api-client";
+import { useAuth } from "@/context/AuthContext";
+import AuthModal from "@/features/auth/components/AuthModal";
 
 interface DiscoveryItem {
     id: string;
@@ -45,10 +47,12 @@ interface RecentTrip {
 }
 
 export default function Home() {
+  const { user, login } = useAuth();
   const [guides, setGuides] = useState<DiscoveryItem[]>([]);
   const [trips, setTrips] = useState<RecentTrip[]>([]);
   const [loadingGuides, setLoadingGuides] = useState(true);
   const [loadingTrips, setLoadingTrips] = useState(true);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchTopGuides = async () => {
@@ -78,6 +82,10 @@ export default function Home() {
   }, []);
 
   const handleToggleLike = async (tripId: string) => {
+    if (!user) {
+        setIsAuthModalOpen(true);
+        return;
+    }
     try {
         const response = await apiClient.post<{ liked: boolean }>(`/trip/${tripId}/toggle-like`);
         const { liked } = response.data;
@@ -113,6 +121,7 @@ export default function Home() {
   };
 
   return (
+    <>
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
       <HeroSlider />
@@ -301,11 +310,17 @@ export default function Home() {
                       <span key={tag} className="text-[10px] font-bold px-3 py-1 bg-gray-50 rounded-full text-secondary">{tag}</span>
                     ))}
                   </div>
-                  <div className="flex items-center space-x-2 text-sm mb-6">
-                    <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                    <span className="text-xs font-semibold text-emerald-600">
-                      Legit Partner
-                    </span>
+                  <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+                    {guide.type === 'agency' && (
+                        <span className="text-xs font-semibold text-blue-600 flex items-center gap-1.5 bg-blue-50 px-2 py-1 rounded">
+                            <ShieldCheck className="w-4 h-4 text-blue-500" /> Travel Agency
+                        </span>
+                    )}
+                    {guide.isLegit && (
+                        <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1.5 bg-emerald-50 px-2 py-1 rounded">
+                            <ShieldCheck className="w-4 h-4 text-emerald-500" /> Licensed Guide
+                        </span>
+                    )}
                   </div>
                   <Link 
                     href={`/profile/${guide.id}`}
@@ -324,5 +339,11 @@ export default function Home() {
         </div>
       </section>
     </div>
+    <AuthModal
+      isOpen={isAuthModalOpen}
+      onClose={() => setIsAuthModalOpen(false)}
+      onSuccess={(userData) => { login(userData); setIsAuthModalOpen(false); }}
+    />
+  </>
   );
 }

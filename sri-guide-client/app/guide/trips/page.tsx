@@ -34,8 +34,10 @@ export default function GuideTripsPage() {
         date: ""
     });
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [existingImages, setExistingImages] = useState<string[]>([]);
     const [submitting, setSubmitting] = useState(false);
     const [viewingTrip, setViewingTrip] = useState<Trip | null>(null);
+    const [editingTripId, setEditingTripId] = useState<string | null>(null);
 
     useEffect(() => {
         if (user?.id) {
@@ -58,11 +60,16 @@ export default function GuideTripsPage() {
         e.preventDefault();
         setSubmitting(true);
         try {
-            const response = await apiClient.post("/trip", newTrip);
-            const tripId = response.data; // The returned Guid
+            let tripId = editingTripId;
+            if (editingTripId) {
+                await apiClient.put(`/trip/${editingTripId}`, { ...newTrip, tripId: editingTripId });
+            } else {
+                const response = await apiClient.post("/trip", newTrip);
+                tripId = response.data as string; // The returned Guid
+            }
 
             // Upload photos if any
-            if (selectedFiles.length > 0) {
+            if (selectedFiles.length > 0 && tripId) {
                 for (const file of selectedFiles) {
                     const formData = new FormData();
                     formData.append("file", file);
@@ -73,6 +80,7 @@ export default function GuideTripsPage() {
             }
 
             setIsAdding(false);
+            setEditingTripId(null);
             setNewTrip({ title: "", description: "", location: "", date: "" });
             setSelectedFiles([]);
             fetchTrips();
@@ -108,6 +116,17 @@ export default function GuideTripsPage() {
         }
     };
 
+    const handleRemoveExistingImage = async (imageUrl: string) => {
+        if (!editingTripId || !confirm("Remove this photo from your trip?")) return;
+        try {
+            await apiClient.delete(`/trip/${editingTripId}/photo?imageUrl=${encodeURIComponent(imageUrl)}`);
+            setExistingImages(prev => prev.filter(img => img !== imageUrl));
+            fetchTrips(); // Refresh the overarching list to get the updated primaryImageUrl if needed
+        } catch (error) {
+            console.error("Failed to delete trip photo", error);
+        }
+    };
+
     const handleDeleteTrip = async (tripId: string) => {
         if (!confirm("Are you sure you want to delete this trip? This action cannot be undone.")) return;
         try {
@@ -135,7 +154,11 @@ export default function GuideTripsPage() {
                 </div>
                 {!isAdding && (
                     <button 
-                        onClick={() => setIsAdding(true)}
+                        onClick={() => {
+                            setEditingTripId(null);
+                            setNewTrip({ title: "", description: "", location: "", date: "" });
+                            setIsAdding(true);
+                        }}
                         className="flex items-center gap-3 bg-gray-900 text-white px-8 py-4 rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-primary transition-all shadow-xl shadow-gray-900/10"
                     >
                         <Plus size={18} /> Add New Trip
@@ -222,6 +245,27 @@ export default function GuideTripsPage() {
                                             }
                                         }}
                                     />
+                                    {existingImages.length > 0 && (
+                                        <div className="mt-4 flex flex-wrap gap-2 justify-center w-full">
+                                            {existingImages.map((imgUrl, i) => (
+                                                <div key={`existing-${i}`} className="h-20 w-20 rounded-xl overflow-hidden shadow-sm relative group z-10">
+                                                    <img 
+                                                        src={imgUrl.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${imgUrl}` : imgUrl} 
+                                                        alt="Existing trip photo" 
+                                                        className="w-full h-full object-cover" 
+                                                    />
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={() => handleRemoveExistingImage(imgUrl)}
+                                                        className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
                                     {selectedFiles.length > 0 && (
                                         <div className="mt-4 flex flex-wrap gap-2 justify-center">
                                             {selectedFiles.map((f, i) => (
@@ -241,7 +285,12 @@ export default function GuideTripsPage() {
                             <div className="flex gap-4">
                                 <button 
                                     type="button"
-                                    onClick={() => setIsAdding(false)}
+                                    onClick={() => {
+                                        setIsAdding(false);
+                                        setEditingTripId(null);
+                                        setExistingImages([]);
+                                        setSelectedFiles([]);
+                                    }}
                                     className="flex-1 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-gray-400 hover:bg-gray-50 transition-all"
                                 >
                                     Cancel
@@ -251,7 +300,7 @@ export default function GuideTripsPage() {
                                     type="submit"
                                     className="flex-3 bg-primary text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/20 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-all"
                                 >
-                                    {submitting ? <Loader2 className="animate-spin" size={18} /> : "Publish Trip"}
+                                    {submitting ? <Loader2 className="animate-spin" size={18} /> : (editingTripId ? "Update Trip" : "Publish Trip")}
                                     <ArrowRight size={18} />
                                 </button>
                             </div>
@@ -305,6 +354,24 @@ export default function GuideTripsPage() {
                                             </label>
                                         </div>
                                         <div className="absolute top-4 right-4 flex gap-2">
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setNewTrip({
+                                                        title: trip.title,
+                                                        description: trip.description || "",
+                                                        location: trip.location || "",
+                                                        date: trip.date ? new Date(trip.date).toISOString().split('T')[0] : ""
+                                                    });
+                                                    setEditingTripId(trip.id);
+                                                    setExistingImages(trip.images || []);
+                                                    setIsAdding(true);
+                                                    // In edit view we need tracking of existing images
+                                                }}
+                                                className="p-2 bg-white/90 backdrop-blur-sm rounded-xl text-blue-500 hover:bg-blue-500 hover:text-white transition-all shadow-sm"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pen"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                                            </button>
                                             <button 
                                                 onClick={(e) => {
                                                     e.stopPropagation();
