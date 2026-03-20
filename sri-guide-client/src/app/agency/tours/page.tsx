@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import apiClient from "@/services/api-client";
+import { useRouter } from "next/navigation";
 
 interface Tour {
     id: string;
@@ -15,14 +16,15 @@ interface Tour {
     location: string;
     price: number;
     status: string;
-    reviews: number;
-    rating: number;
-    date: string;
+    reviews: number | null;
+    rating: number | null;
+    date: string | null;
     imageUrl: string | null;
     guideName: string;
 }
 
 export default function AgencyToursPage() {
+    const router = useRouter();
     const [tours, setTours] = React.useState<Tour[]>([]);
     const [loading, setLoading] = React.useState(true);
 
@@ -40,6 +42,20 @@ export default function AgencyToursPage() {
         fetchTours();
     }, []);
 
+    const handleDelete = async (id: string) => {
+        if (!window.confirm("Are you sure you want to delete this tour? This action cannot be undone.")) {
+            return;
+        }
+
+        try {
+            await apiClient.delete(`/agency/tours/${id}`);
+            setTours(tours.filter(t => t.id !== id));
+        } catch (error) {
+            console.error("Error deleting tour:", error);
+            alert("Failed to delete tour. Please try again.");
+        }
+    };
+
     if (loading) return <div className="flex items-center justify-center min-h-[400px]">
         <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
     </div>;
@@ -54,7 +70,10 @@ export default function AgencyToursPage() {
                     </h1>
                     <p className="text-gray-500 font-medium mt-2">Manage and monitor your curated Sri Lankan experiences</p>
                 </div>
-                <button className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-secondary transition-all shadow-xl shadow-primary/20 flex items-center gap-2">
+                <button 
+                    onClick={() => router.push("/agency/tours/create")}
+                    className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-secondary transition-all shadow-xl shadow-primary/20 flex items-center gap-2"
+                >
                     <Plus size={16} /> Create New Package
                 </button>
             </div>
@@ -89,10 +108,16 @@ export default function AgencyToursPage() {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-8">
                                 <div className="flex gap-4">
-                                     <button className="p-3 bg-white text-gray-900 rounded-xl hover:bg-primary hover:text-white transition-all shadow-xl">
+                                     <button 
+                                         onClick={() => router.push(`/agency/tours/${tour.id}/edit`)}
+                                         className="p-3 bg-white text-gray-900 rounded-xl hover:bg-primary hover:text-white transition-all shadow-xl"
+                                     >
                                          <Edit3 size={18} />
                                      </button>
-                                     <button className="p-3 bg-white text-gray-900 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-xl">
+                                     <button 
+                                         onClick={() => handleDelete(tour.id)}
+                                         className="p-3 bg-white text-gray-900 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-xl"
+                                     >
                                          <Trash2 size={18} />
                                      </button>
                                 </div>
@@ -106,11 +131,17 @@ export default function AgencyToursPage() {
 
                         <div className="p-8 flex-1 flex flex-col">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10px] font-black text-teal-600 uppercase tracking-widest">{tour.date}</span>
-                                <div className="flex items-center gap-1.5">
-                                    <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                                    <span className="text-[10px] font-black text-gray-900">{tour.rating > 0 ? tour.rating : 'New'}</span>
-                                </div>
+                                {tour.date && (
+                                    <span className="text-[10px] font-black text-teal-600 uppercase tracking-widest">{tour.date}</span>
+                                )}
+                                {tour.rating && tour.rating > 0 ? (
+                                    <div className="flex items-center gap-1.5 ml-auto">
+                                        <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                                        <span className="text-[10px] font-black text-gray-900">{tour.rating.toFixed(1)}</span>
+                                    </div>
+                                ) : (
+                                    <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest ml-auto">No Reviews</span>
+                                )}
                             </div>
                             <h3 className="text-xl font-black text-gray-900 tracking-tight italic mb-2 hover:text-teal-600 transition-colors cursor-pointer">{tour.title}</h3>
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">Guide: {tour.guideName}</p>
@@ -129,7 +160,10 @@ export default function AgencyToursPage() {
                 ))}
 
                 {/* Create Card */}
-                <button className="border-4 border-dashed border-gray-100 rounded-[3rem] p-12 flex flex-col items-center justify-center text-center group hover:border-teal-200 transition-all hover:bg-teal-50/30">
+                <button 
+                    onClick={() => router.push("/agency/tours/create")}
+                    className="border-4 border-dashed border-gray-100 rounded-[3rem] p-12 flex flex-col items-center justify-center text-center group hover:border-teal-200 transition-all hover:bg-teal-50/30"
+                >
                     <div className="w-16 h-16 bg-gray-50 rounded-[1.5rem] flex items-center justify-center text-gray-400 mb-6 group-hover:scale-110 group-hover:bg-teal-600 group-hover:text-white transition-all shadow-sm">
                         <Plus size={32} />
                     </div>

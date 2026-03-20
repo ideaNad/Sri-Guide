@@ -3,6 +3,14 @@ using Microsoft.EntityFrameworkCore;
 using SriGuide.Application.Common.Interfaces;
 
 namespace SriGuide.Application.Trips.Queries;
+ 
+public record ItineraryStepDto(
+    string Time,
+    string Title,
+    string Description,
+    string? ImageUrl,
+    int Order
+);
 
 public record TripDetailDto(
     Guid Id,
@@ -11,13 +19,14 @@ public record TripDetailDto(
     string Location,
     DateTime? Date,
     List<string> Images,
-    Guid GuideId,
+    Guid? GuideId,
     string GuideName,
     string? GuideImageUrl,
     double GuideRating,
     int GuideTotalReviews,
     int LikeCount,
     bool IsLikedByCurrentUser,
+    List<ItineraryStepDto> Itinerary,
     List<OtherTripDto> OtherTrips
 );
 
@@ -44,16 +53,23 @@ public class GetTripDetailQueryHandler : IRequestHandler<GetTripDetailQuery, Tri
         var trip = await _context.Trips
             .Include(t => t.Guide)
             .Include(t => t.Images)
+            .Include(t => t.Itinerary)
             .FirstOrDefaultAsync(t => t.Id == request.TripId, cancellationToken);
 
         if (trip == null) throw new Exception("Trip not found");
 
-        var guideReviews = await _context.Reviews
-            .Where(r => r.TargetType == "Trip" && _context.Trips.Where(t => t.GuideId == trip.GuideId).Select(t => t.Id).Contains(r.TargetId))
-            .ToListAsync(cancellationToken);
+        double guideRating = 0;
+        int guideTotalReviews = 0;
 
-        var guideRating = guideReviews.Any() ? guideReviews.Average(r => r.Rating) : 0;
-        var guideTotalReviews = guideReviews.Count;
+        if (trip.GuideId.HasValue)
+        {
+            var guideReviews = await _context.Reviews
+                .Where(r => r.TargetType == "Trip" && _context.Trips.Where(t => t.GuideId == trip.GuideId).Select(t => t.Id).Contains(r.TargetId))
+                .ToListAsync(cancellationToken);
+
+            guideRating = guideReviews.Any() ? Math.Round(guideReviews.Average(r => (double)r.Rating), 1) : 0;
+            guideTotalReviews = guideReviews.Count;
+        }
 
         var likeCount = await _context.TripLikes.CountAsync(tl => tl.TripId == trip.Id, cancellationToken);
         var isLiked = request.CurrentUserId.HasValue && await _context.TripLikes.AnyAsync(tl => tl.TripId == trip.Id && tl.UserId == request.CurrentUserId, cancellationToken);
@@ -64,7 +80,7 @@ public class GetTripDetailQueryHandler : IRequestHandler<GetTripDetailQuery, Tri
             trip.Description,
             trip.Location,
             trip.Date,
-            trip.Images.Select(i => i.ImageUrl != null && !i.ImageUrl.StartsWith("/") && !i.ImageUrl.StartsWith("http") ? "/" + i.ImageUrl : i.ImageUrl).ToList(),
+            trip.Images.Select(i => i.ImageUrl != null && !i.ImageUrl.StartsWith("/") && !i.ImageUrl.StartsWith("http") ? "/" + i.ImageUrl : i.ImageUrl).Where(url => url != null).Cast<string>().ToList(),
             trip.GuideId,
             trip.Guide?.FullName ?? "Unknown Guide",
             trip.Guide != null && trip.Guide.ProfileImageUrl != null && !trip.Guide.ProfileImageUrl.StartsWith("/") && !trip.Guide.ProfileImageUrl.StartsWith("http") 
@@ -74,6 +90,9 @@ public class GetTripDetailQueryHandler : IRequestHandler<GetTripDetailQuery, Tri
             guideTotalReviews,
             likeCount,
             isLiked,
+            trip.Itinerary.OrderBy(s => s.Order).Select(s => new ItineraryStepDto(
+                s.Time, s.Title, s.Description, s.ImageUrl, s.Order
+            )).ToList(),
             await _context.Trips
                 .Include(t => t.Images)
                 .Where(t => t.GuideId == trip.GuideId && t.Id != trip.Id)

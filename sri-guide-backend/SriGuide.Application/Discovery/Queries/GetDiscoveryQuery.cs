@@ -18,7 +18,10 @@ public record DiscoveryItemDto(
     string? Phone,
     string? Email,
     string? WhatsApp,
-    bool IsLegit = false
+    bool IsLegit = false,
+    string? AgencyName = null,
+    decimal? Price = null,
+    string? Date = null
 );
 
 public record GetDiscoveryQuery(
@@ -49,6 +52,7 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
             var guidesRaw = await _context.GuideProfiles
                 .Include(g => g.User)
                 .Include(g => g.Trips)
+                .Include(g => g.Agency)
                 .Where(g => string.IsNullOrEmpty(request.Query) || 
                             g.User.FullName.Contains(request.Query) || 
                             (g.Bio != null && g.Bio.Contains(request.Query)))
@@ -74,7 +78,7 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
                     .Where(r => r.TargetType == "Trip" && tripIds.Contains(r.TargetId))
                     .ToListAsync(cancellationToken);
                 
-                var avgRating = reviews.Any() ? (decimal)reviews.Average(r => r.Rating) : 5.0m;
+                var avgRating = reviews.Any() ? (decimal)Math.Round(reviews.Average(r => (double)r.Rating), 1) : 5.0m;
                 var reviewCount = reviews.Count;
 
                 results.Add(new DiscoveryItemDto(
@@ -90,9 +94,12 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
                     g.User!.Role == UserRole.TravelAgency ? "agency" : "guide",
                     g.Languages.ToArray(),
                     g.User.Email,
-                    g.User.Email, // Email for both fields for now if Phone is not available on User
+                    g.User.Email,
                     g.WhatsAppNumber,
-                    g.IsLegit
+                    g.IsLegit,
+                    g.AgencyId != null && g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted ? g.Agency?.CompanyName : null,
+                    g.DailyRate,
+                    null // Guides don't have a fixed "tour date"
                 ));
             }
         }
@@ -121,11 +128,60 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
                     a.Phone,
                     a.CompanyEmail,
                     a.WhatsApp,
-                    false // Explicitly pass false to avoid CS0854
+                    false, // IsLegit
+                    null,  // AgencyName
+                    null,  // Price
+                    null   // Date
                 ))
                 .ToListAsync(cancellationToken);
             
             results.AddRange(agencies);
+        }
+
+        var isTourType = string.Equals(request.Type, "tour", StringComparison.OrdinalIgnoreCase);
+        if (isTourType)
+        {
+            var tours = await _context.Trips
+                .Include(t => t.Agency)
+                .Include(t => t.Images)
+                .Where(t => t.IsAgencyTour)
+                .Where(t => string.IsNullOrEmpty(request.Query) || 
+                            t.Title.Contains(request.Query) || 
+                            t.Description.Contains(request.Query))
+                .ToListAsync(cancellationToken);
+
+            foreach (var t in tours)
+            {
+                var reviews = await _context.Reviews
+                    .Where(r => r.TargetType == "Trip" && r.TargetId == t.Id)
+                    .ToListAsync(cancellationToken);
+                
+                var avgRating = reviews.Any() ? (decimal)Math.Round(reviews.Average(r => (double)r.Rating), 1) : 5.0m;
+                var reviewCount = reviews.Count;
+
+                var firstImage = t.Images.OrderBy(i => i.CreatedAt).FirstOrDefault()?.ImageUrl;
+
+                results.Add(new DiscoveryItemDto(
+                    t.Id,
+                    t.Title,
+                    t.Agency?.CompanyName ?? "Official Tour",
+                    firstImage != null && !firstImage.StartsWith("/") && !firstImage.StartsWith("http") 
+                        ? "/" + firstImage 
+                        : firstImage ?? "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80",
+                    t.Location ?? "Sri Lanka",
+                    avgRating,
+                    reviewCount,
+                    "tour",
+                    new string[] { "Verified", "Agency" },
+                    null,
+                    null,
+                    null,
+                    true, // IsLegit for agency tours
+                    t.Agency?.CompanyName,
+                    t.Price,
+                    t.Date?.ToString("MMM dd, yyyy")
+                ));
+            }
         }
 
         return results.OrderByDescending(r => r.Rating).ThenByDescending(r => r.Reviews).ToList();

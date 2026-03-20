@@ -2,12 +2,15 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SriGuide.Application.Common.Interfaces;
 using SriGuide.Application.Agencies.DTOs;
+using SriGuide.Application.Common.Models;
+using SriGuide.Domain.Enums;
+using System.Linq;
 
 namespace SriGuide.Application.Agencies.Queries;
 
-public record GetAgencyGuidesQuery(Guid UserId) : IRequest<List<AgencyGuideDto>>;
+public record GetAgencyGuidesQuery(Guid UserId, int PageNumber = 1, int PageSize = 6) : IRequest<PaginatedResult<AgencyGuideDto>>;
 
-public class GetAgencyGuidesQueryHandler : IRequestHandler<GetAgencyGuidesQuery, List<AgencyGuideDto>>
+public class GetAgencyGuidesQueryHandler : IRequestHandler<GetAgencyGuidesQuery, PaginatedResult<AgencyGuideDto>>
 {
     private readonly IApplicationDbContext _context;
 
@@ -16,24 +19,47 @@ public class GetAgencyGuidesQueryHandler : IRequestHandler<GetAgencyGuidesQuery,
         _context = context;
     }
 
-    public async Task<List<AgencyGuideDto>> Handle(GetAgencyGuidesQuery request, CancellationToken cancellationToken)
+    public async Task<PaginatedResult<AgencyGuideDto>> Handle(GetAgencyGuidesQuery request, CancellationToken cancellationToken)
     {
         var agency = await _context.AgencyProfiles
-            .Include(a => a.Guides)
+            .Include(a => a.Guides.Where(g => g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted || g.AgencyRecruitmentStatus == RecruitmentStatus.Requested))
+                .ThenInclude(g => g.User)
+            .Include(a => a.Guides.Where(g => g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted || g.AgencyRecruitmentStatus == RecruitmentStatus.Requested))
                 .ThenInclude(g => g.Trips)
+                    .ThenInclude(t => t.Bookings)
             .FirstOrDefaultAsync(a => a.UserId == request.UserId, cancellationToken);
 
-        if (agency == null) return new List<AgencyGuideDto>();
+        if (agency == null) return new PaginatedResult<AgencyGuideDto>(new List<AgencyGuideDto>(), 0, request.PageNumber, request.PageSize);
 
-        return agency.Guides.Select(g => new AgencyGuideDto
+        var guideUserIds = agency.Guides.Select(g => g.UserId).ToList();
+        
+        // Calculate real average ratings
+        var ratings = await _context.Reviews
+            .Where(r => guideUserIds.Contains(r.TargetId) && r.TargetType == "Guide")
+            .GroupBy(r => r.TargetId)
+            .Select(g => new { UserId = g.Key, AverageRating = Math.Round(g.Average(r => (double)r.Rating), 1) })
+            .ToDictionaryAsync(x => x.UserId, x => x.AverageRating, cancellationToken);
+
+        var today = DateTime.UtcNow.Date;
+
+        var allGuides = agency.Guides.Select(g => new AgencyGuideDto
         {
             Id = g.Id,
+            UserId = g.UserId,
             Name = g.User?.FullName ?? "Unknown",
             Role = g.Specialties?.FirstOrDefault() ?? "Guide",
-            Rating = 5.0, // Placeholder for rating logic
+            Rating = ratings.GetValueOrDefault(g.UserId, 5.0), 
             Location = g.OperatingAreas?.FirstOrDefault() ?? "Sri Lanka",
-            Status = "Available", // Placeholder for availability logic
-            TripCount = g.Trips.Count
+            Status = g.Trips.Any(t => t.Bookings.Any(b => b.BookingDate.Date == today && b.Status == BookingStatus.Confirmed)) 
+                ? "On Tour" 
+                : (g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted ? "Approved" : "Approval Pending"),
+            TripCount = g.Trips.Count,
+            ProfileImageUrl = g.User?.ProfileImageUrl
         }).ToList();
+
+        var count = allGuides.Count;
+        var items = allGuides.Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize).ToList();
+
+        return new PaginatedResult<AgencyGuideDto>(items, count, request.PageNumber, request.PageSize);
     }
 }

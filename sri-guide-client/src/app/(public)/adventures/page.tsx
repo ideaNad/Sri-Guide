@@ -3,9 +3,10 @@
 import React, { useEffect, useState } from "react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import {
-    Star, MapPin, Heart, Search, Loader2, Compass,
-    Calendar, ArrowRight, Filter, X, User
+    Calendar, ArrowRight, Filter, X, User,
+    Search, MapPin, Loader2, Compass
 } from "lucide-react";
+import Card from "@/components/ui/Card";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import apiClient from "@/services/api-client";
@@ -185,68 +186,20 @@ export default function AdventuresPage() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: idx * 0.05 }}
-                                className="group bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 relative flex flex-col"
                             >
-                                {/* Thumbnail */}
-                                <div className="relative h-52 overflow-hidden">
-                                    <img
-                                        src={getImageUrl(trip.imageUrl)}
-                                        alt={trip.title}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                    />
-                                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm text-secondary">
-                                        <MapPin size={10} className="text-primary" />
-                                        {trip.location}
-                                    </div>
-                                    <button
-                                        onClick={() => handleToggleLike(trip.id)}
-                                        className={`absolute top-3 right-3 p-2.5 rounded-full backdrop-blur-md transition-all shadow-sm ${trip.isLiked ? 'bg-rose-500 text-white' : 'bg-white/90 text-gray-400 hover:text-rose-500'}`}
-                                    >
-                                        <Heart size={14} fill={trip.isLiked ? "currentColor" : "none"} />
-                                    </button>
-                                </div>
-
-                                {/* Content */}
-                                <div className="p-6 flex flex-col flex-1">
-                                    {/* Guide row */}
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-md bg-primary flex items-center justify-center text-white text-xs font-bold">
-                                            {trip.guideImageUrl ? (
-                                                <img src={getImageUrl(trip.guideImageUrl)} className="w-full h-full object-cover" alt={trip.guideName} />
-                                            ) : (
-                                                <User size={14} />
-                                            )}
-                                        </div>
-                                        <div>
-                                            <span className="text-xs font-bold text-gray-900">{trip.guideName}</span>
-                                            {trip.date && (
-                                                <p className="text-[10px] text-gray-400 font-medium flex items-center gap-1 mt-0.5">
-                                                    <Calendar size={9} />
-                                                    {new Date(trip.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                                                </p>
-                                            )}
-                                        </div>
-                                        <div className="ml-auto flex items-center gap-1.5 text-[10px] font-bold text-rose-500 bg-rose-50 px-2.5 py-1 rounded-full">
-                                            <Heart size={10} fill="currentColor" />
-                                            {trip.likeCount}
-                                        </div>
-                                    </div>
-
-                                    <h3 className="text-lg font-bold text-gray-900 mb-2 leading-snug group-hover:text-primary transition-colors line-clamp-2">
-                                        {trip.title}
-                                    </h3>
-                                    <p className="text-sm text-gray-500 font-medium leading-relaxed line-clamp-2 mb-6 flex-1">
-                                        {trip.description || "A breathtaking journey curated specifically for an unforgettable experience."}
-                                    </p>
-
-                                    <Link
-                                        href={`/adventures/${trip.id}`}
-                                        className="mt-auto flex items-center justify-between border-t border-gray-50 pt-4 text-xs font-bold text-primary group-hover:gap-3 gap-2 transition-all"
-                                    >
-                                        <span>Read the Story</span>
-                                        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                                    </Link>
-                                </div>
+                                <Card 
+                                    id={trip.id}
+                                    title={trip.title}
+                                    image={trip.imageUrl || ""}
+                                    location={trip.location}
+                                    rating={4.9}
+                                    reviews={trip.likeCount}
+                                    type="tour"
+                                    subtitle={trip.guideName}
+                                    likeCount={trip.likeCount}
+                                    isLiked={trip.isLiked}
+                                    onToggleLike={handleToggleLike}
+                                />
                             </motion.div>
                         ))}
                     </div>

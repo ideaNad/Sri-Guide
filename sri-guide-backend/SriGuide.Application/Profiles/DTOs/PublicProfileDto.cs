@@ -26,7 +26,9 @@ public record PublicProfileDto(
     string? LinkedinLink,
     string? TwitterLink,
 
+    List<PublicTripDto> AgencyTours,
     List<PublicTripDto> RecentTrips,
+    List<SriGuide.Application.Agencies.DTOs.AgencyGuideDto>? Guides = null,
     string Role = "Guide"
 );
 
@@ -39,5 +41,6 @@ public record PublicTripDto(
     string Location,
     double Rating,
     int ReviewCount,
-    List<string> Images
+    List<string> Images,
+    bool IsLiked = false
 );

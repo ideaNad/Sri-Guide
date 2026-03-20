@@ -1,14 +1,45 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import Card from "@/components/ui/Card";
-import { POPULAR_TOURS } from "@/data/mock-data";
-import { motion } from "framer-motion";
-import { Filter, SlidersHorizontal, Search, MapPin, Calendar, Users } from "lucide-react";
+import apiClient from "@/services/api-client";
+import { motion, AnimatePresence } from "framer-motion";
+import { Filter, SlidersHorizontal, Search, MapPin, Calendar, Users, Loader2 } from "lucide-react";
+
+interface Tour {
+    id: string;
+    title: string;
+    subtitle?: string;
+    image: string;
+    location?: string;
+    rating: number;
+    reviews: number;
+    type: string;
+    agencyName?: string;
+    price?: number;
+    date?: string;
+}
 
 const ToursPage = () => {
+    const [tours, setTours] = useState<Tour[]>([]);
+    const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState("All");
+
+    useEffect(() => {
+        const fetchTours = async () => {
+            setLoading(true);
+            try {
+                const response = await apiClient.get<Tour[]>("/discovery?type=tour");
+                setTours(response.data || []);
+            } catch (error) {
+                console.error("Failed to fetch tours:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchTours();
+    }, []);
 
     const categories = ["All", "Adventure", "Culture", "Wild Life", "Beach", "Hiking"];
 
@@ -104,7 +135,9 @@ const ToursPage = () => {
                     {/* Main Content */}
                     <div className="lg:w-3/4">
                         <div className="flex items-center justify-between mb-8">
-                            <p className="text-sm text-gray-500 font-medium">Showing <span className="text-gray-900 font-bold">12</span> tours across Sri Lanka</p>
+                            <p className="text-sm text-gray-500 font-medium">
+                                {loading ? "Finding curated experiences..." : `Showing ${tours.length} tours across Sri Lanka`}
+                            </p>
                             <div className="flex items-center space-x-2 text-sm">
                                 <span className="text-gray-400">Sort by:</span>
                                 <select className="bg-transparent font-bold text-gray-900 outline-none cursor-pointer">
@@ -116,27 +149,37 @@ const ToursPage = () => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {POPULAR_TOURS.map((tour) => (
-                                <motion.div
-                                    key={tour.id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                >
-                                    <Card {...tour} type="tour" />
-                                </motion.div>
-                            ))}
-                            {/* Repeat mock data for demonstration */}
-                            {POPULAR_TOURS.map((tour) => (
-                                <motion.div
-                                    key={`${tour.id}-copy`}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                >
-                                    <Card {...tour} type="tour" />
-                                </motion.div>
-                            ))}
+                            {loading ? (
+                                Array(6).fill(0).map((_, i) => (
+                                    <div key={i} className="bg-white rounded-3xl h-[400px] animate-pulse border border-gray-100" />
+                                ))
+                            ) : tours.length > 0 ? (
+                                tours.map((tour) => (
+                                    <motion.div
+                                        key={tour.id}
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ duration: 0.4 }}
+                                    >
+                                        <Card 
+                                            id={tour.id}
+                                            title={tour.title}
+                                            image={tour.image}
+                                            location={tour.location}
+                                            rating={tour.rating}
+                                            reviews={tour.reviews}
+                                            price={tour.price}
+                                            duration={tour.date}
+                                            type="tour"
+                                            subtitle={tour.agencyName}
+                                        />
+                                    </motion.div>
+                                ))
+                            ) : (
+                                <div className="col-span-full py-20 text-center bg-white rounded-[2.5rem] border border-dashed border-gray-200">
+                                    <p className="text-gray-400 font-bold uppercase tracking-widest text-sm">No tours found matching your criteria</p>
+                                </div>
+                            )}
                         </div>
 
                         {/* Pagination UI */}

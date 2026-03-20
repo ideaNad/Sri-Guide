@@ -7,6 +7,7 @@ import {
     Building2, Globe, Clock, ArrowRight, ShieldCheck
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthContext";
 import apiClient from "@/services/api-client";
 
@@ -20,29 +21,49 @@ interface DashboardStats {
 
 interface Guide {
     id: string;
+    userId: string;
     name: string;
     role: string;
     rating: number;
     location: string;
     status: string;
     tripCount: number;
+    profileImageUrl?: string;
+}
+
+interface PaginatedResult<T> {
+    items: T[];
+    totalCount?: number;
+    pageNumber?: number;
+    pageSize?: number;
+    totalPages?: number;
+    hasPreviousPage?: boolean;
+    hasNextPage?: boolean;
 }
 
 export default function AgencyDashboardPage() {
+    const router = useRouter();
     const { user } = useAuth();
     const [stats, setStats] = React.useState<DashboardStats | null>(null);
     const [guides, setGuides] = React.useState<Guide[]>([]);
     const [loading, setLoading] = React.useState(true);
-
+ 
+    const getImageUrl = (url: string | null | undefined) => {
+        if (!url) return null;
+        if (url.startsWith('http')) return url;
+        const baseUrl = apiClient.defaults.baseURL?.split('/api')[0];
+        return `${baseUrl}${url}`;
+    };
+ 
     React.useEffect(() => {
         const fetchData = async () => {
             try {
                 const [statsRes, guidesRes] = await Promise.all([
                     apiClient.get<DashboardStats>("/agency/dashboard"),
-                    apiClient.get<Guide[]>("/agency/guides")
+                    apiClient.get<PaginatedResult<Guide>>("/agency/guides?pageSize=5")
                 ]);
                 setStats(statsRes.data);
-                setGuides(guidesRes.data);
+                setGuides(guidesRes.data.items);
             } catch (error) {
                 console.error("Error fetching agency data:", error);
             } finally {
@@ -74,7 +95,10 @@ export default function AgencyDashboardPage() {
                     <p className="text-gray-500 font-bold mt-2">Overseeing first-class Sri Lankan experiences for your agency.</p>
                 </div>
                 <div className="flex gap-4">
-                    <button className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-secondary transition-all shadow-xl shadow-primary/20 flex items-center gap-2">
+                    <button 
+                        onClick={() => router.push("/agency/tours")}
+                        className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-secondary transition-all shadow-xl shadow-primary/20 flex items-center gap-2"
+                    >
                         <Plus size={16} /> New Tour
                     </button>
                 </div>
@@ -126,9 +150,19 @@ export default function AgencyDashboardPage() {
                     
                     <div className="space-y-6 relative z-10">
                         {guides.map((guide, i) => (
-                            <div key={guide.id} className="flex items-center gap-6 p-5 rounded-3xl bg-gray-50/50 hover:bg-white hover:shadow-xl transition-all border border-transparent hover:border-gray-100 group cursor-pointer">
-                                <div className={`w-14 h-14 rounded-2xl bg-${i % 2 === 0 ? 'blue' : 'emerald'}-600 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform`}>
-                                    {guide.name.charAt(0)}
+                            <div 
+                                key={guide.id} 
+                                onClick={() => router.push(`/profile/${guide.userId}`)}
+                                className="flex items-center gap-6 p-5 rounded-3xl bg-gray-50/50 hover:bg-white hover:shadow-xl transition-all border border-transparent hover:border-gray-100 group cursor-pointer"
+                            >
+                                <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
+                                    {guide.profileImageUrl ? (
+                                        <img src={getImageUrl(guide.profileImageUrl)!} alt={guide.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className={`w-full h-full bg-${i % 2 === 0 ? 'blue' : 'emerald'}-600 text-white flex items-center justify-center font-black text-xl`}>
+                                            {guide.name.charAt(0)}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex-1">
                                     <p className="text-lg font-black text-gray-900 tracking-tight group-hover:text-teal-600 transition-colors">{guide.name}</p>
@@ -146,7 +180,7 @@ export default function AgencyDashboardPage() {
                                 <div className="flex flex-col items-end gap-2">
                                     <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
                                         guide.status === 'On Tour' ? 'bg-blue-50 text-blue-600 border-blue-100' : 
-                                        guide.status === 'Available' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-orange-50 text-orange-600 border-orange-100'
+                                        guide.status === 'Approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-orange-50 text-orange-600 border-orange-100'
                                     }`}>
                                         {guide.status}
                                     </span>

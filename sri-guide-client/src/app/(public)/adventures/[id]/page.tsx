@@ -12,6 +12,14 @@ import { useAuth } from "@/providers/AuthContext";
 import Link from "next/link";
 import AuthModal from "@/features/auth/components/AuthModal";
 
+interface ItineraryStep {
+    time: string;
+    title: string;
+    description: string;
+    imageUrl?: string;
+    order: number;
+}
+
 interface OtherTrip {
     id: string;
     title: string;
@@ -33,6 +41,7 @@ interface TripDetail {
     guideTotalReviews: number;
     likeCount: number;
     isLikedByCurrentUser: boolean;
+    itinerary: ItineraryStep[];
     otherTrips: OtherTrip[];
 }
 
@@ -103,29 +112,25 @@ const AdventureSimplePage = () => {
         <>
         <div className="pb-24 bg-white">
             {/* Minimal Hero / Title Section */}
-            <div className="container mx-auto px-4 pt-32 pb-12">
+            {/* Compact Header */}
+            <div className="container mx-auto px-4 pt-32 pb-8">
                 <div className="max-w-4xl">
-                    <div className="flex items-center gap-4 mb-6">
-                        <span className="px-3 py-1 bg-primary text-black text-[9px] font-black uppercase tracking-widest">
-                            Story
-                        </span>
+                    <h1 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 leading-tight tracking-tighter italic uppercase">
+                        {tour.title}
+                    </h1>
+                    <div className="flex flex-wrap items-center gap-6 text-gray-400 font-bold uppercase text-[9px] tracking-widest">
+                        <div className="flex items-center">
+                            <MapPin size={12} className="mr-2 text-primary" />
+                            {tour.location}
+                        </div>
                         {tour.date && (
-                            <div className="flex items-center text-gray-400 text-[10px] font-bold uppercase tracking-widest">
-                                <Calendar size={12} className="mr-2" />
+                            <div className="flex items-center">
+                                <Calendar size={12} className="mr-2 text-primary" />
                                 {new Date(tour.date).toLocaleDateString()}
                             </div>
                         )}
-                    </div>
-                    <h1 className="text-5xl md:text-7xl font-black text-gray-900 mb-8 leading-tight tracking-tighter italic uppercase">
-                        {tour.title}
-                    </h1>
-                    <div className="flex flex-wrap items-center gap-8 text-gray-500 font-bold uppercase text-[10px] tracking-widest">
                         <div className="flex items-center">
-                            <MapPin size={14} className="mr-2 text-primary" />
-                            {tour.location}
-                        </div>
-                        <div className="flex items-center">
-                            <Heart size={14} className={`mr-2 ${tour.isLikedByCurrentUser ? "fill-primary text-primary" : ""}`} />
+                            <Heart size={12} className={`mr-2 ${tour.isLikedByCurrentUser ? "fill-primary text-primary" : ""}`} />
                             {tour.likeCount} Likes
                         </div>
                     </div>
@@ -133,30 +138,35 @@ const AdventureSimplePage = () => {
             </div>
 
             {/* Main Picture Gallery (Simple) */}
-            <div className="container mx-auto px-4 mb-20">
-                <div className={`grid gap-6 h-[80vh] ${tour.images.length >= 3 ? "grid-cols-1 md:grid-cols-12" : tour.images.length === 2 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"}`}>
-                    <div className={`${tour.images.length >= 3 ? "md:col-span-8" : ""} h-full`}>
+            {/* Main Picture Gallery (Compact) */}
+            <div className="container mx-auto px-4 mb-16">
+                <div className={`grid gap-4 h-[50vh] max-h-[500px] ${tour.images.length >= 3 ? "grid-cols-1 md:grid-cols-12" : tour.images.length === 2 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"}`}>
+                    <div className={`${tour.images.length >= 3 ? "md:col-span-8" : ""} h-full overflow-hidden rounded-3xl`}>
                         <img 
                             src={getImageUrl(tour.images[0])} 
                             alt={tour.title}
-                            className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-700 shadow-2xl"
+                            className="w-full h-full object-cover hover:scale-[1.05] transition-transform duration-700"
                         />
                     </div>
                     {tour.images.length >= 2 && (
-                        <div className={`${tour.images.length >= 3 ? "md:col-span-4 grid grid-rows-2 gap-6" : ""} h-full`}>
+                        <div className={`${tour.images.length >= 3 ? "md:col-span-4 grid grid-rows-2 gap-4" : ""} h-full`}>
                             {tour.images[1] && (
-                                <img 
-                                    src={getImageUrl(tour.images[1])} 
-                                    alt={tour.title}
-                                    className="w-full h-full object-cover shadow-xl"
-                                />
+                                <div className="h-full overflow-hidden rounded-3xl">
+                                    <img 
+                                        src={getImageUrl(tour.images[1])} 
+                                        alt={tour.title}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
                             )}
                             {tour.images[2] && (
-                                <img 
-                                    src={getImageUrl(tour.images[2])} 
-                                    alt={tour.title}
-                                    className="w-full h-full object-cover shadow-xl"
-                                />
+                                <div className="h-full overflow-hidden rounded-3xl">
+                                    <img 
+                                        src={getImageUrl(tour.images[2])} 
+                                        alt={tour.title}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
                             )}
                         </div>
                     )}
@@ -167,9 +177,51 @@ const AdventureSimplePage = () => {
                 <div className="flex flex-col lg:flex-row gap-20">
                     {/* Simplified Content */}
                     <div className="lg:w-2/3">
-                        <div className="prose prose-2xl max-w-none text-gray-600 leading-relaxed font-medium italic border-l-8 border-primary pl-12 py-4 mb-20">
+                        <div className="prose prose-xl max-w-none text-gray-500 leading-relaxed font-medium italic border-l-4 border-primary/30 pl-8 py-2 mb-16">
                             {tour.description}
                         </div>
+
+                        {/* Itinerary / Experience Timeline */}
+                        {tour.itinerary && tour.itinerary.length > 0 && (
+                            <div className="mb-20">
+                                <h3 className="text-sm font-black text-secondary uppercase tracking-[0.3em] mb-12 flex items-center gap-4">
+                                    <div className="w-12 h-[2px] bg-primary" />
+                                    Experience Timeline
+                                </h3>
+                                <div className="space-y-8 relative">
+                                    {/* Timeline line */}
+                                    <div className="absolute left-[1.95rem] top-8 bottom-8 w-[2px] bg-gray-50 hidden md:block" />
+                                    
+                                    {tour.itinerary.sort((a, b) => a.order - b.order).map((step, idx) => (
+                                        <motion.div 
+                                            key={idx}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            whileInView={{ opacity: 1, y: 0 }}
+                                            viewport={{ once: true }}
+                                            className="flex flex-col md:flex-row gap-6 relative group"
+                                        >
+                                            <div className="w-16 h-16 bg-white border border-gray-100 rounded-full flex items-center justify-center shrink-0 z-10 shadow-sm group-hover:scale-105 transition-transform">
+                                                <span className="text-[9px] font-black text-gray-400">{step.time || "TBD"}</span>
+                                            </div>
+                                            
+                                            <div className="flex-1 bg-gray-50/30 p-6 rounded-3xl border border-transparent hover:border-primary/10 hover:bg-white transition-all">
+                                                <div className="flex flex-col md:flex-row gap-6">
+                                                    {step.imageUrl && (
+                                                        <div className="md:w-32 h-24 shrink-0 overflow-hidden rounded-2xl">
+                                                            <img src={getImageUrl(step.imageUrl)} alt={step.title} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                                                        </div>
+                                                    )}
+                                                    <div>
+                                                        <h4 className="text-lg font-black text-gray-900 mb-1 italic">{step.title}</h4>
+                                                        <p className="text-xs text-gray-500 font-medium leading-relaxed">{step.description}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Pictures placeholder if no more images */}
                         {tour.images.length > 3 && (
@@ -180,17 +232,13 @@ const AdventureSimplePage = () => {
                             </div>
                         )}
 
-                        <div className="flex items-center gap-8 mt-20 pt-20 border-t border-gray-100">
+                        <div className="flex items-center gap-6 mt-16 pt-12 border-t border-gray-50">
                              <button 
                                 onClick={handleToggleLike}
-                                className={`px-10 py-5 flex items-center gap-3 font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:scale-105 ${tour.isLikedByCurrentUser ? "bg-primary text-black" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
+                                className={`px-8 py-4 flex items-center gap-2 font-black text-[9px] uppercase tracking-widest transition-all rounded-xl ${tour.isLikedByCurrentUser ? "bg-primary text-black" : "bg-gray-50 text-gray-400 hover:bg-gray-100"}`}
                             >
-                                <Heart className={tour.isLikedByCurrentUser ? "fill-black" : ""} size={16} />
+                                <Heart className={tour.isLikedByCurrentUser ? "fill-black" : ""} size={14} />
                                 {tour.isLikedByCurrentUser ? "Liked" : "Like Adventure"}
-                            </button>
-                            <button className="px-10 py-5 bg-gray-900 text-white flex items-center gap-3 font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:bg-primary hover:text-black">
-                                <Share2 size={16} />
-                                Share Story
                             </button>
                         </div>
                     </div>
@@ -214,8 +262,14 @@ const AdventureSimplePage = () => {
                                 <div>
                                     <h4 className="text-2xl font-black text-gray-900 tracking-tighter italic">{tour.guideName}</h4>
                                     <div className="flex items-center text-xs font-bold text-gray-400 mt-2">
-                                        <Star className="w-3 h-3 text-yellow-400 fill-yellow-400 mr-1" />
-                                        {tour.guideRating.toFixed(1)} ({tour.guideTotalReviews} reviews)
+                                        {tour.guideTotalReviews > 0 ? (
+                                            <>
+                                                <Star className="w-3 h-3 text-yellow-400 fill-yellow-400 mr-1" />
+                                                {tour.guideRating?.toFixed(1)} ({tour.guideTotalReviews} reviews)
+                                            </>
+                                        ) : (
+                                            "New Professional Guide"
+                                        )}
                                     </div>
                                 </div>
                             </div>

@@ -35,10 +35,20 @@ public record GuideProfileDto(
 );
 
 public record AgencyProfileDto(
+    Guid Id,
     string? CompanyName,
+    string? Bio,
     string? CompanyEmail,
     string? RegistrationNumber,
     string? Phone,
     string? WhatsApp,
-    VerificationStatus VerificationStatus
+    string? YouTubeLink,
+    string? TikTokLink,
+    string? FacebookLink,
+    string? InstagramLink,
+    string? TwitterLink,
+    string? LinkedinLink,
+    bool IsVerified,
+    VerificationStatus VerificationStatus,
+    string? ProfileImageUrl = null
 );

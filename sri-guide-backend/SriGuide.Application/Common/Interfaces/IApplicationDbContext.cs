@@ -13,6 +13,7 @@ public interface IApplicationDbContext
     DbSet<Trip> Trips { get; }
     DbSet<TripImage> TripImages { get; }
     DbSet<TripLike> TripLikes { get; }
+    DbSet<ItineraryStep> ItinerarySteps { get; }
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

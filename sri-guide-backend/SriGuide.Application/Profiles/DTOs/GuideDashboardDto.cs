@@ -12,7 +12,9 @@ public record GuideDashboardDto(
     bool IsLegit,
     string VerificationStatus,
     List<DashboardActivityDto> RecentActivities,
-    List<DashboardTripDto> RecentTrips
+    List<DashboardTripDto> RecentTrips,
+    string? AgencyName = null,
+    RecruitmentStatus? AgencyRecruitmentStatus = null
 );
 
 public record DashboardActivityDto(

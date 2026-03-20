@@ -452,57 +452,49 @@ export default function GuideProfilePage() {
 
             {/* Service Rates Section */}
             <SectionCard icon={DollarSign} title="Service Rates">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 ml-1 mb-2 block">Pricing Model</label>
-                                    <div className="flex flex-col gap-3">
-                                        {[
-                                            { id: 'hourly', label: 'Hourly Rate', icon: Clock },
-                                            { id: 'daily', label: 'Daily Rate', icon: Zap },
-                                            { id: 'negotiable', label: 'Contact for Rates', icon: MessageCircle }
-                                        ].map((model) => (
-                                            <label 
-                                                key={model.id}
-                                                className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all cursor-pointer ${
-                                                    (model.id === 'negotiable' && formData.contactForPrice) || 
-                                                    (model.id !== 'negotiable' && !formData.contactForPrice && (model.id === 'hourly' ? formData.hourlyRate > 0 : formData.dailyRate > 0))
-                                                    ? 'bg-blue-50/50 border-primary text-primary' 
-                                                    : 'bg-gray-50/50 border-transparent text-gray-500 hover:border-gray-200'
-                                                }`}
-                                            >
-                                                <input 
-                                                    type="radio" 
-                                                    name="pricing" 
-                                                    className="hidden"
-                                                    checked={model.id === 'negotiable' ? formData.contactForPrice : !formData.contactForPrice}
-                                                    onChange={() => setFormData(prev => ({ ...prev, contactForPrice: model.id === 'negotiable' }))}
-                                                />
-                                                <div className="w-5 h-5 rounded-full border-2 border-current flex items-center justify-center">
-                                                    {((model.id === 'negotiable' && formData.contactForPrice) || 
-                                                    (model.id !== 'negotiable' && !formData.contactForPrice && (model.id === 'hourly' ? formData.hourlyRate > 0 : formData.dailyRate > 0))) && 
-                                                    <div className="w-2.5 h-2.5 bg-current rounded-full" />}
-                                                </div>
-                                                <model.icon size={18} />
-                                                <span className="text-xs font-black uppercase tracking-widest">{model.label}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 items-start">
+                                {/* column 1: Labels/Radios */}
+                                <div className="space-y-8">
                                     <div>
-                                        <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 ml-1 mb-2 block">Daily Rate (USD)</label>
-                                        <div className="relative">
-                                            <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-gray-300">$</span>
-                                            <input 
-                                                type="number" 
-                                                name="dailyRate"
-                                                value={formData.dailyRate}
-                                                onChange={handleChange}
-                                                className="w-full bg-gray-50 border border-transparent rounded-3xl py-6 px-12 text-3xl font-black text-gray-900 outline-none focus:bg-white focus:border-primary/20 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                            />
+                                        <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 ml-1 mb-6 block">Pricing Model</label>
+                                        <div className="flex flex-col gap-6">
+                                            {[
+                                                { id: 'hourly', label: 'Hourly Rate', icon: Clock },
+                                                { id: 'daily', label: 'Daily Rate', icon: Zap },
+                                                { id: 'negotiable', label: 'Contact for Rates', icon: MessageCircle }
+                                            ].map((model) => (
+                                                <label 
+                                                    key={model.id}
+                                                    className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all cursor-pointer h-[88px] ${
+                                                        (model.id === 'negotiable' && formData.contactForPrice) || 
+                                                        (model.id !== 'negotiable' && !formData.contactForPrice && (model.id === 'hourly' ? formData.hourlyRate > 0 : formData.dailyRate > 0))
+                                                        ? 'bg-blue-50/50 border-primary text-primary' 
+                                                        : 'bg-gray-50/50 border-transparent text-gray-500 hover:border-gray-200'
+                                                    }`}
+                                                >
+                                                    <input 
+                                                        type="radio" 
+                                                        name="pricing" 
+                                                        className="hidden"
+                                                        checked={model.id === 'negotiable' ? formData.contactForPrice : !formData.contactForPrice}
+                                                        onChange={() => setFormData(prev => ({ ...prev, contactForPrice: model.id === 'negotiable' }))}
+                                                    />
+                                                    <div className="w-5 h-5 rounded-full border-2 border-current flex items-center justify-center">
+                                                        {((model.id === 'negotiable' && formData.contactForPrice) || 
+                                                        (model.id !== 'negotiable' && !formData.contactForPrice && (model.id === 'hourly' ? formData.hourlyRate > 0 : formData.dailyRate > 0))) && 
+                                                        <div className="w-2.5 h-2.5 bg-current rounded-full" />}
+                                                    </div>
+                                                    <model.icon size={18} />
+                                                    <span className="text-xs font-black uppercase tracking-widest">{model.label}</span>
+                                                </label>
+                                            ))}
                                         </div>
                                     </div>
-                                    <div>
+                                </div>
+
+                                {/* column 2: Inputs */}
+                                <div className="space-y-8">
+                                    <div className="h-[120px]">
                                         <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 ml-1 mb-2 block">Hourly Rate (USD)</label>
                                         <div className="relative">
                                             <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-gray-300">$</span>
@@ -515,11 +507,25 @@ export default function GuideProfilePage() {
                                             />
                                         </div>
                                     </div>
+                                    <div className="h-[120px]">
+                                        <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 ml-1 mb-2 block">Daily Rate (USD)</label>
+                                        <div className="relative">
+                                            <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-gray-300">$</span>
+                                            <input 
+                                                type="number" 
+                                                name="dailyRate"
+                                                value={formData.dailyRate}
+                                                onChange={handleChange}
+                                                className="w-full bg-gray-50 border border-transparent rounded-3xl py-6 px-12 text-3xl font-black text-gray-900 outline-none focus:bg-white focus:border-primary/20 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                            />
+                                        </div>
+                                    </div>
                                     <p className="text-[10px] font-medium text-gray-400 leading-relaxed px-2">
                                         These rates will be displayed on your public profile. Select &quot;Contact for Rates&quot; if you prefer to negotiate.
                                     </p>
                                 </div>
                             </div>
+
             </SectionCard>
 
             {/* Verification Section */}

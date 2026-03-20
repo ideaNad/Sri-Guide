@@ -20,7 +20,7 @@ public class GetAgencyDashboardQueryHandler : IRequestHandler<GetAgencyDashboard
     public async Task<AgencyDashboardDto> Handle(GetAgencyDashboardQuery request, CancellationToken cancellationToken)
     {
         var agency = await _context.AgencyProfiles
-            .Include(a => a.Guides)
+            .Include(a => a.Guides.Where(g => g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted))
                 .ThenInclude(g => g.Trips)
                     .ThenInclude(t => t.Bookings)
             .FirstOrDefaultAsync(a => a.UserId == request.UserId, cancellationToken);

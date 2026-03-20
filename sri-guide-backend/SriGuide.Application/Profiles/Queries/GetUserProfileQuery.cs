@@ -57,11 +57,20 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
                 guideProfile.LinkedinLink
             ) : null,
             agencyProfile != null ? new AgencyProfileDto(
+                agencyProfile.Id,
                 agencyProfile.CompanyName,
+                agencyProfile.Bio,
                 agencyProfile.CompanyEmail,
                 agencyProfile.RegistrationNumber,
                 agencyProfile.Phone,
                 agencyProfile.WhatsApp,
+                agencyProfile.YouTubeLink,
+                agencyProfile.TikTokLink,
+                agencyProfile.FacebookLink,
+                agencyProfile.InstagramLink,
+                agencyProfile.TwitterLink,
+                agencyProfile.LinkedinLink,
+                agencyProfile.IsVerified,
                 agencyProfile.VerificationStatus
             ) : null
         );

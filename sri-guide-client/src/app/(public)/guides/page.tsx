@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { Star, Languages, ShieldCheck, MessageCircle, Calendar, Compass, Search, UserCircle, Loader2, Filter, X } from "lucide-react";
+import { Star, Languages, ShieldCheck, MessageCircle, Calendar, Compass, Search, UserCircle, Loader2, Filter, X, Building2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import apiClient from "@/services/api-client";
@@ -18,6 +18,7 @@ interface DiscoveryItem {
     type: string;
     isLegit?: boolean;
     tags: string[];
+    agencyName?: string;
 }
 
 const GuidesPage = () => {
@@ -253,6 +254,11 @@ const GuidesPage = () => {
                                         {guide.isLegit && (
                                             <span className="text-emerald-600 font-semibold text-xs flex items-center gap-1.5 bg-emerald-50 px-2 py-1 rounded">
                                                 <ShieldCheck className="w-4 h-4 text-emerald-500" /> Licensed Guide <Star size={10} className="fill-emerald-500 text-emerald-500" />
+                                            </span>
+                                        )}
+                                        {guide.agencyName && (
+                                            <span className="text-blue-600 font-semibold text-xs flex items-center gap-1.5 bg-blue-50 px-2 py-1 rounded">
+                                                <Building2 className="w-4 h-4 text-blue-500" /> {guide.agencyName}
                                             </span>
                                         )}
                                     </div>

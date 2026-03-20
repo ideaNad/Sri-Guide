@@ -29,8 +29,9 @@ const Navbar = () => {
     const navLinks = [
         { name: "Home", href: "/" },
         { name: "Tours", href: "/tours" },
+        { name: "Agencies", href: "/agencies" },
         { name: "Guides", href: "/guides" },
-        { name: "Contact", href: "#" },
+        { name: "Contact", href: "/contact" },
     ];
 
     // Navbar background and text color based on scroll

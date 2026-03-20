@@ -15,6 +15,14 @@ import apiClient from "@/services/api-client";
 import { useAuth } from "@/providers/AuthContext";
 import Link from "next/link";
 
+interface ItineraryStep {
+    time: string;
+    title: string;
+    description: string;
+    imageUrl?: string;
+    order: number;
+}
+ 
 interface TripDetail {
     id: string;
     title: string;
@@ -29,6 +37,7 @@ interface TripDetail {
     guideTotalReviews: number;
     likeCount: number;
     isLikedByCurrentUser: boolean;
+    itinerary?: ItineraryStep[];
 }
 
 const TourDetailPage = () => {
@@ -169,15 +178,8 @@ const TourDetailPage = () => {
                         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {activeTab === "overview" && (
                                 <div className="space-y-10">
-                                    <div className="prose prose-lg max-w-none text-gray-600 leading-relaxed font-medium">
-                                        <p>
-                                            Join us for an unforgettable journey to {tour.title}. This experience is designed for those who appreciate the finer details of Sri Lankan culture and heritage.
-                                            You will explore the majestic landscapes, interact with local communities, and discover why this is considered one of the pearl of the Indian Ocean&apos;s must-see attractions.
-                                        </p>
-                                        <p className="mt-4">
-                                            Our professional local guides will accompany you, sharing insights and stories that you won&apos;t find in any guidebook.
-                                            From early morning views to evening reflections, every moment is crafted to provide a deep connection with the destination.
-                                        </p>
+                                    <div className="prose prose-lg max-w-none text-gray-600 leading-relaxed font-medium whitespace-pre-wrap">
+                                        <p>{tour.description}</p>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-8 border-y border-gray-100">
@@ -215,25 +217,39 @@ const TourDetailPage = () => {
 
                             {activeTab === "itinerary" && (
                                 <div className="space-y-12">
-                                    {[
-                                        { time: "08:00 AM", title: "Hotel Pick-up", desc: "Our luxury vehicle will pick you up directly from your accommodation in a comfortable, air-conditioned SUV." },
-                                        { time: "10:00 AM", title: "Arrival & Sightseeing", desc: "First stop at the main archaeological site. Your guide will provide a deep historical overview while avoiding the crowds." },
-                                        { time: "12:30 PM", title: "Authentic Local Lunch", desc: "Enjoy a traditional Sri Lankan rice and curry spread at a hidden garden restaurant known only to locals." },
-                                        { time: "03:00 PM", title: "Exploration & Relaxation", desc: "Free time to explore the surroundings, take photos, or relax by the serene water bodies." },
-                                        { time: "05:30 PM", title: "Return Journey", desc: "Heading back to the hotel while enjoying the sunset views along the scenic coastal/mountain route." }
-                                    ].map((item, i) => (
+                                    {tour.itinerary && tour.itinerary.length > 0 ? tour.itinerary.map((item, i) => (
                                         <div key={i} className="flex gap-8 relative pb-12 last:pb-0">
-                                            {i !== 4 && <div className="absolute left-[27px] top-8 bottom-0 w-0.5 bg-gray-100" />}
+                                            {i !== (tour.itinerary?.length || 0) - 1 && <div className="absolute left-[27px] top-8 bottom-0 w-0.5 bg-gray-100" />}
                                             <div className="flex-shrink-0 w-14 h-14 bg-white border-2 border-gray-900 flex items-center justify-center text-gray-900 font-black text-xs z-10 transition-all hover:bg-gray-900 hover:text-white group shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
                                                 {i + 1}
                                             </div>
-                                            <div className="pt-2">
-                                                <span className="text-xs font-black text-secondary tracking-widest uppercase mb-2 block">{item.time}</span>
-                                                <h4 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h4>
-                                                <p className="text-gray-500 leading-relaxed font-medium">{item.desc}</p>
+                                            <div className="pt-2 flex-1">
+                                                <div className="flex flex-col md:flex-row gap-6">
+                                                    <div className="flex-1">
+                                                        <span className="text-xs font-black text-secondary tracking-widest uppercase mb-2 block">{item.time}</span>
+                                                        <h4 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h4>
+                                                        <p className="text-gray-500 leading-relaxed font-medium">{item.description}</p>
+                                                    </div>
+                                                    {item.imageUrl && (
+                                                        <div className="w-full md:w-48 h-32 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                                                            <img 
+                                                                src={item.imageUrl.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${item.imageUrl}` : item.imageUrl}
+                                                                alt={item.title}
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => {
+                                                                    (e.currentTarget as HTMLImageElement).src = "https://images.unsplash.com/photo-1544013919-add52c3dffbd?q=80&w=400&auto=format";
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
-                                    ))}
+                                    )) : (
+                                        <div className="text-center py-20 bg-gray-50 rounded-2xl italic text-gray-400 font-bold tracking-widest">
+                                            The itinerary for this journey is being whispered by the wind...
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -294,13 +310,17 @@ const TourDetailPage = () => {
                                 </div>
 
                                 <div className="space-y-4 mb-10">
-                                    <div className="bg-white/5 border border-white/10 p-6">
-                                        <div className="flex items-center space-x-3 text-white/30 mb-2">
-                                            <Calendar className="w-4 h-4" />
-                                            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Select Date</span>
+                                    {tour.date && (
+                                        <div className="bg-white/5 border border-white/10 p-6">
+                                            <div className="flex items-center space-x-3 text-white/30 mb-2">
+                                                <Calendar className="w-4 h-4" />
+                                                <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Start Date</span>
+                                            </div>
+                                            <p className="font-black text-sm text-white">
+                                                {new Date(tour.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()}
+                                            </p>
                                         </div>
-                                        <p className="font-black text-sm text-white">MARCH 15, 2026</p>
-                                    </div>
+                                    )}
                                     <div className="bg-white/5 border border-white/10 p-6">
                                         <div className="flex items-center space-x-3 text-white/30 mb-2">
                                             <Users className="w-4 h-4" />

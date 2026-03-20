@@ -60,6 +60,7 @@ public class UpgradeToAgencyCommandHandler : IRequestHandler<UpgradeToAgencyComm
         if (guideProfile != null)
         {
             guideProfile.AgencyId = agencyProfile.Id;
+            guideProfile.AgencyRecruitmentStatus = RecruitmentStatus.Accepted;
         }
 
         await _context.SaveChangesAsync(cancellationToken);

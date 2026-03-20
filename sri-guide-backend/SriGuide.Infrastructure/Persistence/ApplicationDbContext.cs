@@ -19,6 +19,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Trip> Trips => Set<Trip>();
     public DbSet<TripImage> TripImages => Set<TripImage>();
     public DbSet<TripLike> TripLikes => Set<TripLike>();
+    public DbSet<ItineraryStep> ItinerarySteps => Set<ItineraryStep>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -76,6 +77,17 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .HasMany(t => t.Images)
             .WithOne(i => i.Trip)
             .HasForeignKey(i => i.TripId);
+
+        modelBuilder.Entity<Trip>()
+            .HasMany(t => t.Itinerary)
+            .WithOne(i => i.Trip)
+            .HasForeignKey(i => i.TripId);
+
+        modelBuilder.Entity<Trip>()
+            .HasOne(t => t.Agency)
+            .WithMany()
+            .HasForeignKey(t => t.AgencyId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         // TripLike — unique per user per trip
         modelBuilder.Entity<TripLike>()

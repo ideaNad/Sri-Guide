@@ -22,6 +22,8 @@ interface DashboardStats {
     profileImageUrl?: string;
     recentActivities: any[];
     recentTrips: any[];
+    agencyName?: string;
+    agencyRecruitmentStatus?: number | string;
 }
 
 export default function GuideDashboardPage() {
@@ -41,20 +43,30 @@ export default function GuideDashboardPage() {
     });
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchDashboardData = async () => {
-            try {
-                const response = await apiClient.get("/profile/guide-dashboard");
-                setStats(response.data as DashboardStats);
-            } catch (error) {
-                console.error("Dashboard fetch failed", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const fetchDashboardData = async () => {
+        try {
+            const response = await apiClient.get("/profile/guide-dashboard");
+            setStats(response.data as DashboardStats);
+        } catch (error) {
+            console.error("Dashboard fetch failed", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchDashboardData();
     }, []);
+
+    const handleRespondOffer = async (accept: boolean) => {
+        try {
+            await apiClient.post("/profile/respond-to-offer", { accept });
+            await fetchDashboardData();
+        } catch (error) {
+            console.error("Error responding to offer", error);
+            alert("Failed to process your response.");
+        }
+    };
 
     const statCards = [
         { label: "Avg. Rating", value: stats.averageRating.toFixed(1), icon: <Star className="text-yellow-500 fill-yellow-500" />, trend: `${stats.totalReviews} reviews` },
@@ -105,6 +117,41 @@ export default function GuideDashboardPage() {
                     </div>
                 )}
             </header>
+
+            {/* Recruitment Offer */}
+            {(stats.agencyRecruitmentStatus === 1 || stats.agencyRecruitmentStatus === "Requested") && (
+                <motion.div 
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-primary/10 border-2 border-primary/20 rounded-[2.5rem] p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6"
+                >
+                    <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm border border-primary/10">
+                            <Briefcase size={28} />
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-black text-gray-900 italic uppercase leading-none">Recruitment Offer</h3>
+                            <p className="text-sm font-bold text-gray-500 mt-2">
+                                <span className="text-secondary font-black underline decoration-primary decoration-2 underline-offset-4">{stats.agencyName}</span> wants to recruit you.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-4 w-full md:w-auto">
+                        <button 
+                            onClick={() => handleRespondOffer(true)}
+                            className="flex-1 md:flex-none px-8 py-4 bg-gray-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-teal-600 transition-all shadow-xl shadow-gray-200"
+                        >
+                            Accept Offer
+                        </button>
+                        <button 
+                            onClick={() => handleRespondOffer(false)}
+                            className="flex-1 md:flex-none px-8 py-4 bg-white border-2 border-gray-100 text-gray-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all"
+                        >
+                            Reject
+                        </button>
+                    </div>
+                </motion.div>
+            )}
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -271,7 +318,7 @@ export default function GuideDashboardPage() {
                             </p>
                         </div>
                         <button 
-                            onClick={() => router.push("/agency/apply")}
+                            onClick={() => router.push("/guide/upgrade")}
                             className="shrink-0 px-10 py-5 bg-white text-gray-900 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-primary transition-all active:scale-95 shadow-xl shadow-black/20"
                         >
                             Become an Agency

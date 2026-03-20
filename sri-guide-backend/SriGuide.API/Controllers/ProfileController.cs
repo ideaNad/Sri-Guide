@@ -6,6 +6,8 @@ using SriGuide.Application.Profiles.Queries;
 using SriGuide.Application.Profiles.DTOs;
 using SriGuide.Application.Profiles.Queries.GetProfileById;
 using System.Security.Claims;
+using SriGuide.Application.Agencies.Commands;
+using SriGuide.Application.Agencies.Queries;
 
 namespace SriGuide.API.Controllers;
 
@@ -68,7 +70,10 @@ public class ProfileController : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult<PublicProfileDto>> GetDetailedPublicProfile(Guid id)
     {
-        var result = await _mediator.Send(new GetPublicProfileQuery(id));
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        Guid? userIdObj = !string.IsNullOrEmpty(currentUserId) ? Guid.Parse(currentUserId) : null;
+        
+        var result = await _mediator.Send(new GetPublicProfileQuery(id, userIdObj));
         return Ok(result);
     }
 
@@ -133,5 +138,37 @@ public class ProfileController : ControllerBase
 
         var result = await _mediator.Send(command with { UserId = Guid.Parse(userId) });
         return Ok(result);
+    }
+    [HttpGet("agency")]
+    [Authorize(Roles = "TravelAgency")]
+    public async Task<ActionResult<AgencyProfileDto>> GetAgencyProfile()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var result = await _mediator.Send(new GetAgencyProfileQuery(Guid.Parse(userId)));
+        if (result == null) return NotFound();
+        return Ok(result);
+    }
+
+    [HttpPost("agency/update")]
+    [Authorize(Roles = "TravelAgency")]
+    public async Task<ActionResult<bool>> UpdateAgencyProfile([FromBody] UpdateAgencyProfileCommand command)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null || Guid.Parse(userId) != command.UserId) return Forbid();
+
+        return await _mediator.Send(command);
+    }
+
+    [HttpPost("respond-to-offer")]
+    [Authorize(Roles = "Guide")]
+    public async Task<IActionResult> RespondToOffer([FromBody] RespondToAgencyOfferCommand command)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var success = await _mediator.Send(command with { GuideUserId = Guid.Parse(userId) });
+        return success ? Ok() : BadRequest("Offer not found or already processed");
     }
 }

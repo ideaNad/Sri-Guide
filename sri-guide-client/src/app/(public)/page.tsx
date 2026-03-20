@@ -30,6 +30,7 @@ interface DiscoveryItem {
     type: string;
     isLegit?: boolean;
     tags: string[];
+    agencyName?: string;
 }
 
 interface RecentTrip {
@@ -49,9 +50,13 @@ interface RecentTrip {
 export default function Home() {
   const { user, login } = useAuth();
   const [guides, setGuides] = useState<DiscoveryItem[]>([]);
+  const [agencies, setAgencies] = useState<DiscoveryItem[]>([]);
   const [trips, setTrips] = useState<RecentTrip[]>([]);
+  const [popularTours, setPopularTours] = useState<RecentTrip[]>([]);
   const [loadingGuides, setLoadingGuides] = useState(true);
+  const [loadingAgencies, setLoadingAgencies] = useState(true);
   const [loadingTrips, setLoadingTrips] = useState(true);
+  const [loadingPopular, setLoadingPopular] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => {
@@ -66,6 +71,17 @@ export default function Home() {
       }
     };
 
+    const fetchTopAgencies = async () => {
+      try {
+        const response = await apiClient.get<DiscoveryItem[]>("/discovery?type=agency");
+        setAgencies(response.data.slice(0, 3));
+      } catch (error) {
+        console.error("Failed to fetch top agencies", error);
+      } finally {
+        setLoadingAgencies(false);
+      }
+    };
+
     const fetchRecentTrips = async () => {
         try {
             const response = await apiClient.get<RecentTrip[]>("/discovery/recent-trips");
@@ -77,8 +93,21 @@ export default function Home() {
         }
     };
 
+    const fetchPopularTours = async () => {
+        try {
+            const response = await apiClient.get<RecentTrip[]>("/discovery/popular-tours");
+            setPopularTours(response.data);
+        } catch (error) {
+            console.error("Failed to fetch popular tours", error);
+        } finally {
+            setLoadingPopular(false);
+        }
+    };
+
     fetchTopGuides();
+    fetchTopAgencies();
     fetchRecentTrips();
+    fetchPopularTours();
   }, []);
 
   const handleToggleLike = async (tripId: string) => {
@@ -90,16 +119,8 @@ export default function Home() {
         const response = await apiClient.post<{ liked: boolean }>(`/trip/${tripId}/toggle-like`);
         const { liked } = response.data;
         
-        setTrips(prev => prev.map(t => {
-            if (t.id === tripId) {
-                return {
-                    ...t,
-                    isLiked: liked,
-                    likeCount: liked ? t.likeCount + 1 : t.likeCount - 1
-                };
-            }
-            return t;
-        }));
+        setTrips(prev => prev.map(t => t.id === tripId ? { ...t, isLiked: liked, likeCount: liked ? t.likeCount + 1 : t.likeCount - 1 } : t));
+        setPopularTours(prev => prev.map(t => t.id === tripId ? { ...t, isLiked: liked, likeCount: liked ? t.likeCount + 1 : t.likeCount - 1 } : t));
     } catch (error) {
         console.error("Failed to toggle like", error);
     }
@@ -150,11 +171,34 @@ export default function Home() {
             viewport={{ once: true }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
           >
-            {POPULAR_TOURS.map((tour) => (
-              <motion.div key={tour.id} variants={itemVariants}>
-                <Card {...tour} type="tour" />
-              </motion.div>
-            ))}
+            {loadingPopular ? (
+                Array(4).fill(0).map((_, i) => (
+                    <div key={i} className="h-[400px] bg-gray-100 animate-pulse rounded-3xl" />
+                ))
+            ) : popularTours.length > 0 ? (
+                popularTours.map((tour) => (
+                    <motion.div key={tour.id} variants={itemVariants}>
+                        <Card 
+                            id={tour.id}
+                            title={tour.title}
+                            image={tour.imageUrl || ""}
+                            location={tour.location}
+                            rating={4.8} 
+                            reviews={tour.likeCount}
+                            type="tour"
+                            price={250} 
+                            badge="Curated"
+                            likeCount={tour.likeCount}
+                            isLiked={tour.isLiked}
+                            onToggleLike={handleToggleLike}
+                        />
+                    </motion.div>
+                ))
+            ) : (
+                <div className="col-span-4 text-center py-10 text-gray-400 font-bold uppercase text-[10px] tracking-widest">
+                    No curated tours available yet
+                </div>
+            )}
           </motion.div>
         </div>
       </section>
@@ -217,54 +261,21 @@ export default function Home() {
             ) : trips.length > 0 ? trips.map((trip) => (
               <motion.div
                 key={trip.id}
-                whileHover={{ y: -10 }}
-                className="group relative bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100 hover:shadow-xl transition-shadow"
+                variants={itemVariants}
               >
-                <div className="h-72 overflow-hidden relative">
-                  <img 
-                    src={trip.imageUrl ? (trip.imageUrl.startsWith("http") ? trip.imageUrl : `${apiClient.defaults.baseURL?.replace('/api', '')}${trip.imageUrl}`) : 'https://images.unsplash.com/photo-1588598133416-2da21976a210?q=80&w=800&auto=format&fit=crop'}
-                    alt={trip.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" 
-                  />
-                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm text-secondary">
-                    <MapPin size={12} className="text-primary" />
-                    {trip.location}
-                  </div>
-                  
-                  <button 
-                    onClick={() => handleToggleLike(trip.id)}
-                    className={`absolute top-4 right-4 p-3 rounded-full backdrop-blur-md transition-all shadow-sm ${trip.isLiked ? 'bg-rose-500 text-white shadow-lg' : 'bg-white/90 text-gray-400 hover:text-rose-500'}`}
-                  >
-                    <Heart size={16} fill={trip.isLiked ? "currentColor" : "none"} className={trip.isLiked ? "animate-pulse" : ""} />
-                  </button>
-                </div>
-                <div className="p-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-bold text-xs text-white">
-                        {trip.guideImageUrl ? (
-                          <img src={`${apiClient.defaults.baseURL?.replace('/api', '')}${trip.guideImageUrl}`} className="w-full h-full rounded-full object-cover" />
-                        ) : trip.guideName.charAt(0)}
-                      </div>
-                      <span className="text-xs font-bold text-gray-900">
-                        {trip.guideName}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-rose-500 bg-rose-50 px-3 py-1.5 rounded-full">
-                        <Heart size={12} fill="currentColor" />
-                        {trip.likeCount}
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 leading-snug group-hover:text-primary transition-colors">
-                    {trip.title}
-                  </h3>
-                  <p className="text-gray-500 text-sm font-medium leading-relaxed mb-6 line-clamp-2">
-                    {trip.description}
-                  </p>
-                  <Link href={`/adventures/${trip.id}`} className="text-xs font-bold text-primary flex items-center gap-2 group-hover:gap-3 transition-all">
-                    Read the Story <ArrowRight size={14} />
-                  </Link>
-                </div>
+                <Card 
+                    id={trip.id}
+                    title={trip.title}
+                    image={trip.imageUrl || ""}
+                    location={trip.location}
+                    rating={5.0}
+                    reviews={trip.likeCount}
+                    type="tour"
+                    subtitle={trip.guideName}
+                    likeCount={trip.likeCount}
+                    isLiked={trip.isLiked}
+                    onToggleLike={handleToggleLike}
+                />
               </motion.div>
             )) : (
                 <div className="col-span-3 text-center py-20 text-gray-400 uppercase text-[10px] font-black tracking-widest">
@@ -305,6 +316,20 @@ export default function Home() {
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-1">{guide.title}</h3>
                   <p className="text-primary font-medium text-sm mb-4">{guide.subtitle || "Local Guide"}</p>
+                  
+                  <div className="flex flex-wrap justify-center gap-2 mb-6">
+                    {guide.isLegit && (
+                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100 flex items-center gap-1">
+                            Verified <ShieldCheck size={10} />
+                        </span>
+                    )}
+                    {guide.agencyName && (
+                        <span className="text-[9px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-2 py-1 rounded-full border border-blue-100">
+                            {guide.agencyName}
+                        </span>
+                    )}
+                  </div>
+
                   <div className="flex flex-wrap justify-center gap-2 mb-6">
                     {guide.tags?.slice(0, 3).map((tag: string) => (
                       <span key={tag} className="text-[10px] font-bold px-3 py-1 bg-gray-50 rounded-full text-secondary">{tag}</span>
@@ -334,6 +359,61 @@ export default function Home() {
           ) : (
             <div className="text-center py-20 text-gray-400 uppercase text-[10px] font-black tracking-widest">
               No top guides available currently
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Top Agencies Section */}
+      <section className="py-24 bg-white overflow-hidden relative">
+        <div className="absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gray-100 to-transparent" />
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
+          <SectionHeader
+            badge="Business Partners"
+            title="Our Top Travel Agencies"
+            subtitle="Explore certified tour companies providing premium travel experiences."
+          />
+
+          {loadingAgencies ? (
+            <div className="flex justify-center py-20">
+              <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
+            </div>
+          ) : agencies.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {agencies.map((agency) => (
+                <motion.div
+                  key={agency.id}
+                  whileHover={{ y: -8 }}
+                  className="bg-gray-50 p-10 rounded-[3rem] border border-gray-100 flex flex-col items-center text-center shadow-sm hover:shadow-2xl transition-all duration-500"
+                >
+                  <div className="w-24 h-24 rounded-3xl overflow-hidden mb-8 shadow-xl border-4 border-white rotate-3 group-hover:rotate-0 transition-transform">
+                    <img 
+                      src={agency.image ? (agency.image.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${agency.image}` : agency.image) : `https://ui-avatars.com/api/?name=${agency.title}&background=000&color=fff&bold=true`} 
+                      alt={agency.title} 
+                      className="w-full h-full object-cover" 
+                    />
+                  </div>
+                  <h3 className="text-2xl font-black text-gray-900 mb-2 truncate max-w-full">{agency.title}</h3>
+                  <div className="flex items-center gap-2 mb-6">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+                        Official Agency
+                    </span>
+                  </div>
+                  <p className="text-gray-500 text-sm font-medium mb-8 line-clamp-2 leading-relaxed">
+                    Connecting you to authentic Sri Lankan adventures with professional excellence.
+                  </p>
+                  <Link 
+                    href={`/profile/${agency.id}`}
+                    className="w-full py-4 bg-gray-900 text-white font-bold text-xs uppercase tracking-widest rounded-2xl hover:bg-blue-600 transition-colors shadow-lg shadow-gray-200"
+                  >
+                    View Agency Profile
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20 text-gray-400 uppercase text-[10px] font-black tracking-widest">
+              No top agencies available currently
             </div>
           )}
         </div>

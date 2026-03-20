@@ -2,6 +2,8 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SriGuide.Application.Common.Interfaces;
 using SriGuide.Application.Agencies.DTOs;
+using SriGuide.Domain.Enums;
+using System.Linq;
 
 namespace SriGuide.Application.Agencies.Queries;
 
@@ -19,7 +21,7 @@ public class GetAgencyBookingsQueryHandler : IRequestHandler<GetAgencyBookingsQu
     public async Task<List<AgencyBookingDto>> Handle(GetAgencyBookingsQuery request, CancellationToken cancellationToken)
     {
         var agency = await _context.AgencyProfiles
-            .Include(a => a.Guides)
+            .Include(a => a.Guides.Where(g => g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted))
                 .ThenInclude(g => g.Trips)
                     .ThenInclude(t => t.Bookings)
                         .ThenInclude(b => b.Customer)
@@ -34,7 +36,7 @@ public class GetAgencyBookingsQueryHandler : IRequestHandler<GetAgencyBookingsQu
             Id = b.Id,
             CustomerName = b.Customer?.FullName ?? "Unknown",
             TourName = b.Trip?.Title ?? "Unknown Tour",
-            Guests = 1, // Placeholder
+            Guests = 1, // NumberOfGuests field missing in Domain, keeping placeholder but ready for future
             DateRange = b.BookingDate.ToString("MMM dd, yyyy"),
             Status = b.Status.ToString()
         }).ToList();

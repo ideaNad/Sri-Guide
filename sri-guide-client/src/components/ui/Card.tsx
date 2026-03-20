@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { Star, MapPin, Clock, ArrowRight, ShieldCheck } from "lucide-react";
+import { Star, MapPin, Clock, ArrowRight, ShieldCheck, Heart } from "lucide-react";
 import Link from "next/link";
 import apiClient from "@/services/api-client";
 
@@ -15,13 +15,17 @@ interface CardProps {
     reviews?: number;
     duration?: string;
     tags?: string[];
-    type?: "tour" | "guide" | "place" | "restaurant" | "vehicle" | "agency";
+    type?: "tour" | "adventure" | "guide" | "place" | "restaurant" | "vehicle" | "agency";
     subtitle?: string;
     phone?: string;
     email?: string;
     whatsapp?: string;
     id?: string | number;
     isLegit?: boolean;
+    badge?: string;
+    likeCount?: number;
+    isLiked?: boolean;
+    onToggleLike?: (id: string) => void;
 }
 
 import ProtectedContact from "./ProtectedContact";
@@ -41,10 +45,14 @@ const Card: React.FC<CardProps> = ({
     email,
     whatsapp,
     id,
-    isLegit
+    isLegit,
+    badge,
+    likeCount,
+    isLiked,
+    onToggleLike
 }) => {
     const isProfile = type === "guide" || type === "agency";
-    const profileLink = id ? `/profile/${id}` : "#";
+    const profileLink = (type === "tour" || type === "adventure") ? `/adventures/${id}` : (id ? `/profile/${id}` : "#");
 
     const displayImage = image?.startsWith("/") && !image?.startsWith("http") 
         ? `${apiClient.defaults.baseURL?.replace('/api', '')}${image}` 
@@ -52,7 +60,7 @@ const Card: React.FC<CardProps> = ({
 
     return (
         <div className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-lg hover:shadow-2xl transition-all duration-500 relative flex flex-col h-full">
-            {isProfile && id && (
+            {(isProfile || type === "tour") && id && (
                 <Link href={profileLink} className="absolute inset-0 z-10" />
             )}
             
@@ -61,6 +69,12 @@ const Card: React.FC<CardProps> = ({
                 <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md border border-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm z-20 text-xs font-bold">
                     <ShieldCheck size={14} className="text-emerald-500" />
                     <span>Verified</span>
+                </div>
+            )}
+
+            {badge && (
+                <div className="absolute top-4 right-4 bg-primary/95 backdrop-blur-md text-white px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm z-20 text-[10px] font-black uppercase tracking-widest">
+                    {badge}
                 </div>
             )}
 
@@ -81,6 +95,18 @@ const Card: React.FC<CardProps> = ({
                         <Star className="w-3 h-3 text-highlight mr-1.5 fill-highlight" />
                         {rating}
                     </div>
+                )}
+                {onToggleLike && id && (
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onToggleLike(id.toString());
+                        }}
+                        className={`absolute top-4 right-4 p-2.5 rounded-full backdrop-blur-md transition-all shadow-sm z-30 ${isLiked ? 'bg-rose-500 text-white' : 'bg-white/90 text-gray-400 hover:text-rose-500'}`}
+                    >
+                        <Heart size={14} fill={isLiked ? "currentColor" : "none"} />
+                    </button>
                 )}
             </div>
 
@@ -118,10 +144,17 @@ const Card: React.FC<CardProps> = ({
                             </div>
                         )}
 
-                        {rating && type !== "guide" && (
+                        {rating && rating > 0 && type !== "guide" && (
                             <div className="flex items-center text-sm font-bold text-gray-900">
-                                <Star className="w-4 h-4 text-yellow-400 mr-1.5 fill-yellow-400" />
-                                {rating} <span className="font-medium text-gray-400 ml-1">({reviews})</span>
+                                <Star className="w-4 h-4 text-highlight mr-1.5 fill-highlight" />
+                                {rating.toFixed(1)} <span className="font-medium text-gray-400 ml-1">({reviews})</span>
+                            </div>
+                        )}
+
+                        {likeCount !== undefined && (
+                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-rose-500 bg-rose-50 px-2.5 py-1 rounded-full">
+                                <Heart size={10} fill="currentColor" />
+                                {likeCount}
                             </div>
                         )}
                     </div>

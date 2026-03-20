@@ -29,6 +29,9 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Bio")
+                        .HasColumnType("text");
+
                     b.Property<string>("CompanyEmail")
                         .HasColumnType("text");
 
@@ -39,13 +42,28 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("FacebookLink")
+                        .HasColumnType("text");
+
+                    b.Property<string>("InstagramLink")
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsVerified")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("LinkedinLink")
+                        .HasColumnType("text");
 
                     b.Property<string>("Phone")
                         .HasColumnType("text");
 
                     b.Property<string>("RegistrationNumber")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TikTokLink")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TwitterLink")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -58,6 +76,9 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("WhatsApp")
+                        .HasColumnType("text");
+
+                    b.Property<string>("YouTubeLink")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -120,6 +141,9 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
 
                     b.Property<Guid?>("AgencyId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("AgencyRecruitmentStatus")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Bio")
                         .IsRequired()
@@ -205,6 +229,46 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                     b.ToTable("GuideProfiles");
                 });
 
+            modelBuilder.Entity("SriGuide.Domain.Entities.ItineraryStep", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Time")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TripId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TripId");
+
+                    b.ToTable("ItinerarySteps");
+                });
+
             modelBuilder.Entity("SriGuide.Domain.Entities.Review", b =>
                 {
                     b.Property<Guid>("Id")
@@ -246,6 +310,12 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("AgencyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Category")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -256,15 +326,21 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("GuideId")
+                    b.Property<Guid?>("GuideId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("GuideProfileId")
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("IsAgencyTour")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -274,6 +350,8 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AgencyId");
 
                     b.HasIndex("GuideId");
 
@@ -437,6 +515,17 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SriGuide.Domain.Entities.ItineraryStep", b =>
+                {
+                    b.HasOne("SriGuide.Domain.Entities.Trip", "Trip")
+                        .WithMany("Itinerary")
+                        .HasForeignKey("TripId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Trip");
+                });
+
             modelBuilder.Entity("SriGuide.Domain.Entities.Review", b =>
                 {
                     b.HasOne("SriGuide.Domain.Entities.User", "User")
@@ -450,15 +539,20 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("SriGuide.Domain.Entities.Trip", b =>
                 {
+                    b.HasOne("SriGuide.Domain.Entities.AgencyProfile", "Agency")
+                        .WithMany()
+                        .HasForeignKey("AgencyId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("SriGuide.Domain.Entities.User", "Guide")
                         .WithMany()
-                        .HasForeignKey("GuideId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("GuideId");
 
                     b.HasOne("SriGuide.Domain.Entities.GuideProfile", null)
                         .WithMany("Trips")
                         .HasForeignKey("GuideProfileId");
+
+                    b.Navigation("Agency");
 
                     b.Navigation("Guide");
                 });
@@ -508,6 +602,8 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                     b.Navigation("Bookings");
 
                     b.Navigation("Images");
+
+                    b.Navigation("Itinerary");
                 });
 
             modelBuilder.Entity("SriGuide.Domain.Entities.User", b =>

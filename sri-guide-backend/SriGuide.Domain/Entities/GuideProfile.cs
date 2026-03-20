@@ -37,6 +37,7 @@ public class GuideProfile : BaseEntity
 
     public Guid? AgencyId { get; set; }
     public AgencyProfile? Agency { get; set; }
+    public RecruitmentStatus AgencyRecruitmentStatus { get; set; } = RecruitmentStatus.None;
 
     public List<Trip> Trips { get; set; } = new();
 }

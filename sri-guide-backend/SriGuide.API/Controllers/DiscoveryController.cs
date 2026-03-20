@@ -31,7 +31,20 @@ public class DiscoveryController : ControllerBase
     [HttpGet("recent-trips")]
     public async Task<IActionResult> GetRecentTrips()
     {
-        var result = await _mediator.Send(new GetRecentTripsQuery());
+        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        Guid? userIdObj = !string.IsNullOrEmpty(currentUserId) ? Guid.Parse(currentUserId) : null;
+
+        var result = await _mediator.Send(new GetRecentTripsQuery(userIdObj));
+        return Ok(result);
+    }
+
+    [HttpGet("popular-tours")]
+    public async Task<IActionResult> GetPopularTours()
+    {
+        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        Guid? userIdObj = !string.IsNullOrEmpty(currentUserId) ? Guid.Parse(currentUserId) : null;
+
+        var result = await _mediator.Send(new GetPopularToursQuery(userIdObj));
         return Ok(result);
     }
 }

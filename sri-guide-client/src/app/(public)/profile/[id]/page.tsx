@@ -13,6 +13,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/providers/AuthContext";
 import Link from "next/link";
 import AuthModal from "@/features/auth/components/AuthModal";
+import Card from "@/components/ui/Card";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,18 @@ interface PublicProfile {
     instagramLink?: string;
     twitterLink?: string;
     linkedinLink?: string;
+    agencyTours: {
+        id: string;
+        title: string;
+        primaryImageUrl: string;
+        date?: string;
+        description?: string;
+        location?: string;
+        rating?: number;
+        reviewCount?: number;
+        images?: string[];
+        isLiked?: boolean;
+    }[];
     recentTrips: {
         id: string;
         title: string;
@@ -60,6 +73,16 @@ interface PublicProfile {
         rating?: number;
         reviewCount?: number;
         images?: string[];
+        isLiked?: boolean;
+    }[];
+    guides?: {
+        id: string;
+        name: string;
+        role: string;
+        rating: number;
+        location: string;
+        status: string;
+        tripCount: number;
     }[];
 }
 
@@ -76,6 +99,27 @@ export default function PublicProfilePage() {
     const [submittingReview, setSubmittingReview] = useState(false);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
+    const handleToggleLike = async (tripId: string) => {
+        if (!user) { setIsAuthModalOpen(true); return; }
+        try {
+            const response = await apiClient.post<{ liked: boolean }>(`/trip/${tripId}/toggle-like`);
+            const { liked } = response.data;
+            if (profile) {
+                setProfile({
+                    ...profile,
+                    agencyTours: profile.agencyTours?.map(t =>
+                        t.id === tripId ? { ...t, isLiked: liked } : t
+                    ) || [],
+                    recentTrips: profile.recentTrips?.map(t =>
+                        t.id === tripId ? { ...t, isLiked: liked } : t
+                    ) || []
+                });
+            }
+        } catch (error) {
+            console.error("Failed to toggle like", error);
+        }
+    };
+
     const fetchReviews = async () => {
         try {
             const response = await apiClient.get<Review[]>(`/review/guide/${id}`);
@@ -85,14 +129,6 @@ export default function PublicProfilePage() {
         }
     };
 
-    const formatBio = (text: string) => {
-        return text.split('\n').map((line, i) => (
-            <React.Fragment key={i}>
-                {line}
-                <br />
-            </React.Fragment>
-        ));
-    };
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -183,15 +219,15 @@ export default function PublicProfilePage() {
                                         </div>
                                     </div>
                                     <span className="text-xs text-gray-500 font-bold tracking-wide">
-                                        {profile.totalReviews} TRAVELER REVIEWS
+                                        {profile.totalReviews} {profile.role === 'Agency' ? 'TOTAL' : 'TRAVELER'} REVIEWS
                                     </span>
                                 </div>
                             </div>
 
                             <div className="max-w-xl mx-auto lg:mx-0 mb-8 text-left bg-white/60 backdrop-blur-sm p-6 rounded-2xl border border-gray-100 shadow-sm">
-                                <h3 className="text-sm font-bold text-gray-900 uppercase mb-3 text-center lg:text-left">About Me</h3>
+                                <h3 className="text-sm font-bold text-gray-900 uppercase mb-3 text-center lg:text-left">{profile.role === 'Agency' ? 'Our Story' : 'About Me'}</h3>
                                 <div className="text-base text-gray-600 leading-relaxed font-medium">
-                                    {profile.bio.split('\n').filter(p => p.trim() !== '').map((paragraph, idx) => (
+                                    {(profile.bio || "No bio available.").split('\n').filter(p => p.trim() !== '').map((paragraph, idx) => (
                                         <p key={idx} className="mb-4 last:mb-0">{paragraph}</p>
                                     ))}
                                 </div>
@@ -216,12 +252,15 @@ export default function PublicProfilePage() {
                                     <div>
                                         <h3 className="text-[11px] font-bold tracking-widest text-gray-900 uppercase mb-3">Languages</h3>
                                         <div className="flex flex-wrap gap-2">
-                                            {profile.languages.map((lang, i) => (
-                                                <span key={i} className="bg-gray-50 text-secondary text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-100">
-                                                    {lang.trim()}
-                                                </span>
-                                            ))}
-                                            {profile.languages.length === 0 && <span className="text-secondary text-sm font-semibold">English</span>}
+                                            {profile.languages && profile.languages.length > 0 ? (
+                                                profile.languages.map((lang, i) => (
+                                                    <span key={i} className="bg-gray-50 text-secondary text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-100">
+                                                        {lang.trim()}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <span className="text-secondary text-sm font-semibold">English</span>
+                                            )}
                                         </div>
                                     </div>
 
@@ -306,7 +345,7 @@ export default function PublicProfilePage() {
                                     ) : (
                                         <div className="sm:col-span-2 lg:col-span-2 mt-4 p-6 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-4">
                                             <div>
-                                                <h3 className="text-sm font-bold text-gray-900 mb-1">Want to contact {profile.fullName.split(' ')[0]}?</h3>
+                                                <h3 className="text-sm font-bold text-gray-900 mb-1">Want to contact {(profile.fullName || "this guide").split(' ')[0]}?</h3>
                                                 <p className="text-xs text-gray-500 font-medium">Log in to view social media links and phone numbers.</p>
                                             </div>
                                             <button onClick={() => setIsAuthModalOpen(true)} className="bg-primary text-white font-bold text-[10px] tracking-widest uppercase px-6 py-3 rounded-xl hover:bg-secondary hover:-translate-y-0.5 transition-all shadow-md shadow-primary/20 whitespace-nowrap">
@@ -325,14 +364,16 @@ export default function PublicProfilePage() {
                                                     <span className="text-xl font-black text-secondary uppercase tracking-tight">Contact for Pricing</span>
                                                 </div>
                                             ) : (
-                                                <>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[10px] font-bold uppercase text-gray-400 mb-0.5">Daily Base Rate</span>
-                                                        <div className="flex items-baseline gap-1.5">
-                                                            <span className="text-3xl font-black text-secondary">${profile.dailyRate}</span>
-                                                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">/day</span>
+                                                <div className={`grid ${profile.dailyRate > 0 && profile.hourlyRate > 0 ? 'grid-cols-1 sm:grid-cols-2 gap-6' : 'grid-cols-1 gap-4'}`}>
+                                                    {profile.dailyRate > 0 && (
+                                                        <div className="flex flex-col">
+                                                            <span className="text-[10px] font-bold uppercase text-gray-400 mb-0.5">Daily Base Rate</span>
+                                                            <div className="flex items-baseline gap-1.5">
+                                                                <span className="text-3xl font-black text-secondary">${profile.dailyRate}</span>
+                                                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">/day</span>
+                                                            </div>
                                                         </div>
-                                                    </div>
+                                                    )}
                                                     {profile.hourlyRate > 0 && (
                                                         <div className="flex flex-col">
                                                             <span className="text-[10px] font-bold uppercase text-gray-400 mb-0.5">Hourly Rate</span>
@@ -342,9 +383,16 @@ export default function PublicProfilePage() {
                                                             </div>
                                                         </div>
                                                     )}
-                                                </>
+                                                    {profile.dailyRate === 0 && profile.hourlyRate === 0 && (
+                                                        <div className="flex flex-col">
+                                                            <span className="text-[10px] font-bold uppercase text-primary mb-0.5">Custom Quote</span>
+                                                            <span className="text-xl font-black text-secondary uppercase tracking-tight">Contact for Pricing</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             )}
                                         </div>
+
                                     </div>
                                 </div>
                             </div>
@@ -384,35 +432,38 @@ export default function PublicProfilePage() {
                             </div>
 
                             {/* Actions Box */}
-                            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white p-3 rounded-2xl border border-gray-100 shadow-xl flex gap-3 z-10 w-max">
-                                <a 
-                                    href={profile.youTubeLink || "#"} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer" 
-                                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-sm ${profile.youTubeLink ? "bg-red-50 text-red-600 hover:bg-red-600 hover:text-white" : "bg-gray-50 text-gray-300 cursor-not-allowed"}`}
-                                    title="YouTube Portfolio"
-                                >
-                                    <Youtube size={18} />
-                                </a>
-                                <a 
-                                    href={profile.linkedinLink || "#"} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer" 
-                                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-sm ${profile.linkedinLink ? "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white" : "bg-gray-50 text-gray-300 cursor-not-allowed"}`}
-                                    title="LinkedIn Profile"
-                                >
-                                    <Linkedin size={18} />
-                                </a>
-                                <a 
-                                    href={profile.whatsAppNumber ? `https://wa.me/${profile.whatsAppNumber.replace(/[^0-9]/g, '')}` : "#"} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer" 
-                                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-sm ${profile.whatsAppNumber ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white" : "bg-gray-50 text-gray-300 cursor-not-allowed"}`}
-                                    title="WhatsApp Contact"
-                                >
-                                    <MessageCircle size={18} />
-                                </a>
-                            </div>
+                            {user && (
+                                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white p-3 rounded-2xl border border-gray-100 shadow-xl flex gap-3 z-10 w-max">
+                                    <a 
+                                        href={profile.youTubeLink || "#"} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-sm ${profile.youTubeLink ? "bg-red-50 text-red-600 hover:bg-red-600 hover:text-white" : "bg-gray-50 text-gray-300 cursor-not-allowed"}`}
+                                        title="YouTube Portfolio"
+                                    >
+                                        <Youtube size={18} />
+                                    </a>
+                                    <a 
+                                        href={profile.linkedinLink || "#"} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-sm ${profile.linkedinLink ? "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white" : "bg-gray-50 text-gray-300 cursor-not-allowed"}`}
+                                        title="LinkedIn Profile"
+                                    >
+                                        <Linkedin size={18} />
+                                    </a>
+                                    <a 
+                                        href={profile.whatsAppNumber ? `https://wa.me/${profile.whatsAppNumber.replace(/[^0-9]/g, '')}` : "#"} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-sm ${profile.whatsAppNumber ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white" : "bg-gray-50 text-gray-300 cursor-not-allowed"}`}
+                                        title="WhatsApp Contact"
+                                    >
+                                        <MessageCircle size={18} />
+                                    </a>
+                                </div>
+                            )}
+
                         </motion.div>
                     </div>
                 </div>
@@ -421,48 +472,118 @@ export default function PublicProfilePage() {
             <div className="max-w-6xl mx-auto px-4 pt-20">
 
 
-                {/* 3. PORTFOLIO: SIGNATURE TOURS */}
+                {/* 3. PORTFOLIO: SIGNATURE TOURS (AGENCY ONLY) */}
+                {profile.role === 'Agency' && (
+                    <div className="mb-24">
+                        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-6 pb-6 border-b border-gray-100">
+                            <div>
+                                <h3 className="text-xs font-bold tracking-widest text-primary uppercase mb-3">Professional Offerings</h3>
+                                <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">Official Tours</h2>
+                            </div>
+                            <Link href="/tours" className="text-sm font-bold text-gray-600 hover:text-primary flex items-center gap-2 group transition-colors px-6 py-3 rounded-full border border-gray-200 hover:border-primary shadow-sm">
+                                Explore All Tours <span className="group-hover:translate-x-1 transition-transform" aria-hidden="true">→</span>
+                            </Link>
+                        </div>
+                        {profile.agencyTours && profile.agencyTours.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {profile.agencyTours.map(trip => (
+                                    <motion.div key={trip.id} whileHover={{ y: -5 }}>
+                                        <Card 
+                                            id={trip.id}
+                                            title={trip.title}
+                                            image={trip.primaryImageUrl || ""}
+                                            location={trip.location}
+                                            rating={trip.rating || 5.0}
+                                            reviews={trip.reviewCount || 0}
+                                            type="tour"
+                                            likeCount={trip.reviewCount || 0}
+                                            isLiked={trip.isLiked}
+                                            onToggleLike={handleToggleLike}
+                                        />
+                                    </motion.div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="py-24 text-center bg-gray-50 rounded-[2.5rem] border border-gray-100 shadow-sm">
+                                <h3 className="text-xl font-bold text-gray-900 mb-2 uppercase italic tracking-tighter">No official tours yet</h3>
+                                <p className="text-gray-500 text-sm font-bold uppercase tracking-widest">Check back soon for curated experiences by {profile.fullName}</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* 4. RECENT ADVENTURES (BOTH) */}
                 <div className="mb-24">
                     <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-6 pb-6 border-b border-gray-100">
                         <div>
-                            <h3 className="text-xs font-bold tracking-widest text-primary uppercase mb-3">Portfolio</h3>
-                            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">Signature Tours</h2>
+                            <h3 className="text-xs font-bold tracking-widest text-primary uppercase mb-3">Gallery</h3>
+                            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">{profile.role === 'Agency' ? 'Team Adventures' : 'Recent Trips'}</h2>
                         </div>
                         <Link href="/adventures" className="text-sm font-bold text-gray-600 hover:text-primary flex items-center gap-2 group transition-colors px-6 py-3 rounded-full border border-gray-200 hover:border-primary shadow-sm">
-                            View All <span className="group-hover:translate-x-1 transition-transform" aria-hidden="true">→</span>
+                            View All Stories <span className="group-hover:translate-x-1 transition-transform" aria-hidden="true">→</span>
                         </Link>
                     </div>
-
-                    {profile.recentTrips.length > 0 ? (
+                    {profile.recentTrips && profile.recentTrips.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {profile.recentTrips.map(trip => (
-                                <Link href={`/adventures/${trip.id}`} key={trip.id} className="group bg-white border border-gray-100 rounded-3xl p-5 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 relative overflow-hidden flex flex-col">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
-                                    <div className="relative aspect-[4/3] overflow-hidden rounded-2xl mb-6 shadow-sm group-hover:shadow-md transition-shadow">
-                                        <img
-                                            src={trip.primaryImageUrl?.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${trip.primaryImageUrl}` : trip.primaryImageUrl || "https://images.unsplash.com/photo-1588267240364-706d8848db9a"}
-                                            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
-                                            alt={trip.title}
-                                        />
-
-                                        {trip.location && (
-                                            <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-secondary px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider shadow-sm rounded-full">
-                                                {trip.location}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <h4 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors leading-snug relative z-10">{trip.title}</h4>
-                                    <p className="text-sm text-gray-500 font-medium line-clamp-2 leading-relaxed relative z-10">{trip.description || "A breathtaking journey curated specifically for an unforgettable experience."}</p>
-                                </Link>
+                                <motion.div key={trip.id} whileHover={{ y: -5 }}>
+                                    <Card 
+                                        id={trip.id}
+                                        title={trip.title}
+                                        image={trip.primaryImageUrl || ""}
+                                        location={trip.location}
+                                        rating={trip.rating || 5.0}
+                                        reviews={trip.reviewCount || 0}
+                                        type="adventure"
+                                        likeCount={trip.reviewCount || 0}
+                                        isLiked={trip.isLiked}
+                                        onToggleLike={handleToggleLike}
+                                    />
+                                </motion.div>
                             ))}
                         </div>
                     ) : (
                         <div className="py-24 text-center bg-gray-50 rounded-[2.5rem] border border-gray-100 shadow-sm">
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">No tours published</h3>
-                            <p className="text-gray-500 text-sm font-medium">Check back later for signature experiences by {profile.fullName}</p>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2 uppercase italic tracking-tighter">No recent adventures</h3>
+                            <p className="text-gray-500 text-sm font-bold uppercase tracking-widest">Follow for upcoming journey updates</p>
                         </div>
                     )}
                 </div>
+
+                {/* AGENCY GUIDES SECTION */}
+                {profile.role === 'Agency' && profile.guides && profile.guides.length > 0 && (
+                    <div className="mb-24">
+                        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-6 pb-6 border-b border-gray-100">
+                            <div>
+                                <h3 className="text-xs font-bold tracking-widest text-primary uppercase mb-3">Professional Team</h3>
+                                <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">Our Experts</h2>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {profile.guides.map(guide => (
+                                <Link href={`/profile/${guide.id}`} key={guide.id} className="group bg-white border border-gray-100 rounded-3xl p-6 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center">
+                                    <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-4 border-gray-50 group-hover:border-primary/20 transition-colors">
+                                        <img 
+                                            src={`https://ui-avatars.com/api/?name=${guide.name}&background=F5F4F0&color=2563eb`} 
+                                            alt={guide.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                    <h4 className="font-bold text-gray-900 group-hover:text-primary transition-colors">{guide.name}</h4>
+                                    <div className="flex items-center justify-center gap-1.5 mt-2">
+                                        <Star size={12} className="fill-highlight text-highlight" />
+                                        <span className="text-xs font-bold text-gray-700">{guide.rating}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1 mt-3 text-gray-500">
+                                        <MapPin size={12} />
+                                        <span className="text-[10px] font-bold uppercase tracking-wider">{guide.location}</span>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* 4. RECENT FEEDBACK */}
                 <div className="bg-primary/5 p-8 md:p-16 mb-24 relative overflow-hidden">
@@ -493,7 +614,7 @@ export default function PublicProfilePage() {
                             {/* Write Review Action - Only for Tourists */}
                             <div className="flex flex-col items-center sm:flex-row justify-between mb-8 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm relative z-10">
                                 <div>
-                                    <h4 className="font-bold text-gray-900">Had a great trip with {profile.fullName.split(' ')[0]}?</h4>
+                                    <h4 className="font-bold text-gray-900">Had a great trip with {(profile.fullName || "this guide").split(' ')[0]}?</h4>
                                     <p className="text-xs text-gray-500">Share your experience with other travelers.</p>
                                 </div>
                                 <button

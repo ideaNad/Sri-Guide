@@ -22,6 +22,7 @@ public class GetGuideDashboardQueryHandler : IRequestHandler<GetGuideDashboardQu
     {
         var guideProfile = await _context.GuideProfiles
             .Include(g => g.User)
+            .Include(g => g.Agency)
             .FirstOrDefaultAsync(g => g.UserId == request.UserId, cancellationToken);
 
         if (guideProfile == null) throw new Exception("Guide profile not found");
@@ -112,7 +113,9 @@ public class GetGuideDashboardQueryHandler : IRequestHandler<GetGuideDashboardQu
             guideProfile.IsLegit,
             guideProfile.VerificationStatus.ToString(),
             activities.OrderByDescending(a => a.TimeAgo).ToList(), // Simple sort, maybe better way
-            recentTrips
+            recentTrips,
+            guideProfile.Agency?.CompanyName,
+            guideProfile.AgencyRecruitmentStatus
         );
     }
 

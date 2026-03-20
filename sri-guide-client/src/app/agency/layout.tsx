@@ -17,6 +17,7 @@ const AGENCY_NAV = [
     { name: "Manage Tours", href: "/agency/tours", icon: <Map size={20} /> },
     { name: "Guide Roster", href: "/agency/guides", icon: <Users size={20} /> },
     { name: "Bookings", href: "/agency/bookings", icon: <Briefcase size={20} /> },
+    { name: "My Profile", href: "/agency/profile", icon: <Building2 size={20} /> },
 ];
 
 export default function AgencyLayout({ children }: { children: React.ReactNode }) {
