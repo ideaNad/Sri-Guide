@@ -77,6 +77,7 @@ const NavItems = ({ mobile = false, textColor, navLinks, setIsMobileMenuOpen }: 
                 {/* Logo */}
                 <Link href="/" className="relative transition-all duration-500 flex items-center h-8 md:h-10 z-10">
                     <img
+                        id="navbar-logo"
                         src="/logo.svg"
                         alt="SRIGuide Logo"
                         className={`absolute left-0 h-40 md:h-40 w-auto transition-all duration-500 object-contain max-w-none ${!isScrolled && isHomePage ? "brightness-0 invert" : ""} ${isMobileMenuOpen ? "opacity-0 pointer-events-none" : "opacity-100"

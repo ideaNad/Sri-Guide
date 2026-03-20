@@ -76,6 +76,7 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
             user.GuideProfile.OperatingAreas,
             user.GuideProfile.Languages,
             user.GuideProfile.DailyRate ?? 0,
+            user.GuideProfile.HourlyRate ?? 0,
             user.GuideProfile.ContactForPrice,
             user.GuideProfile.IsLegit,
             user.GuideProfile.VerificationStatus.ToString(),
@@ -87,6 +88,8 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
             user.GuideProfile.TikTokLink,
             user.GuideProfile.FacebookLink,
             user.GuideProfile.InstagramLink,
+            user.GuideProfile.LinkedinLink,
+            user.GuideProfile.TwitterLink,
             trips,
             user.Role.ToString()
         );

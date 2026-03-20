@@ -9,6 +9,7 @@ public record PublicProfileDto(
     List<string> OperatingAreas,
     List<string> Languages,
     decimal DailyRate,
+    decimal HourlyRate,
     bool ContactForPrice,
     bool IsLegit,
     string VerificationStatus,
@@ -22,6 +23,8 @@ public record PublicProfileDto(
     string? TikTokLink,
     string? FacebookLink,
     string? InstagramLink,
+    string? LinkedinLink,
+    string? TwitterLink,
 
     List<PublicTripDto> RecentTrips,
     string Role = "Guide"

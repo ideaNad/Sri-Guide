@@ -18,11 +18,12 @@ export const dynamic = "force-dynamic";
 
 interface Review {
     id: string;
-    userId: string;
-    userName: string;
+    reviewerName: string;
     rating: number;
     comment: string;
     createdAt: string;
+    targetType: string;
+    tripTitle?: string;
 }
 
 interface PublicProfile {
@@ -33,6 +34,7 @@ interface PublicProfile {
     operatingAreas: string[];
     languages: string[];
     dailyRate: number;
+    hourlyRate: number;
     contactForPrice: boolean;
     isLegit: boolean;
     verificationStatus: string;
@@ -76,10 +78,8 @@ export default function PublicProfilePage() {
 
     const fetchReviews = async () => {
         try {
-            const response = await apiClient.get(`/review/guide/${id}`);
-            const data = response.data as any;
-            const combined = [...(data.profileReviews || []), ...(data.tripReviews || [])].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-            setReviews(combined);
+            const response = await apiClient.get<Review[]>(`/review/guide/${id}`);
+            setReviews(response.data || []);
         } catch (error) {
             console.error("Failed to fetch public reviews", error);
         }
@@ -247,50 +247,58 @@ export default function PublicProfilePage() {
                                     {/* Social Connect */}
                                     {user ? (
                                         <div className="sm:col-span-2 lg:col-span-2 mt-4 sm:mt-0 lg:mt-4" id="contact-section">
-                                            <h3 className="text-[11px] font-bold tracking-widest text-gray-900 uppercase mb-4">Social Presence</h3>
-                                            <div className="flex flex-wrap gap-3">
-                                                {/* WhatsApp hidden for now
+                                            <h3 className="text-[11px] font-black tracking-widest text-primary uppercase mb-4 opacity-50">Social & Contact</h3>
+                                            <div className="flex flex-wrap gap-2.5">
+                                                {profile.phoneNumber && (
+                                                    <a href={`tel:${profile.phoneNumber}`} className="flex items-center gap-2.5 group bg-blue-50/50 hover:bg-blue-600 px-4 py-2.5 rounded-xl transition-all border border-blue-100/50 hover:border-blue-600 shadow-sm">
+                                                        <Phone size={14} className="text-blue-600 group-hover:text-white transition-colors" />
+                                                        <span className="font-bold text-[11px] uppercase tracking-wider text-blue-700 group-hover:text-white transition-colors">Call {profile.phoneNumber}</span>
+                                                    </a>
+                                                )}
                                                 {profile.whatsAppNumber && (
-                                                    <a href={`https://wa.me/${profile.whatsAppNumber.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-gray-50 hover:bg-[#25D366] px-4 py-2 rounded-xl transition-all border border-gray-100 hover:border-[#25D366] shadow-sm">
-                                                        <MessageCircle size={14} className="text-gray-500 group-hover:text-white transition-colors" />
-                                                        <span className="font-semibold text-xs text-gray-700 group-hover:text-white transition-colors">WhatsApp</span>
-                                                    </a>
-                                                )}
-                                                */}
-                                                {profile.instagramLink && (
-                                                    <a href={profile.instagramLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-[#E1306C]/10 hover:bg-[#E1306C] px-4 py-2 rounded-xl transition-all border border-[#E1306C]/20 hover:border-[#E1306C] shadow-sm">
-                                                        <Instagram size={14} className="text-[#E1306C] group-hover:text-white transition-colors" />
-                                                        <span className="font-semibold text-xs text-[#E1306C] group-hover:text-white transition-colors">Instagram</span>
-                                                    </a>
-                                                )}
-                                                {profile.youTubeLink && (
-                                                    <a href={profile.youTubeLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-[#FF0000]/10 hover:bg-[#FF0000] px-4 py-2 rounded-xl transition-all border border-[#FF0000]/20 hover:border-[#FF0000] shadow-sm">
-                                                        <Youtube size={14} className="text-[#FF0000] group-hover:text-white transition-colors" />
-                                                        <span className="font-semibold text-xs text-[#FF0000] group-hover:text-white transition-colors">YouTube</span>
-                                                    </a>
-                                                )}
-                                                {profile.facebookLink && (
-                                                    <a href={profile.facebookLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-[#1877F2]/10 hover:bg-[#1877F2] px-4 py-2 rounded-xl transition-all border border-[#1877F2]/20 hover:border-[#1877F2] shadow-sm">
-                                                        <Facebook size={14} className="text-[#1877F2] group-hover:text-white transition-colors" />
-                                                        <span className="font-semibold text-xs text-[#1877F2] group-hover:text-white transition-colors">Facebook</span>
-                                                    </a>
-                                                )}
-                                                {profile.tikTokLink && (
-                                                    <a href={profile.tikTokLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-black/5 hover:bg-black px-4 py-2 rounded-xl transition-all border border-black/10 hover:border-black shadow-sm">
-                                                        <MessageCircle size={14} className="text-black group-hover:text-white transition-colors" />
-                                                        <span className="font-semibold text-xs text-black group-hover:text-white transition-colors">TikTok</span>
-                                                    </a>
-                                                )}
-                                                {profile.twitterLink && (
-                                                    <a href={profile.twitterLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-[#1DA1F2]/10 hover:bg-[#1DA1F2] px-4 py-2 rounded-xl transition-all border border-[#1DA1F2]/20 hover:border-[#1DA1F2] shadow-sm">
-                                                        <Twitter size={14} className="text-[#1DA1F2] group-hover:text-white transition-colors" />
-                                                        <span className="font-semibold text-xs text-[#1DA1F2] group-hover:text-white transition-colors">Twitter (X)</span>
+                                                    <a href={`https://wa.me/${profile.whatsAppNumber.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-emerald-50/50 hover:bg-[#25D366] px-4 py-2.5 rounded-xl transition-all border border-emerald-100/50 hover:border-[#25D366] shadow-sm">
+                                                        <MessageCircle size={14} className="text-emerald-600 group-hover:text-white transition-colors" />
+                                                        <span className="font-bold text-[11px] uppercase tracking-wider text-emerald-700 group-hover:text-white transition-colors">WhatsApp</span>
                                                     </a>
                                                 )}
                                                 {profile.linkedinLink && (
-                                                    <a href={profile.linkedinLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-[#0A66C2]/10 hover:bg-[#0A66C2] px-4 py-2 rounded-xl transition-all border border-[#0A66C2]/20 hover:border-[#0A66C2] shadow-sm">
+                                                    <a href={profile.linkedinLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-[#0A66C2]/5 hover:bg-[#0A66C2] px-4 py-2.5 rounded-xl transition-all border border-[#0A66C2]/10 hover:border-[#0A66C2] shadow-sm">
                                                         <Linkedin size={14} className="text-[#0A66C2] group-hover:text-white transition-colors" />
-                                                        <span className="font-semibold text-xs text-[#0A66C2] group-hover:text-white transition-colors">LinkedIn</span>
+                                                        <span className="font-bold text-[11px] uppercase tracking-wider text-[#0A66C2] group-hover:text-white transition-colors">LinkedIn</span>
+                                                    </a>
+                                                )}
+                                                {profile.tikTokLink && (
+                                                    <a href={profile.tikTokLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-black/5 hover:bg-black px-4 py-2.5 rounded-xl transition-all border border-black/10 hover:border-black shadow-sm">
+                                                        <svg className="w-3.5 h-3.5 fill-current text-black group-hover:text-white transition-colors" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.86-.6-4.12-1.31a8.776 8.776 0 0 1-1.87-1.41c-.02 2.14-.01 4.29-.02 6.43-.02 2.22-.46 4.55-2.02 6.2-.24.25-.5.48-.77.71a8.487 8.487 0 0 1-5.71 2.16c-1.54-.02-3.07-.44-4.39-1.21-2-1.14-3.51-3.1-4.12-5.3-.67-2.4-.47-5.05.74-7.31 1.05-1.95 2.91-3.48 5.1-4.11a8.172 8.172 0 0 1 6.18.52v4.13c-1.25-.7-2.73-.92-4.14-.61-1.42.3-2.69 1.14-3.52 2.32-.83 1.16-1.2 2.61-1.04 4.03.16 1.42.88 2.73 2.02 3.59 1.15.86 2.63 1.25 4.07 1.09 1.44-.16 2.72-.94 3.53-2.14.81-1.2 1.13-2.69 1.01-4.13-.01-5.03 0-10.06-.01-15.08z"/>
+                                                        </svg>
+                                                        <span className="font-bold text-[11px] uppercase tracking-wider text-black group-hover:text-white transition-colors">TikTok</span>
+                                                    </a>
+                                                )}
+                                                {profile.instagramLink && (
+                                                    <a href={profile.instagramLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-[#E1306C]/5 hover:bg-[#E1306C] px-4 py-2.5 rounded-xl transition-all border border-[#E1306C]/10 hover:border-[#E1306C] shadow-sm">
+                                                        <Instagram size={14} className="text-[#E1306C] group-hover:text-white transition-colors" />
+                                                        <span className="font-bold text-[11px] uppercase tracking-wider text-[#E1306C] group-hover:text-white transition-colors">Instagram</span>
+                                                    </a>
+                                                )}
+                                                {profile.youTubeLink && (
+                                                    <a href={profile.youTubeLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-[#FF0000]/5 hover:bg-[#FF0000] px-4 py-2.5 rounded-xl transition-all border border-[#FF0000]/10 hover:border-[#FF0000] shadow-sm">
+                                                        <Youtube size={14} className="text-[#FF0000] group-hover:text-white transition-colors" />
+                                                        <span className="font-bold text-[11px] uppercase tracking-wider text-[#FF0000] group-hover:text-white transition-colors">YouTube</span>
+                                                    </a>
+                                                )}
+                                                {profile.facebookLink && (
+                                                    <a href={profile.facebookLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-[#1877F2]/5 hover:bg-[#1877F2] px-4 py-2.5 rounded-xl transition-all border border-[#1877F2]/10 hover:border-[#1877F2] shadow-sm">
+                                                        <Facebook size={14} className="text-[#1877F2] group-hover:text-white transition-colors" />
+                                                        <span className="font-bold text-[11px] uppercase tracking-wider text-[#1877F2] group-hover:text-white transition-colors">Facebook</span>
+                                                    </a>
+                                                )}
+                                                {profile.twitterLink && (
+                                                    <a href={profile.twitterLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-black/5 hover:bg-black px-4 py-2.5 rounded-xl transition-all border border-black/10 hover:border-black shadow-sm">
+                                                        <svg className="w-3.5 h-3.5 fill-current text-black group-hover:text-white transition-colors" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                                        </svg>
+                                                        <span className="font-bold text-[11px] uppercase tracking-wider text-black group-hover:text-white transition-colors">X</span>
                                                     </a>
                                                 )}
                                             </div>
@@ -310,21 +318,33 @@ export default function PublicProfilePage() {
                                     {/* Investment */}
                                     <div className="sm:col-span-2 lg:col-span-1 border-t border-gray-100 pt-4 lg:pt-0 lg:border-t-0 lg:border-l lg:pl-6 sm:mt-4 flex flex-col justify-center">
                                         <h3 className="text-[11px] font-bold tracking-widest text-gray-900 uppercase mb-2">Investment</h3>
-                                        <div className="flex flex-col">
-                                            <span className="text-[10px] font-bold uppercase text-gray-400 mb-0.5">Daily Base Rate</span>
-                                            <div className="flex items-baseline gap-1.5 mb-2">
-                                                <span className="text-3xl font-black text-secondary">${profile.dailyRate}</span>
-                                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">/day</span>
-                                            </div>
+                                        <div className="flex flex-col gap-4">
+                                            {profile.contactForPrice ? (
+                                                <div className="flex flex-col">
+                                                    <span className="text-[10px] font-bold uppercase text-primary mb-0.5">Custom Quote</span>
+                                                    <span className="text-xl font-black text-secondary uppercase tracking-tight">Contact for Pricing</span>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[10px] font-bold uppercase text-gray-400 mb-0.5">Daily Base Rate</span>
+                                                        <div className="flex items-baseline gap-1.5">
+                                                            <span className="text-3xl font-black text-secondary">${profile.dailyRate}</span>
+                                                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">/day</span>
+                                                        </div>
+                                                    </div>
+                                                    {profile.hourlyRate > 0 && (
+                                                        <div className="flex flex-col">
+                                                            <span className="text-[10px] font-bold uppercase text-gray-400 mb-0.5">Hourly Rate</span>
+                                                            <div className="flex items-baseline gap-1.5">
+                                                                <span className="text-xl font-black text-secondary">${profile.hourlyRate}</span>
+                                                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">/hr</span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )}
                                         </div>
-
-                                        {/* Bespoke Quote hidden for now
-                                        {profile.contactForPrice && (
-                                            <a href="#" className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-primary px-3 py-2 mt-1 rounded-lg hover:bg-secondary transition-colors w-full sm:w-fit shadow-md shadow-primary/20">
-                                                <MessageCircle size={14} /> Bespoke Quote
-                                            </a>
-                                        )}
-                                        */}
                                     </div>
                                 </div>
                             </div>
@@ -365,9 +385,33 @@ export default function PublicProfilePage() {
 
                             {/* Actions Box */}
                             <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white p-3 rounded-2xl border border-gray-100 shadow-xl flex gap-3 z-10 w-max">
-                                <button className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-50 text-gray-600 hover:bg-primary hover:text-white transition-all shadow-sm"><Globe size={18} /></button>
-                                <button className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-50 text-gray-600 hover:bg-primary hover:text-white transition-all shadow-sm"><Share2 size={18} /></button>
-                                <button className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-50 text-gray-600 hover:bg-primary hover:text-white transition-all shadow-sm"><AtSign size={18} /></button>
+                                <a 
+                                    href={profile.youTubeLink || "#"} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-sm ${profile.youTubeLink ? "bg-red-50 text-red-600 hover:bg-red-600 hover:text-white" : "bg-gray-50 text-gray-300 cursor-not-allowed"}`}
+                                    title="YouTube Portfolio"
+                                >
+                                    <Youtube size={18} />
+                                </a>
+                                <a 
+                                    href={profile.linkedinLink || "#"} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-sm ${profile.linkedinLink ? "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white" : "bg-gray-50 text-gray-300 cursor-not-allowed"}`}
+                                    title="LinkedIn Profile"
+                                >
+                                    <Linkedin size={18} />
+                                </a>
+                                <a 
+                                    href={profile.whatsAppNumber ? `https://wa.me/${profile.whatsAppNumber.replace(/[^0-9]/g, '')}` : "#"} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-sm ${profile.whatsAppNumber ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white" : "bg-gray-50 text-gray-300 cursor-not-allowed"}`}
+                                    title="WhatsApp Contact"
+                                >
+                                    <MessageCircle size={18} />
+                                </a>
                             </div>
                         </motion.div>
                     </div>
@@ -445,9 +489,9 @@ export default function PublicProfilePage() {
                         </div>
 
                         {/* Testimonials */}
-                        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* Write Review Action */}
-                            <div className="col-span-1 md:col-span-2 flex flex-col items-center sm:flex-row justify-between mb-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                        <div className="lg:col-span-2">
+                            {/* Write Review Action - Only for Tourists */}
+                            <div className="flex flex-col items-center sm:flex-row justify-between mb-8 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm relative z-10">
                                 <div>
                                     <h4 className="font-bold text-gray-900">Had a great trip with {profile.fullName.split(' ')[0]}?</h4>
                                     <p className="text-xs text-gray-500">Share your experience with other travelers.</p>
@@ -458,16 +502,20 @@ export default function PublicProfilePage() {
                                             setIsAuthModalOpen(true);
                                             return;
                                         }
+                                        if (user.role !== 'Tourist') {
+                                            alert("Only Tourists can write reviews.");
+                                            return;
+                                        }
                                         setReviewFormOpen(!reviewFormOpen);
                                     }}
-                                    className="mt-4 sm:mt-0 bg-secondary text-white px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-primary transition-colors"
+                                    className={`mt-4 sm:mt-0 px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all shadow-sm ${user?.role !== 'Tourist' && user ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-secondary text-white hover:bg-primary"}`}
                                 >
                                     Write a Review
                                 </button>
                             </div>
 
-                            {reviewFormOpen && user && (
-                                <div className="col-span-1 md:col-span-2 bg-white p-8 rounded-3xl border border-primary/20 shadow-xl mb-4">
+                            {reviewFormOpen && user && user.role === 'Tourist' && (
+                                <div className="bg-white p-8 rounded-3xl border border-primary/20 shadow-xl mb-8 relative z-10">
                                     <h4 className="font-black text-gray-900 uppercase tracking-widest text-sm mb-6">Write your review</h4>
                                     <div className="flex text-highlight gap-2 mb-6 cursor-pointer">
                                         {[1, 2, 3, 4, 5].map((star) => (
@@ -521,31 +569,53 @@ export default function PublicProfilePage() {
                                 </div>
                             )}
 
-                            {reviews.length > 0 ? reviews.map((review, idx) => (
-                                <div key={review.id} className="bg-white p-8 md:p-10 rounded-3xl border border-gray-100 shadow-lg hover:shadow-xl transition-shadow flex flex-col justify-between">
-                                    <div className="flex text-highlight gap-1 mb-6">
-                                        {[1, 2, 3, 4, 5].map((star) => <Star key={star} size={16} className={star <= review.rating ? "fill-current" : "opacity-30"} />)}
-                                    </div>
-                                    <p className="text-gray-700 text-lg font-medium mb-8 leading-relaxed italic">
-                                        "{review.comment}"
-                                    </p>
-                                    <div className="flex items-center gap-4 mt-auto pt-6 border-t border-gray-50">
-                                        <div className="w-12 h-12 shrink-0 rounded-full overflow-hidden border-2 border-gray-100 shadow-sm bg-gray-100 flex items-center justify-center text-gray-500 font-bold">
-                                            {review.userName.charAt(0)}
+                            {/* Carousel Container */}
+                            <div className="relative">
+                                <div className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory scrollbar-hide no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+                                    {reviews.length > 0 ? (
+                                        reviews.map((review) => (
+                                            <div 
+                                                key={review.id} 
+                                                className="min-w-[280px] md:min-w-[400px] h-full bg-white p-8 md:p-10 rounded-3xl border border-gray-100 shadow-lg hover:shadow-xl transition-shadow flex flex-col justify-between snap-center"
+                                            >
+                                                <div className="flex text-highlight gap-1 mb-6">
+                                                    {[1, 2, 3, 4, 5].map((star) => (
+                                                        <Star key={star} size={16} className={star <= review.rating ? "fill-current" : "opacity-30"} />
+                                                    ))}
+                                                </div>
+                                                <p className="text-gray-700 text-base md:text-lg font-medium mb-8 leading-relaxed italic line-clamp-4">
+                                                    "{review.comment}"
+                                                </p>
+                                                <div className="flex items-center gap-4 mt-auto pt-6 border-t border-gray-50 uppercase tracking-tighter">
+                                                    <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden border-2 border-primary/10 shadow-sm bg-primary/5 flex items-center justify-center text-primary font-black text-xs">
+                                                        {review.reviewerName.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="text-xs font-black text-gray-900">{review.reviewerName}</p>
+                                                            {review.targetType === 'Trip' && review.tripTitle && (
+                                                                <span className="text-[8px] font-bold bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                                                    Review for {review.tripTitle}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-[10px] font-bold text-gray-400 mt-0.5">{new Date(review.createdAt).toLocaleDateString()}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="w-full py-12 text-center bg-white/50 border border-dashed border-gray-200 rounded-[2rem]">
+                                            <MessageCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                                            <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">No reviews yet</p>
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-gray-900">{review.userName}</p>
-                                            <p className="text-xs font-semibold text-gray-500 mt-0.5">{new Date(review.createdAt).toLocaleDateString()}</p>
-                                        </div>
-                                    </div>
+                                    )}
                                 </div>
-                            )) : (
-                                <div className="col-span-1 md:col-span-2 rounded-3xl border border-gray-100 shadow-sm p-12 text-center flex flex-col items-center justify-center bg-white">
-                                    <MessageCircle className="w-12 h-12 text-gray-300 mb-4" />
-                                    <p className="text-gray-500 font-bold text-sm">No reviews yet.</p>
-                                    <p className="text-gray-400 text-xs mt-2">Be the first to share your experience!</p>
-                                </div>
-                            )}
+                                
+                                {/* Fade Effects */}
+                                <div className="absolute left-0 top-0 bottom-8 w-12 bg-gradient-to-r from-primary/5 to-transparent pointer-events-none hidden md:block" />
+                                <div className="absolute right-0 top-0 bottom-8 w-12 bg-gradient-to-l from-primary/5 to-transparent pointer-events-none hidden md:block" />
+                            </div>
                         </div>
                     </div>
                 </div>

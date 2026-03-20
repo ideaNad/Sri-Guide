@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SriGuide.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+57b3cc010a1ddaa2919ad0c0676f32ee33abda1e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4de38fd76c6a0fe9e1ce334f88792e59fef94df4")]
 [assembly: System.Reflection.AssemblyProductAttribute("SriGuide.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SriGuide.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
