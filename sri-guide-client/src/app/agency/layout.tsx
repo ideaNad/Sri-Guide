@@ -9,6 +9,7 @@ import {
     LayoutDashboard, Briefcase, Map, Users,
     Building2, LogOut, Menu, X, Compass, Bell, Plus
 } from "lucide-react";
+import apiClient from "@/services/api-client";
 
 const AGENCY_NAV = [
     { name: "Overview", href: "/agency", icon: <LayoutDashboard size={20} /> },
@@ -37,19 +38,25 @@ export default function AgencyLayout({ children }: { children: React.ReactNode }
         );
     }
 
-const SidebarContent = ({ pathname, setSidebarOpen, logout }: { pathname: string, setSidebarOpen: (open: boolean) => void, logout: () => void }) => (
-    <div className="flex flex-col h-full bg-white border-r border-gray-100 shadow-sm">
-        <div className="p-8 border-b border-gray-50 mb-4">
-            <Link href="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-teal-600 rounded-lg flex items-center justify-center">
-                    <Building2 size={18} className="text-white" />
+const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: string, setSidebarOpen: (open: boolean) => void, logout: () => void, user: any }) => (
+    <div className="flex flex-col h-full bg-white border-r border-gray-100 shadow-sm relative overflow-hidden">
+        {/* Background Accent */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50/50 blur-3xl rounded-full -mr-16 -mt-16 -z-10" />
+        
+        <div className="p-8 mb-6">
+            <Link href="/" className="flex items-center gap-3 group">
+                <div className="w-10 h-10 bg-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-teal-600/20 group-hover:scale-110 transition-transform">
+                    <Building2 size={20} className="text-white" />
                 </div>
-                <span className="font-black text-gray-900 text-lg tracking-tighter italic uppercase">Sri<span className="text-teal-600">Guide</span></span>
+                <div>
+                    <span className="font-black text-gray-900 text-xl tracking-tighter uppercase italic block leading-none">Sri<span className="text-teal-600">Guide</span></span>
+                    <span className="text-[9px] font-black text-teal-600 uppercase tracking-[0.3em] mt-1 block">Travel Agency</span>
+                </div>
             </Link>
-            <div className="mt-2 text-[10px] font-black text-teal-600 uppercase tracking-[0.3em]">Travel Agency</div>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2">
+        <nav className="flex-1 px-6 space-y-3">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-4 mb-4">Main Navigation</p>
             {AGENCY_NAV.map((item) => {
                 const isActive = pathname === item.href;
                 return (
@@ -57,40 +64,56 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout }: { pathname: string
                         key={item.href}
                         href={item.href}
                         onClick={() => setSidebarOpen(false)}
-                        className={`flex items-center justify-between px-6 py-4 rounded-2xl transition-all duration-300 group ${
+                        className={`flex items-center justify-between px-6 py-4 rounded-[1.25rem] transition-all duration-300 group ${
                             isActive
-                                ? "bg-teal-600 text-white shadow-xl shadow-teal-600/20"
+                                ? "bg-gray-900 text-white shadow-xl shadow-gray-900/20"
                                 : "text-gray-500 hover:bg-teal-50 hover:text-teal-700"
                         }`}
                     >
                         <div className="flex items-center gap-4">
-                            <span className={isActive ? "text-white" : "text-gray-400 group-hover:text-teal-600 transition-colors"}>
+                            <span className={isActive ? "text-teal-400" : "text-gray-400 group-hover:text-teal-600 transition-colors"}>
                                 {item.icon}
                             </span>
-                            <span className="font-black text-xs uppercase tracking-widest">{item.name}</span>
+                            <span className="font-bold text-xs uppercase tracking-widest">{item.name}</span>
                         </div>
+                        {isActive && <motion.div layoutId="activeInd" className="w-1.5 h-1.5 rounded-full bg-teal-400" />}
                     </Link>
                 );
             })}
         </nav>
 
-        <div className="p-6 border-t border-gray-50 mt-auto">
-            <button
-                onClick={logout}
-                className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-rose-500 hover:bg-rose-50 transition-all font-black text-xs uppercase tracking-widest"
-            >
-                <LogOut size={20} />
-                <span>Logout</span>
-            </button>
+        <div className="p-6 mt-auto">
+            <div className="bg-gray-50 rounded-3xl p-6 mb-6 border border-gray-100">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-white shadow-sm">
+                        <img 
+                            src={user.profileImageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${user.profileImageUrl}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.fullName}`} 
+                            alt={user.fullName}
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                    <div className="overflow-hidden">
+                        <p className="text-xs font-black text-gray-900 truncate">{user.fullName}</p>
+                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Agency Owner</p>
+                    </div>
+                </div>
+                <button
+                    onClick={logout}
+                    className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white text-rose-500 hover:bg-rose-50 transition-all font-black text-[10px] uppercase tracking-widest border border-rose-100 shadow-sm"
+                >
+                    <LogOut size={16} />
+                    <span>Logout</span>
+                </button>
+            </div>
         </div>
     </div>
 );
 
     return (
-        <div className="flex min-h-screen bg-gray-50/30">
+        <div className="flex min-h-screen bg-white">
             {/* Desktop Sidebar */}
             <aside className="hidden lg:block w-80 fixed inset-y-0 left-0 z-30">
-                <SidebarContent pathname={pathname} setSidebarOpen={setSidebarOpen} logout={logout} />
+                <SidebarContent pathname={pathname} setSidebarOpen={setSidebarOpen} logout={logout} user={user} />
             </aside>
 
             {/* Mobile Sidebar */}
@@ -110,34 +133,47 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout }: { pathname: string
                             exit={{ x: -320 }}
                             className="fixed inset-y-0 left-0 w-80 z-50 lg:hidden"
                         >
-                            <SidebarContent pathname={pathname} setSidebarOpen={setSidebarOpen} logout={logout} />
+                            <SidebarContent pathname={pathname} setSidebarOpen={setSidebarOpen} logout={logout} user={user} />
                         </motion.aside>
                     </>
                 )}
             </AnimatePresence>
 
             <div className="flex-1 flex flex-col lg:pl-80">
-                <header className="lg:hidden sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-                    <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-2 text-gray-400 hover:text-gray-900 transition-colors">
-                        <Menu size={24} />
-                    </button>
-                    <Building2 size={24} className="text-teal-600" />
-                    <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 font-black text-xs border border-teal-100">
-                        {user.fullName.charAt(0)}
+                <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 -ml-2 text-gray-400 hover:text-gray-900 transition-colors">
+                            <Menu size={24} />
+                        </button>
+                        <div className="hidden lg:flex items-center gap-2 text-gray-400">
+                            <Compass size={16} />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Sri Lanka Operations</span>
+                        </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-6">
+                        <button className="relative p-2 text-gray-400 hover:text-teal-600 transition-colors">
+                            <Bell size={20} />
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-teal-500 rounded-full border-2 border-white" />
+                        </button>
+                        <div className="h-8 w-px bg-gray-100" />
+                        <div className="flex items-center gap-3">
+                            <div className="text-right hidden sm:block">
+                                <p className="text-[10px] font-black text-gray-900 uppercase leading-none">{user.fullName}</p>
+                                <p className="text-[9px] font-bold text-teal-600/70 uppercase tracking-tighter mt-1 italic">Verified Agency</p>
+                            </div>
+                            <div className="w-10 h-10 rounded-2xl overflow-hidden border-2 border-teal-50 shadow-sm">
+                                <img 
+                                    src={user.profileImageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${user.profileImageUrl}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.fullName}`} 
+                                    alt={user.fullName}
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </header>
 
-                <main className="flex-1 p-6 lg:p-12 max-w-7xl mx-auto w-full">
-                    <div className="flex items-center justify-between mb-8">
-                        <div>
-                            <h2 className="text-2xl font-black text-gray-900 tracking-tighter uppercase italic">Agency Dashboard</h2>
-                            <p className="text-gray-500 text-sm">Managing tours for {user.fullName}</p>
-                        </div>
-                        <button className="flex items-center gap-2 bg-teal-600 text-white px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-teal-700 transition-all shadow-lg shadow-teal-600/20">
-                            <Plus size={16} />
-                            Create Tour
-                        </button>
-                    </div>
+                <main className="flex-1 p-6 lg:p-12 w-full">
                     {children}
                 </main>
             </div>

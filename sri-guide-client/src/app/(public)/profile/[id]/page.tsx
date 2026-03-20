@@ -248,12 +248,14 @@ export default function PublicProfilePage() {
                                         <div className="sm:col-span-2 lg:col-span-2 mt-4 sm:mt-0 lg:mt-4" id="contact-section">
                                             <h3 className="text-[11px] font-bold tracking-widest text-gray-900 uppercase mb-4">Social Presence</h3>
                                             <div className="flex flex-wrap gap-3">
+                                                {/* WhatsApp hidden for now
                                                 {profile.whatsAppNumber && (
                                                     <a href={`https://wa.me/${profile.whatsAppNumber.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-gray-50 hover:bg-[#25D366] px-4 py-2 rounded-xl transition-all border border-gray-100 hover:border-[#25D366] shadow-sm">
                                                         <MessageCircle size={14} className="text-gray-500 group-hover:text-white transition-colors" />
                                                         <span className="font-semibold text-xs text-gray-700 group-hover:text-white transition-colors">WhatsApp</span>
                                                     </a>
                                                 )}
+                                                */}
                                                 {profile.instagramLink && (
                                                     <a href={profile.instagramLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group bg-gray-50 hover:bg-[#E1306C] px-4 py-2 rounded-xl transition-all border border-gray-100 hover:border-[#E1306C] shadow-sm">
                                                         <Instagram size={14} className="text-gray-500 group-hover:text-white transition-colors" />
@@ -311,16 +313,19 @@ export default function PublicProfilePage() {
                                             </div>
                                         </div>
                                         
+                                        {/* Bespoke Quote hidden for now
                                         {profile.contactForPrice && (
                                             <a href="#" className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-white bg-primary px-3 py-2 mt-1 rounded-lg hover:bg-secondary transition-colors w-full sm:w-fit shadow-md shadow-primary/20">
                                                 <MessageCircle size={14} /> Bespoke Quote
                                             </a>
                                         )}
+                                        */}
                                     </div>
                                 </div>
                             </div>
 
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-4 mx-auto lg:mx-0">
+                                {/* Contact buttons hidden for now
                                 {user ? (
                                     <button 
                                         onClick={() => document.getElementById('contact-section')?.scrollIntoView({ behavior: 'smooth' })}
@@ -335,6 +340,7 @@ export default function PublicProfilePage() {
                                         Log In to Contact
                                     </button>
                                 )}
+                                */}
                             </div>
                         </motion.div>
 

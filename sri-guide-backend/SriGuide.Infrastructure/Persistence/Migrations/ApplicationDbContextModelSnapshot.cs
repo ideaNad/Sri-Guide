@@ -95,6 +95,9 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("numeric");
 
+                    b.Property<Guid?>("TripId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -103,6 +106,8 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("GuideId");
+
+                    b.HasIndex("TripId");
 
                     b.ToTable("Bookings");
                 });
@@ -403,9 +408,15 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("SriGuide.Domain.Entities.Trip", "Trip")
+                        .WithMany("Bookings")
+                        .HasForeignKey("TripId");
+
                     b.Navigation("Customer");
 
                     b.Navigation("Guide");
+
+                    b.Navigation("Trip");
                 });
 
             modelBuilder.Entity("SriGuide.Domain.Entities.GuideProfile", b =>
@@ -494,6 +505,8 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("SriGuide.Domain.Entities.Trip", b =>
                 {
+                    b.Navigation("Bookings");
+
                     b.Navigation("Images");
                 });
 

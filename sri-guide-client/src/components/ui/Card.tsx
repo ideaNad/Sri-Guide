@@ -127,11 +127,10 @@ const Card: React.FC<CardProps> = ({
                     </div>
                 </div>
 
-                {(type === "guide" || type === "agency") && (phone || email || whatsapp) && (
+                {(type === "guide" || type === "agency") && (phone || email) && (
                     <div className="mt-5 pt-5 border-t border-gray-50 space-y-2.5 relative z-20">
                         {phone && <ProtectedContact type="phone" value={phone} />}
                         {email && <ProtectedContact type="email" value={email} />}
-                        {whatsapp && <ProtectedContact type="whatsapp" value={whatsapp} />}
                     </div>
                 )}
                 

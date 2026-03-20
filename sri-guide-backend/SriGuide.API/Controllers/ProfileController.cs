@@ -102,6 +102,28 @@ public class ProfileController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("tourist-dashboard")]
+    public async Task<ActionResult<TouristDashboardDto>> GetTouristDashboard()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var query = new GetTouristDashboardQuery(Guid.Parse(userId));
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+
+    [HttpGet("my-plans")]
+    public async Task<ActionResult<List<PlanDto>>> GetMyPlans()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var query = new GetMyPlansQuery(Guid.Parse(userId));
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+
     [HttpPost("upgrade-to-agency")]
     [Authorize(Roles = "Guide")]
     public async Task<IActionResult> UpgradeToAgency([FromBody] UpgradeToAgencyCommand command)

@@ -13,4 +13,5 @@ public class Trip : BaseEntity
     public DateTime? Date { get; set; }
 
     public List<TripImage> Images { get; set; } = new();
+    public List<Booking> Bookings { get; set; } = new();
 }

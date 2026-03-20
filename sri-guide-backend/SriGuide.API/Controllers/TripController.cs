@@ -112,4 +112,15 @@ public class TripController : ControllerBase
         var result = await _mediator.Send(new ToggleTripLikeCommand(tripId, Guid.Parse(userId)));
         return Ok(new { liked = result });
     }
+
+    [HttpGet("liked")]
+    [Authorize]
+    public async Task<ActionResult<List<DashboardTripDto>>> GetLikedTrips()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var result = await _mediator.Send(new GetLikedTripsQuery(Guid.Parse(userId)));
+        return Ok(result);
+    }
 }

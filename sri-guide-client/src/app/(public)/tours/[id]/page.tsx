@@ -310,6 +310,7 @@ const TourDetailPage = () => {
                                     </div>
                                 </div>
 
+                                {/* Booking feature disabled for now
                                 <div className="space-y-4">
                                     <button className="w-full bg-white text-gray-900 hover:bg-primary hover:text-white py-6 font-black text-xs uppercase tracking-[0.3em] shadow-2xl flex items-center justify-center transition-all group">
                                         Book Experience
@@ -317,6 +318,7 @@ const TourDetailPage = () => {
                                     </button>
                                     <p className="text-center text-xs text-white/30 font-medium italic">No payment required yet</p>
                                 </div>
+                                */}
 
                                 <div className="mt-10 pt-10 border-t border-white/10 space-y-4">
                                     <div className="flex items-center text-xs text-white/60">

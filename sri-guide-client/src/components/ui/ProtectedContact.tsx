@@ -6,7 +6,7 @@ import { useAuth } from "@/providers/AuthContext";
 import AuthModal from "@/features/auth/components/AuthModal";
 
 interface ProtectedContactProps {
-  type: "phone" | "email" | "whatsapp";
+  type: "phone" | "email";
   value: string;
   label?: string;
 }
@@ -18,12 +18,11 @@ const ProtectedContact: React.FC<ProtectedContactProps> = ({ type, value, label 
   const icons = {
     phone: <Phone size={16} />,
     email: <Mail size={16} />,
-    whatsapp: <MessageSquare size={16} />,
   };
 
   const getMaskedValue = () => {
     if (type === "email") return "••••••••@••••.com";
-    if (type === "phone" || type === "whatsapp") return "+94 •• ••• ••••";
+    if (type === "phone") return "+94 •• ••• ••••";
     return "••••••••";
   };
 
