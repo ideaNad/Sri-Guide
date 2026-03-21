@@ -285,64 +285,78 @@ export default function PublicProfilePage() {
 
                                     {/* Social Connect */}
                                     {user ? (
-                                        <div className="sm:col-span-2 lg:col-span-2 mt-4 sm:mt-0 lg:mt-4" id="contact-section">
-                                            <h3 className="text-[11px] font-black tracking-widest text-primary uppercase mb-4 opacity-50">Social & Contact</h3>
-                                            <div className="flex flex-wrap gap-2.5">
-                                                {profile.phoneNumber && (
-                                                    <a href={`tel:${profile.phoneNumber}`} className="flex items-center gap-2.5 group bg-blue-50/50 hover:bg-blue-600 px-4 py-2.5 rounded-xl transition-all border border-blue-100/50 hover:border-blue-600 shadow-sm">
-                                                        <Phone size={14} className="text-blue-600 group-hover:text-white transition-colors" />
-                                                        <span className="font-bold text-[11px] uppercase tracking-wider text-blue-700 group-hover:text-white transition-colors">Call {profile.phoneNumber}</span>
-                                                    </a>
-                                                )}
-                                                {profile.whatsAppNumber && (
-                                                    <a href={`https://wa.me/${profile.whatsAppNumber.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-emerald-50/50 hover:bg-[#25D366] px-4 py-2.5 rounded-xl transition-all border border-emerald-100/50 hover:border-[#25D366] shadow-sm">
-                                                        <MessageCircle size={14} className="text-emerald-600 group-hover:text-white transition-colors" />
-                                                        <span className="font-bold text-[11px] uppercase tracking-wider text-emerald-700 group-hover:text-white transition-colors">WhatsApp</span>
-                                                    </a>
-                                                )}
-                                                {profile.linkedinLink && (
-                                                    <a href={profile.linkedinLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-[#0A66C2]/5 hover:bg-[#0A66C2] px-4 py-2.5 rounded-xl transition-all border border-[#0A66C2]/10 hover:border-[#0A66C2] shadow-sm">
-                                                        <Linkedin size={14} className="text-[#0A66C2] group-hover:text-white transition-colors" />
-                                                        <span className="font-bold text-[11px] uppercase tracking-wider text-[#0A66C2] group-hover:text-white transition-colors">LinkedIn</span>
-                                                    </a>
-                                                )}
-                                                {profile.tikTokLink && (
-                                                    <a href={profile.tikTokLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-black/5 hover:bg-black px-4 py-2.5 rounded-xl transition-all border border-black/10 hover:border-black shadow-sm">
-                                                        <svg className="w-3.5 h-3.5 fill-current text-black group-hover:text-white transition-colors" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                            <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.86-.6-4.12-1.31a8.776 8.776 0 0 1-1.87-1.41c-.02 2.14-.01 4.29-.02 6.43-.02 2.22-.46 4.55-2.02 6.2-.24.25-.5.48-.77.71a8.487 8.487 0 0 1-5.71 2.16c-1.54-.02-3.07-.44-4.39-1.21-2-1.14-3.51-3.1-4.12-5.3-.67-2.4-.47-5.05.74-7.31 1.05-1.95 2.91-3.48 5.1-4.11a8.172 8.172 0 0 1 6.18.52v4.13c-1.25-.7-2.73-.92-4.14-.61-1.42.3-2.69 1.14-3.52 2.32-.83 1.16-1.2 2.61-1.04 4.03.16 1.42.88 2.73 2.02 3.59 1.15.86 2.63 1.25 4.07 1.09 1.44-.16 2.72-.94 3.53-2.14.81-1.2 1.13-2.69 1.01-4.13-.01-5.03 0-10.06-.01-15.08z"/>
-                                                        </svg>
-                                                        <span className="font-bold text-[11px] uppercase tracking-wider text-black group-hover:text-white transition-colors">TikTok</span>
-                                                    </a>
-                                                )}
-                                                {profile.instagramLink && (
-                                                    <a href={profile.instagramLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-[#E1306C]/5 hover:bg-[#E1306C] px-4 py-2.5 rounded-xl transition-all border border-[#E1306C]/10 hover:border-[#E1306C] shadow-sm">
-                                                        <Instagram size={14} className="text-[#E1306C] group-hover:text-white transition-colors" />
-                                                        <span className="font-bold text-[11px] uppercase tracking-wider text-[#E1306C] group-hover:text-white transition-colors">Instagram</span>
-                                                    </a>
-                                                )}
-                                                {profile.youTubeLink && (
-                                                    <a href={profile.youTubeLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-[#FF0000]/5 hover:bg-[#FF0000] px-4 py-2.5 rounded-xl transition-all border border-[#FF0000]/10 hover:border-[#FF0000] shadow-sm">
-                                                        <Youtube size={14} className="text-[#FF0000] group-hover:text-white transition-colors" />
-                                                        <span className="font-bold text-[11px] uppercase tracking-wider text-[#FF0000] group-hover:text-white transition-colors">YouTube</span>
-                                                    </a>
-                                                )}
-                                                {profile.facebookLink && (
-                                                    <a href={profile.facebookLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-[#1877F2]/5 hover:bg-[#1877F2] px-4 py-2.5 rounded-xl transition-all border border-[#1877F2]/10 hover:border-[#1877F2] shadow-sm">
-                                                        <Facebook size={14} className="text-[#1877F2] group-hover:text-white transition-colors" />
-                                                        <span className="font-bold text-[11px] uppercase tracking-wider text-[#1877F2] group-hover:text-white transition-colors">Facebook</span>
-                                                    </a>
-                                                )}
-                                                {profile.twitterLink && (
-                                                    <a href={profile.twitterLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-black/5 hover:bg-black px-4 py-2.5 rounded-xl transition-all border border-black/10 hover:border-black shadow-sm">
-                                                        <svg className="w-3.5 h-3.5 fill-current text-black group-hover:text-white transition-colors" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                                                        </svg>
-                                                        <span className="font-bold text-[11px] uppercase tracking-wider text-black group-hover:text-white transition-colors">X</span>
-                                                    </a>
+                                            <div className="sm:col-span-2 lg:col-span-2 mt-4 sm:mt-0 lg:mt-4 space-y-8" id="contact-section">
+                                                {/* Contact Information */}
+                                                <div>
+                                                    <h3 className="text-[11px] font-black tracking-widest text-primary uppercase mb-4 opacity-50">Contact Information</h3>
+                                                    <div className="flex flex-wrap gap-2.5">
+                                                        {profile.phoneNumber && (
+                                                            <a href={`tel:${profile.phoneNumber}`} className="flex items-center gap-2.5 group bg-blue-50/50 hover:bg-blue-600 px-4 py-2.5 rounded-xl transition-all border border-blue-100/50 hover:border-blue-600 shadow-sm">
+                                                                <Phone size={14} className="text-blue-600 group-hover:text-white transition-colors" />
+                                                                <span className="font-bold text-[11px] uppercase tracking-wider text-blue-700 group-hover:text-white transition-colors">Call {profile.phoneNumber}</span>
+                                                            </a>
+                                                        )}
+                                                        {profile.whatsAppNumber && (
+                                                            <a href={`https://wa.me/${profile.whatsAppNumber.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-emerald-50/50 hover:bg-[#25D366] px-4 py-2.5 rounded-xl transition-all border border-emerald-100/50 hover:border-[#25D366] shadow-sm">
+                                                                <svg className="w-4 h-4 fill-current text-[#25D366] group-hover:text-white transition-colors" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                                                                </svg>
+                                                                <span className="font-bold text-[11px] uppercase tracking-wider text-emerald-700 group-hover:text-white transition-colors">WhatsApp</span>
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Social Media */}
+                                                {(profile.linkedinLink || profile.tikTokLink || profile.instagramLink || profile.youTubeLink || profile.facebookLink || profile.twitterLink) && (
+                                                    <div>
+                                                        <h3 className="text-[11px] font-black tracking-widest text-primary uppercase mb-4 opacity-50">Social Media</h3>
+                                                        <div className="flex flex-wrap gap-2.5">
+                                                            {profile.linkedinLink && (
+                                                                <a href={profile.linkedinLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-[#0A66C2]/5 hover:bg-[#0A66C2] px-4 py-2.5 rounded-xl transition-all border border-[#0A66C2]/10 hover:border-[#0A66C2] shadow-sm">
+                                                                    <Linkedin size={14} className="text-[#0A66C2] group-hover:text-white transition-colors" />
+                                                                    <span className="font-bold text-[11px] uppercase tracking-wider text-[#0A66C2] group-hover:text-white transition-colors">LinkedIn</span>
+                                                                </a>
+                                                            )}
+                                                            {profile.tikTokLink && (
+                                                                <a href={profile.tikTokLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-black/5 hover:bg-black px-4 py-2.5 rounded-xl transition-all border border-black/10 hover:border-black shadow-sm">
+                                                                    <svg className="w-3.5 h-3.5 fill-current text-black group-hover:text-white transition-colors" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.86-.6-4.12-1.31a8.776 8.776 0 0 1-1.87-1.41c-.02 2.14-.01 4.29-.02 6.43-.02 2.22-.46 4.55-2.02 6.2-.24.25-.5.48-.77.71a8.487 8.487 0 0 1-5.71 2.16c-1.54-.02-3.07-.44-4.39-1.21-2-1.14-3.51-3.1-4.12-5.3-.67-2.4-.47-5.05.74-7.31 1.05-1.95 2.91-3.48 5.1-4.11a8.172 8.172 0 0 1 6.18.52v4.13c-1.25-.7-2.73-.92-4.14-.61-1.42.3-2.69 1.14-3.52 2.32-.83 1.16-1.2 2.61-1.04 4.03.16 1.42.88 2.73 2.02 3.59 1.15.86 2.63 1.25 4.07 1.09 1.44-.16 2.72-.94 3.53-2.14.81-1.2 1.13-2.69 1.01-4.13-.01-5.03 0-10.06-.01-15.08z"/>
+                                                                    </svg>
+                                                                    <span className="font-bold text-[11px] uppercase tracking-wider text-black group-hover:text-white transition-colors">TikTok</span>
+                                                                </a>
+                                                            )}
+                                                            {profile.instagramLink && (
+                                                                <a href={profile.instagramLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-[#E1306C]/5 hover:bg-[#E1306C] px-4 py-2.5 rounded-xl transition-all border border-[#E1306C]/10 hover:border-[#E1306C] shadow-sm">
+                                                                    <Instagram size={14} className="text-[#E1306C] group-hover:text-white transition-colors" />
+                                                                    <span className="font-bold text-[11px] uppercase tracking-wider text-[#E1306C] group-hover:text-white transition-colors">Instagram</span>
+                                                                </a>
+                                                            )}
+                                                            {profile.youTubeLink && (
+                                                                <a href={profile.youTubeLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-[#FF0000]/5 hover:bg-[#FF0000] px-4 py-2.5 rounded-xl transition-all border border-[#FF0000]/10 hover:border-[#FF0000] shadow-sm">
+                                                                    <Youtube size={14} className="text-[#FF0000] group-hover:text-white transition-colors" />
+                                                                    <span className="font-bold text-[11px] uppercase tracking-wider text-[#FF0000] group-hover:text-white transition-colors">YouTube</span>
+                                                                </a>
+                                                            )}
+                                                            {profile.facebookLink && (
+                                                                <a href={profile.facebookLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-[#1877F2]/5 hover:bg-[#1877F2] px-4 py-2.5 rounded-xl transition-all border border-[#1877F2]/10 hover:border-[#1877F2] shadow-sm">
+                                                                    <Facebook size={14} className="text-[#1877F2] group-hover:text-white transition-colors" />
+                                                                    <span className="font-bold text-[11px] uppercase tracking-wider text-[#1877F2] group-hover:text-white transition-colors">Facebook</span>
+                                                                </a>
+                                                            )}
+                                                            {profile.twitterLink && (
+                                                                <a href={profile.twitterLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 group bg-black/5 hover:bg-black px-4 py-2.5 rounded-xl transition-all border border-black/10 hover:border-black shadow-sm">
+                                                                    <svg className="w-3.5 h-3.5 fill-current text-black group-hover:text-white transition-colors" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                                                    </svg>
+                                                                    <span className="font-bold text-[11px] uppercase tracking-wider text-black group-hover:text-white transition-colors">X</span>
+                                                                </a>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 )}
                                             </div>
-                                        </div>
-                                    ) : (
+                                        ) : (
                                         <div className="sm:col-span-2 lg:col-span-2 mt-4 p-6 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-4">
                                             <div>
                                                 <h3 className="text-sm font-bold text-gray-900 mb-1">Want to contact {(profile.fullName || "this guide").split(' ')[0]}?</h3>
@@ -431,38 +445,6 @@ export default function PublicProfilePage() {
                                 />
                             </div>
 
-                            {/* Actions Box */}
-                            {user && (
-                                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white p-3 rounded-2xl border border-gray-100 shadow-xl flex gap-3 z-10 w-max">
-                                    <a 
-                                        href={profile.youTubeLink || "#"} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer" 
-                                        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-sm ${profile.youTubeLink ? "bg-red-50 text-red-600 hover:bg-red-600 hover:text-white" : "bg-gray-50 text-gray-300 cursor-not-allowed"}`}
-                                        title="YouTube Portfolio"
-                                    >
-                                        <Youtube size={18} />
-                                    </a>
-                                    <a 
-                                        href={profile.linkedinLink || "#"} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer" 
-                                        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-sm ${profile.linkedinLink ? "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white" : "bg-gray-50 text-gray-300 cursor-not-allowed"}`}
-                                        title="LinkedIn Profile"
-                                    >
-                                        <Linkedin size={18} />
-                                    </a>
-                                    <a 
-                                        href={profile.whatsAppNumber ? `https://wa.me/${profile.whatsAppNumber.replace(/[^0-9]/g, '')}` : "#"} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer" 
-                                        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-sm ${profile.whatsAppNumber ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white" : "bg-gray-50 text-gray-300 cursor-not-allowed"}`}
-                                        title="WhatsApp Contact"
-                                    >
-                                        <MessageCircle size={18} />
-                                    </a>
-                                </div>
-                            )}
 
                         </motion.div>
                     </div>
