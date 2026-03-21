@@ -19,6 +19,8 @@ interface Tour {
     agencyName?: string;
     price?: number;
     date?: string;
+    duration?: string;
+    mapLink?: string;
 }
 
 const ToursPage = () => {
@@ -169,7 +171,8 @@ const ToursPage = () => {
                                             rating={tour.rating}
                                             reviews={tour.reviews}
                                             price={tour.price}
-                                            duration={tour.date}
+                                            duration={tour.duration || tour.date}
+                                            mapLink={tour.mapLink}
                                             type="tour"
                                             subtitle={tour.agencyName}
                                         />

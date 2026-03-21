@@ -25,6 +25,7 @@ interface CardProps {
     badge?: string;
     likeCount?: number;
     isLiked?: boolean;
+    mapLink?: string;
     onToggleLike?: (id: string) => void;
 }
 
@@ -49,6 +50,7 @@ const Card: React.FC<CardProps> = ({
     badge,
     likeCount,
     isLiked,
+    mapLink,
     onToggleLike
 }) => {
     const isProfile = type === "guide" || type === "agency";
@@ -60,7 +62,7 @@ const Card: React.FC<CardProps> = ({
 
     return (
         <div className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-lg hover:shadow-2xl transition-all duration-500 relative flex flex-col h-full">
-            {(isProfile || type === "tour") && id && (
+            {(isProfile || type === "tour" || type === "adventure") && id && (
                 <Link href={profileLink} className="absolute inset-0 z-10" />
             )}
             
@@ -151,13 +153,28 @@ const Card: React.FC<CardProps> = ({
                             </div>
                         )}
 
-                        {likeCount !== undefined && (
-                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-rose-500 bg-rose-50 px-2.5 py-1 rounded-full">
+                         {likeCount !== undefined && (
+                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-rose-500 bg-rose-50 px-2.5 py-1 rounded-full whitespace-nowrap">
                                 <Heart size={10} fill="currentColor" />
                                 {likeCount}
                             </div>
                         )}
                     </div>
+
+                    {mapLink && (
+                        <div className="pt-2">
+                            <a 
+                                href={mapLink} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-teal-600 hover:text-teal-700 transition-colors bg-teal-50 px-3 py-1.5 rounded-lg border border-teal-100 relative z-20"
+                            >
+                                <MapPin size={10} />
+                                View on Map
+                            </a>
+                        </div>
+                    )}
                 </div>
 
                 {(type === "guide" || type === "agency") && (phone || email) && (

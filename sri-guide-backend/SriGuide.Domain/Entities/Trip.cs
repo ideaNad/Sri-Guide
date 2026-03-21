@@ -14,6 +14,9 @@ public class Trip : BaseEntity
     
     public decimal Price { get; set; }
     public string? Category { get; set; }
+    public string? Duration { get; set; }
+    public string? MapLink { get; set; }
+    public bool IsActive { get; set; } = true;
     public bool IsAgencyTour { get; set; }
     
     public Guid? AgencyId { get; set; }

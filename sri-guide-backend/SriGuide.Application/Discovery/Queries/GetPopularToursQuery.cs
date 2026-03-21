@@ -26,10 +26,12 @@ public class GetPopularToursQueryHandler : IRequestHandler<GetPopularToursQuery,
             .Include(t => t.Guide)
             .Include(t => t.Agency)
             .Include(t => t.Images)
-            .Where(t => t.IsAgencyTour)
+            .Where(t => t.IsAgencyTour && t.IsActive && t.GuideId == null)
             .OrderByDescending(t => _context.TripLikes.Count(tl => tl.TripId == t.Id))
             .Take(4)
             .ToListAsync(cancellationToken);
+
+        var combinedTours = popularTours;
 
         var userLikedTripIds = request.CurrentUserId.HasValue 
             ? await _context.TripLikes
@@ -38,7 +40,7 @@ public class GetPopularToursQueryHandler : IRequestHandler<GetPopularToursQuery,
                 .ToListAsync(cancellationToken)
             : new List<Guid>();
 
-        return popularTours.Select(t => new RecentTripDto(
+        return combinedTours.Select(t => new RecentTripDto(
             t.Id,
             t.Title,
             t.Description,
@@ -56,7 +58,11 @@ public class GetPopularToursQueryHandler : IRequestHandler<GetPopularToursQuery,
             t.GuideId ?? t.AgencyId,
             _context.TripLikes.Count(tl => tl.TripId == t.Id),
             userLikedTripIds.Contains(t.Id),
-            t.Price
+            t.Price,
+            t.Duration,
+            t.MapLink,
+            t.Category,
+            t.IsAgencyTour
         )).ToList();
     }
 }

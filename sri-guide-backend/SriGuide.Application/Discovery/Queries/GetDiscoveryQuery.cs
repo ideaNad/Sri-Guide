@@ -21,7 +21,9 @@ public record DiscoveryItemDto(
     bool IsLegit = false,
     string? AgencyName = null,
     decimal? Price = null,
-    string? Date = null
+    string? Date = null,
+    string? Duration = null,
+    string? MapLink = null
 );
 
 public record GetDiscoveryQuery(
@@ -99,7 +101,9 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
                     g.IsLegit,
                     g.AgencyId != null && g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted ? g.Agency?.CompanyName : null,
                     g.DailyRate,
-                    null // Guides don't have a fixed "tour date"
+                    null, // Date
+                    null, // Duration
+                    null  // MapLink
                 ));
             }
         }
@@ -131,7 +135,9 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
                     false, // IsLegit
                     null,  // AgencyName
                     null,  // Price
-                    null   // Date
+                    null,  // Date
+                    null,  // Duration
+                    null   // MapLink
                 ))
                 .ToListAsync(cancellationToken);
             
@@ -144,7 +150,7 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
             var tours = await _context.Trips
                 .Include(t => t.Agency)
                 .Include(t => t.Images)
-                .Where(t => t.IsAgencyTour)
+                .Where(t => t.IsAgencyTour && t.IsActive && t.GuideId == null)
                 .Where(t => string.IsNullOrEmpty(request.Query) || 
                             t.Title.Contains(request.Query) || 
                             t.Description.Contains(request.Query))
@@ -179,7 +185,9 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
                     true, // IsLegit for agency tours
                     t.Agency?.CompanyName,
                     t.Price,
-                    t.Date?.ToString("MMM dd, yyyy")
+                    t.Date?.ToString("MMM dd, yyyy"),
+                    t.Duration,
+                    t.MapLink
                 ));
             }
         }

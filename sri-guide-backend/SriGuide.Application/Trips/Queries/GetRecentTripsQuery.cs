@@ -16,7 +16,11 @@ public record RecentTripDto(
     Guid? GuideUserId,
     int LikeCount,
     bool IsLiked = false,
-    decimal? Price = null
+    decimal? Price = null,
+    string? Duration = null,
+    string? MapLink = null,
+    string? Category = null,
+    bool IsAgencyTour = false
 );
 
 public record GetRecentTripsQuery(Guid? CurrentUserId = null) : IRequest<List<RecentTripDto>>;
@@ -35,6 +39,7 @@ public class GetRecentTripsQueryHandler : IRequestHandler<GetRecentTripsQuery, L
         var recentTrips = await _context.Trips
             .Include(t => t.Guide)
             .Include(t => t.Images)
+            .Where(t => t.IsActive && (!t.IsAgencyTour || t.GuideId != null))
             .OrderByDescending(t => t.CreatedAt)
             .Take(6)
             .ToListAsync(cancellationToken);
@@ -64,7 +69,11 @@ public class GetRecentTripsQueryHandler : IRequestHandler<GetRecentTripsQuery, L
             t.GuideId,
             _context.TripLikes.Count(tl => tl.TripId == t.Id),
             userLikedTripIds.Contains(t.Id),
-            t.Price
+            t.Price,
+            t.Duration,
+            t.MapLink,
+            t.Category,
+            t.IsAgencyTour
         )).ToList();
     }
 }

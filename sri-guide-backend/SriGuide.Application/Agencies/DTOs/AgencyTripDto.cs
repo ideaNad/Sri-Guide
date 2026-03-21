@@ -12,4 +12,5 @@ public class AgencyTripDto
     public string? Date { get; set; }
     public string? ImageUrl { get; set; }
     public string GuideName { get; set; } = string.Empty;
+    public bool IsActive { get; set; }
 }

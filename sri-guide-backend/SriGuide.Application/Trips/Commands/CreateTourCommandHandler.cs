@@ -34,6 +34,9 @@ public class CreateTourCommandHandler : IRequestHandler<CreateTourCommand, Guid>
             Description = request.Description,
             Location = request.Location,
             Category = request.Category,
+            Duration = request.Duration,
+            MapLink = request.MapLink,
+            IsActive = true,
             Price = request.Price,
             IsAgencyTour = agencyProfileId.HasValue,
             AgencyId = agencyProfileId,
@@ -51,6 +54,21 @@ public class CreateTourCommandHandler : IRequestHandler<CreateTourCommand, Guid>
             });
         }
 
+        if (request.AdditionalImages != null)
+        {
+            foreach (var imgUrl in request.AdditionalImages)
+            {
+                if (!string.IsNullOrEmpty(imgUrl))
+                {
+                    trip.Images.Add(new TripImage
+                    {
+                        ImageUrl = imgUrl,
+                        Caption = "Gallery Image"
+                    });
+                }
+            }
+        }
+
         if (request.Itinerary != null)
         {
             trip.Itinerary = request.Itinerary.Select(s => new ItineraryStep
@@ -59,6 +77,7 @@ public class CreateTourCommandHandler : IRequestHandler<CreateTourCommand, Guid>
                 Title = s.Title,
                 Description = s.Description,
                 ImageUrl = s.ImageUrl,
+                DayNumber = s.DayNumber,
                 Order = s.Order
             }).ToList();
         }

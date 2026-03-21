@@ -45,6 +45,9 @@ interface RecentTrip {
     guideUserId: string;
     likeCount: number;
     isLiked?: boolean;
+    duration?: string;
+    mapLink?: string;
+    isAgencyTour?: boolean;
 }
 
 export default function Home() {
@@ -155,11 +158,12 @@ export default function Home() {
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <SectionHeader
-              badge="Hot Deals"
+              badge="Top Picks"
               title="Our Most Popular Tours"
               subtitle="From ancient wonders to tropical surfing, find your next adventure."
             />
-            <Link href="/tours" className="mb-12 bg-primary text-white px-8 py-3 font-bold text-sm rounded-full hover:bg-secondary transition-all shadow-md">
+            
+            <Link href="/tours" className="mb-12 bg-gray-900 text-white px-8 py-3 font-bold text-[10px] uppercase tracking-widest rounded-full hover:bg-black transition-all shadow-md">
               View All Tours
             </Link>
           </div>
@@ -187,16 +191,20 @@ export default function Home() {
                             reviews={tour.likeCount}
                             type="tour"
                             price={250} 
-                            badge="Curated"
+                            badge="Agency"
                             likeCount={tour.likeCount}
                             isLiked={tour.isLiked}
+                            duration={tour.duration}
+                            mapLink={tour.mapLink}
                             onToggleLike={handleToggleLike}
                         />
                     </motion.div>
                 ))
             ) : (
-                <div className="col-span-4 text-center py-10 text-gray-400 font-bold uppercase text-[10px] tracking-widest">
-                    No curated tours available yet
+                <div className="col-span-4 text-center py-20 bg-white rounded-[3rem] border border-dashed border-gray-200">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                        No official tours featured yet
+                    </p>
                 </div>
             )}
           </motion.div>
@@ -270,10 +278,13 @@ export default function Home() {
                     location={trip.location}
                     rating={5.0}
                     reviews={trip.likeCount}
-                    type="tour"
+                    type={trip.isAgencyTour ? "tour" : "adventure"}
+                    badge={trip.isAgencyTour ? "Agency" : "Guide"}
                     subtitle={trip.guideName}
                     likeCount={trip.likeCount}
                     isLiked={trip.isLiked}
+                    duration={trip.duration}
+                    mapLink={trip.mapLink}
                     onToggleLike={handleToggleLike}
                 />
               </motion.div>

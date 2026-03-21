@@ -8,47 +8,97 @@ import apiClient from "@/services/api-client";
 interface ImageUploadProps {
     value?: string;
     onChange: (url: string) => void;
+    onMultipleChange?: (urls: string[]) => void;
     label?: string;
     className?: string;
     aspectRatio?: "square" | "video" | "auto";
+    multiple?: boolean;
+    maxCount?: number;
+    currentCount?: number;
 }
 
 export default function ImageUpload({ 
     value, 
     onChange, 
+    onMultipleChange,
     label, 
     className = "",
-    aspectRatio = "video"
+    aspectRatio = "video",
+    multiple = false,
+    maxCount = 10,
+    currentCount = 0
 }: ImageUploadProps) {
     const [uploading, setUploading] = useState(false);
     const [preview, setPreview] = useState<string | null>(value || null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        // Show local preview immediately
-        const localPreview = URL.createObjectURL(file);
-        setPreview(localPreview);
-        setUploading(true);
-
-        const formData = new FormData();
-        formData.append("file", file);
-
-        try {
-            const response = await apiClient.post<{ url: string }>("/media/upload", formData, {
-                headers: { "Content-Type": "multipart/form-data" }
-            });
-            const uploadedUrl = response.data.url;
-            onChange(uploadedUrl);
-            setPreview(uploadedUrl);
-        } catch (error) {
-            console.error("Upload failed:", error);
-            alert("Failed to upload image. Please try again.");
+    // Sync preview with value when it changes externally
+    React.useEffect(() => {
+        if (value !== undefined) {
             setPreview(value || null);
-        } finally {
-            setUploading(false);
+        }
+    }, [value]);
+
+    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        if (multiple && onMultipleChange) {
+            const remaining = maxCount - currentCount;
+            if (remaining <= 0) {
+                alert(`You can only upload up to ${maxCount} images.`);
+                return;
+            }
+            
+            const filesToUpload = Array.from(files).slice(0, remaining);
+            setUploading(true);
+
+            try {
+                const uploadPromises = filesToUpload.map(async (file) => {
+                    const formData = new FormData();
+                    formData.append("file", file);
+                    const response = await apiClient.post<{ url: string }>("/media/upload", formData, {
+                        headers: { "Content-Type": "multipart/form-data" }
+                    });
+                    return response.data.url;
+                });
+
+                const urls = await Promise.all(uploadPromises);
+                onMultipleChange(urls);
+                if (fileInputRef.current) fileInputRef.current.value = "";
+            } catch (error) {
+                console.error("Multi-upload failed:", error);
+                alert("Some images failed to upload. Please try again.");
+            } finally {
+                setUploading(false);
+            }
+        } else {
+            const file = files[0];
+            // Show local preview immediately
+            const localPreview = URL.createObjectURL(file);
+            setPreview(localPreview);
+            setUploading(true);
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const response = await apiClient.post<{ url: string }>("/media/upload", formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
+                });
+                const uploadedUrl = response.data.url;
+                onChange(uploadedUrl);
+                
+                // Immediately update preview so it doesn't disappear before parent re-renders
+                setPreview(uploadedUrl);
+                if (fileInputRef.current) fileInputRef.current.value = "";
+            } catch (error) {
+                console.error("Upload failed:", error);
+                alert("Failed to upload image. Please try again.");
+                setPreview(value || null);
+            } finally {
+                setUploading(false);
+            }
         }
     };
 
@@ -60,7 +110,9 @@ export default function ImageUpload({
     };
 
     const resolvedPreview = preview 
-        ? (preview.startsWith("/") && !preview.startsWith("blob:") ? `${apiClient.defaults.baseURL?.replace("/api", "")}${preview}` : preview)
+        ? ((preview.startsWith("/") || (!preview.startsWith("http") && !preview.startsWith("blob:"))) 
+            ? `${apiClient.defaults.baseURL?.replace("/api", "")}${preview.startsWith("/") ? "" : "/"}${preview}` 
+            : preview)
         : null;
 
     const aspectRatioClass = aspectRatio === "square" ? "aspect-square" : aspectRatio === "video" ? "aspect-video" : "h-48";
@@ -87,6 +139,7 @@ export default function ImageUpload({
                     onChange={handleUpload}
                     className="hidden"
                     accept="image/*"
+                    multiple={multiple}
                 />
 
                 <AnimatePresence mode="wait">
@@ -127,7 +180,7 @@ export default function ImageUpload({
                                 </div>
                             )}
 
-                            {!uploading && preview?.startsWith("http") === false && (
+                            {!uploading && (preview?.startsWith("http") || preview?.startsWith("blob:")) === false && (
                                 <div className="absolute top-4 right-4 bg-green-500 text-white p-1.5 rounded-full shadow-lg">
                                     <CheckCircle2 size={16} />
                                 </div>
@@ -143,9 +196,14 @@ export default function ImageUpload({
                                 <ImageIcon size={28} className="group-hover:text-primary transition-colors" />
                             </div>
                             <div className="space-y-1">
-                                <p className="text-sm font-black text-gray-900 tracking-tight">Click to upload photo</p>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">PNG, JPG or WebP up to 10MB</p>
+                                <p className="text-sm font-black text-gray-900 tracking-tight">Click to upload photo{multiple ? "s" : ""}</p>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">PNG, JPG or WebP up to {multiple ? "10MB each" : "10MB"}</p>
                             </div>
+                            {uploading && (
+                                <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
+                                    <Loader2 className="animate-spin text-primary" size={32} />
+                                </div>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>

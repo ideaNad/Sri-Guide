@@ -1,2 +1,35 @@
-*.dll
+## .NET Core / ASP.NET Core
+bin/
+obj/
+*.user
+*.suo
+*.sln.docstates
+*.pdf
+_ReSharper.*/
+*.dotCover
+*.cache
+*.log
+*.TemporaryGeneratedFile_*.cs
+App_Data/
+TestResults/
+.vs/
+
+## Node / Next.js
+node_modules/
+.next/
+out/
+build/
+.env*
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.vercel
+
+## IDE specific
+.vscode/
+.idea/
+.expo/
+*.swp
+*.bak
 *.dll

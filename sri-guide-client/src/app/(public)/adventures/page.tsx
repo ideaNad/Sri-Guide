@@ -25,6 +25,7 @@ interface Trip {
     guideUserId: string;
     likeCount: number;
     isLiked?: boolean;
+    isAgencyTour?: boolean;
 }
 
 const COMMON_LOCATIONS = [
@@ -194,7 +195,8 @@ export default function AdventuresPage() {
                                     location={trip.location}
                                     rating={4.9}
                                     reviews={trip.likeCount}
-                                    type="tour"
+                                    type={trip.isAgencyTour ? "tour" : "adventure"}
+                                    badge={trip.isAgencyTour ? "Agency" : "Guide"}
                                     subtitle={trip.guideName}
                                     likeCount={trip.likeCount}
                                     isLiked={trip.isLiked}

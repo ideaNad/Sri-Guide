@@ -10,6 +10,7 @@ public record ItineraryStepDto(
     string Title,
     string Description,
     string? ImageUrl,
+    int DayNumber,
     int Order
 );
 
@@ -18,10 +19,13 @@ public record CreateTourCommand(
     Guid? GuideId,
     string Title,
     string Description,
-    string Location,
+    string? Location,
     string? Category,
+    string? Duration,
+    string? MapLink,
     decimal Price,
     string? MainImageUrl,
+    List<string>? AdditionalImages,
     DateTime? Date,
     List<ItineraryStepDto> Itinerary
 ) : IRequest<Guid>;

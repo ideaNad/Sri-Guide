@@ -24,7 +24,7 @@ public class GetLikedTripsQueryHandler : IRequestHandler<GetLikedTripsQuery, Lis
             .Where(l => l.UserId == request.UserId)
             .OrderByDescending(l => l.CreatedAt)
             .Select(l => l.Trip)
-            .Where(t => t != null)
+            .Where(t => t != null && t.IsActive)
             .ToListAsync(cancellationToken);
 
         return likedTrips.Select(t => new DashboardTripDto(

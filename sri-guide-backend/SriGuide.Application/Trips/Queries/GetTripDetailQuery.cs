@@ -9,6 +9,7 @@ public record ItineraryStepDto(
     string Title,
     string Description,
     string? ImageUrl,
+    int DayNumber,
     int Order
 );
 
@@ -17,6 +18,7 @@ public record TripDetailDto(
     string Title,
     string Description,
     string Location,
+    string? Category,
     DateTime? Date,
     List<string> Images,
     Guid? GuideId,
@@ -27,7 +29,11 @@ public record TripDetailDto(
     int LikeCount,
     bool IsLikedByCurrentUser,
     List<ItineraryStepDto> Itinerary,
-    List<OtherTripDto> OtherTrips
+    List<OtherTripDto> OtherTrips,
+    string? Duration = null,
+    string? MapLink = null,
+    bool IsActive = true,
+    decimal? Price = null
 );
 
 public record OtherTripDto(
@@ -79,6 +85,7 @@ public class GetTripDetailQueryHandler : IRequestHandler<GetTripDetailQuery, Tri
             trip.Title,
             trip.Description,
             trip.Location,
+            trip.Category,
             trip.Date,
             trip.Images.Select(i => i.ImageUrl != null && !i.ImageUrl.StartsWith("/") && !i.ImageUrl.StartsWith("http") ? "/" + i.ImageUrl : i.ImageUrl).Where(url => url != null).Cast<string>().ToList(),
             trip.GuideId,
@@ -90,8 +97,8 @@ public class GetTripDetailQueryHandler : IRequestHandler<GetTripDetailQuery, Tri
             guideTotalReviews,
             likeCount,
             isLiked,
-            trip.Itinerary.OrderBy(s => s.Order).Select(s => new ItineraryStepDto(
-                s.Time, s.Title, s.Description, s.ImageUrl, s.Order
+            trip.Itinerary.OrderBy(s => s.DayNumber).ThenBy(s => s.Order).Select(s => new ItineraryStepDto(
+                s.Time, s.Title, s.Description, s.ImageUrl, s.DayNumber, s.Order
             )).ToList(),
             await _context.Trips
                 .Include(t => t.Images)
@@ -104,7 +111,11 @@ public class GetTripDetailQueryHandler : IRequestHandler<GetTripDetailQuery, Tri
                     t.Images.OrderBy(i => i.CreatedAt).Select(i => i.ImageUrl != null && !i.ImageUrl.StartsWith("/") && !i.ImageUrl.StartsWith("http") ? "/" + i.ImageUrl : i.ImageUrl).FirstOrDefault(),
                     t.Location
                 ))
-                .ToListAsync(cancellationToken)
+                .ToListAsync(cancellationToken),
+            trip.Duration,
+            trip.MapLink,
+            trip.IsActive,
+            trip.Price
         );
     }
 }

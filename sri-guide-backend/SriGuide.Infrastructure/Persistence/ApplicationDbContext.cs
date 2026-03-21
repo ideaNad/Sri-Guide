@@ -20,6 +20,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<TripImage> TripImages => Set<TripImage>();
     public DbSet<TripLike> TripLikes => Set<TripLike>();
     public DbSet<ItineraryStep> ItinerarySteps => Set<ItineraryStep>();
+    public DbSet<Feedback> Feedbacks => Set<Feedback>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

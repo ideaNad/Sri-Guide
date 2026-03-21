@@ -91,9 +91,9 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
 
         var tripsRaw = await _context.Trips
             .Include(t => t.Images)
-            .Where(t => isAgency 
+            .Where(t => (isAgency 
                 ? (t.AgencyId == agencyProfile!.Id || (t.GuideId.HasValue && guideIdsForAgency.Contains(t.GuideId.Value))) 
-                : t.GuideId == user.Id)
+                : t.GuideId == user.Id) && t.IsActive)
             .OrderByDescending(t => t.Date ?? t.CreatedAt)
             .Take(20)
             .ToListAsync(cancellationToken);

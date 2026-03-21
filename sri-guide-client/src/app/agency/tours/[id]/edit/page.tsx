@@ -1,47 +1,36 @@
 "use client";
- 
+
 import React, { useState, useEffect } from "react";
 import { 
-    Users, MapPin, Calendar, Clock, Plus, Trash2, 
-    ArrowLeft, ArrowRight, Save, Image as ImageIcon,
-    Type, DollarSign, Tag, Info, Camera
+    Clock, MapPin, DollarSign, Image as ImageIcon, Plus, Trash2, 
+    ArrowRight, Map as MapIcon, Tag, Info, Camera, Send, ChevronRight,
+    ArrowLeft, Power, Save, Users
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useParams } from "next/navigation";
 import apiClient from "@/services/api-client";
 import ImageUpload from "@/components/ui/ImageUpload";
- 
-interface ItineraryStep {
-    time: string;
-    title: string;
-    description: string;
-    order: number;
-    imageUrl?: string | null;
-}
- 
+import "react-quill-new/dist/quill.snow.css";
+import ReactQuill from "react-quill-new";
+
+// SRI LANKA DISTRICTS
+const DISTRICTS = [
+    "Island-wide", "Ampara", "Anuradhapura", "Badulla", "Batticaloa", "Colombo", "Galle", "Gampaha", "Hambantota", "Jaffna", 
+    "Kalutara", "Kandy", "Kegalle", "Kilinochchi", "Kurunegala", "Mannar", "Matale", "Matara", "Monaragala", "Mullaitivu", 
+    "Nuwara Eliya", "Polonnaruwa", "Puttalam", "Ratnapura", "Trincomalee", "Vavuniya"
+];
+
+// TOUR CATEGORIES
+const CATEGORIES = [
+    "Adventure", "Cultural", "Wildlife", "Beach", "Hiking", "Spiritual", "Culinary", "Luxury", "Photography", "Surfing", "Wellness"
+];
+
 interface Guide {
     userId: string;
     name: string;
 }
- 
-interface PaginatedResult<T> {
-    items: T[];
-}
 
-interface TripDetail {
-    id: string;
-    title: string;
-    description: string;
-    location: string;
-    category: string;
-    price: number;
-    date: string | null;
-    guideId: string | null;
-    itinerary: ItineraryStep[];
-    images: string[];
-}
- 
-export default function EditTourPage() {
+const EditTourPage = () => {
     const router = useRouter();
     const params = useParams();
     const tourId = params.id as string;
@@ -51,39 +40,56 @@ export default function EditTourPage() {
     const [fetching, setFetching] = useState(true);
     const [guides, setGuides] = useState<Guide[]>([]);
     
-    // Form State
     const [formData, setFormData] = useState({
         title: "",
         description: "",
-        location: "",
-        category: "Adventure",
+        location: [] as string[],
+        category: [] as string[],
         price: 0,
         date: "",
+        duration: "",
+        mapLink: "",
         mainImageUrl: "",
-        guideId: "",
-        itinerary: [] as ItineraryStep[]
+        additionalImages: [] as string[],
+        guideId: null as string | null,
+        isActive: true,
+        itinerary: [] as any[]
     });
- 
+
+    const [locationSearch, setLocationSearch] = useState("");
+    const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
+    const [categorySearch, setCategorySearch] = useState("");
+    const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const [guidesRes, tourRes] = await Promise.all([
-                    apiClient.get<PaginatedResult<Guide>>("/agency/guides?pageSize=100"),
-                    apiClient.get<TripDetail>(`/trip/${tourId}`)
+                    apiClient.get<any>("/agency/guides?pageSize=100"),
+                    apiClient.get<any>(`/trip/${tourId}`)
                 ]);
                 
                 setGuides(guidesRes.data.items);
                 
                 const tour = tourRes.data;
+                const allImages = tour.images || [];
+                const mainImg = allImages.length > 0 ? allImages[0] : "";
+                const gallery = allImages.length > 1 ? allImages.slice(1) : [];
+
                 setFormData({
-                    title: tour.title,
-                    description: tour.description,
-                    location: tour.location,
-                    category: tour.category || "Adventure",
-                    price: tour.price,
+                    title: tour.title || "",
+                    description: tour.description || "",
+                    location: tour.location ? tour.location.split(", ").filter((l: any) => l) : [],
+                    category: tour.category ? tour.category.split(", ").filter((c: any) => c) : [],
+                    duration: tour.duration || "",
+                    mapLink: tour.mapLink || "",
+                    price: tour.price || 0,
                     date: tour.date ? new Date(tour.date).toISOString().split('T')[0] : "",
-                    mainImageUrl: tour.images && tour.images.length > 0 ? tour.images[0] : "",
-                    guideId: tour.guideId || "",
+                    mainImageUrl: mainImg,
+                    additionalImages: gallery,
+                    guideId: tour.guideId || null,
+                    isActive: tour.isActive ?? true,
                     itinerary: tour.itinerary || []
                 });
             } catch (error) {
@@ -95,60 +101,123 @@ export default function EditTourPage() {
         };
         fetchData();
     }, [tourId]);
- 
-    const categories = ["Adventure", "Culture", "Wild Life", "Beach", "Hiking", "City Tour"];
- 
-    const addItineraryStep = () => {
-        setFormData(prev => ({
-            ...prev,
-            itinerary: [
-                ...prev.itinerary, 
-                { time: "", title: "", description: "", order: prev.itinerary.length }
-            ]
-        }));
-    };
- 
-    const removeItineraryStep = (index: number) => {
-        setFormData(prev => ({
-            ...prev,
-            itinerary: prev.itinerary.filter((_, i) => i !== index).map((s, i) => ({ ...s, order: i }))
-        }));
-    };
- 
-    const updateItineraryStep = (index: number, field: keyof ItineraryStep, value: string) => {
+
+    const toggleLocation = (loc: string) => {
+        if (loc === "Island-wide") {
+            setFormData(prev => ({ ...prev, location: ["Island-wide"] }));
+            return;
+        }
         setFormData(prev => {
-            const newItinerary = [...prev.itinerary];
-            newItinerary[index] = { ...newItinerary[index], [field]: value };
+            const current = prev.location.filter(l => l !== "Island-wide");
+            if (current.includes(loc)) {
+                return { ...prev, location: current.filter(l => l !== loc) };
+            }
+            return { ...prev, location: [...current, loc] };
+        });
+    };
+
+    const toggleCategory = (cat: string) => {
+        setFormData(prev => {
+            if (prev.category.includes(cat)) {
+                return { ...prev, category: prev.category.filter(c => c !== cat) };
+            }
+            return { ...prev, category: [...prev.category, cat] };
+        });
+    };
+
+    const handleAddActivity = (dayNumber: number) => {
+        const dayActivities = formData.itinerary.filter(i => i.dayNumber === dayNumber);
+        const newOrder = dayActivities.length + 1;
+        setFormData({
+            ...formData,
+            itinerary: [...formData.itinerary, { 
+                time: "09:00 AM", title: "", description: "", imageUrl: "", dayNumber, order: newOrder 
+            }]
+        });
+    };
+
+    const handleAddDay = () => {
+        const maxDay = formData.itinerary.length > 0 ? Math.max(...formData.itinerary.map(i => i.dayNumber)) : 0;
+        const newDay = maxDay + 1;
+        setFormData({
+            ...formData,
+            itinerary: [...formData.itinerary, { 
+                time: "09:00 AM", title: `Day ${newDay} Start`, description: "", imageUrl: "", dayNumber: newDay, order: 1 
+            }]
+        });
+    };
+
+    const handleRemoveDay = (dayNumber: number) => {
+        setFormData(prev => {
+            const newItinerary = prev.itinerary
+                .filter(i => i.dayNumber !== dayNumber)
+                .map(i => {
+                    if (i.dayNumber > dayNumber) {
+                        return { ...i, dayNumber: i.dayNumber - 1 };
+                    }
+                    return i;
+                });
             return { ...prev, itinerary: newItinerary };
         });
     };
- 
+
+    const getImageUrl = (url?: string) => {
+        if (!url) return "";
+        if (url.startsWith("http") || url.startsWith("blob:")) return url;
+        return `${apiClient.defaults.baseURL?.replace("/api", "")}${url.startsWith("/") ? "" : "/"}${url}`;
+    };
+
     const handleSubmit = async () => {
+        // Validation
+        const newErrors: Record<string, string> = {};
+        if (!formData.title) newErrors.title = "A compelling title is required";
+        if (!formData.description) newErrors.description = "Please share the soul of the journey";
+        if (formData.location.length === 0) newErrors.location = "Select at least one operating area";
+        if (formData.category.length === 0) newErrors.category = "Select at least one category";
+        if (formData.price <= 0) newErrors.price = "Enter a valid base price";
+        if (!formData.duration) newErrors.duration = "Specify the duration (e.g. 3 Days)";
+        if (!formData.mainImageUrl) newErrors.mainImageUrl = "A main cover image is mandatory";
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            alert("Please complete all required fields and try again!");
+            setStep(1);
+            return;
+        }
+
         setLoading(true);
+        setErrors({});
         try {
             const payload = {
                 tripId: tourId,
                 ...formData,
-                guideId: formData.guideId || null,
+                location: formData.location.join(", "),
+                category: formData.category.join(", "),
                 price: Number(formData.price),
-                date: formData.date ? new Date(formData.date).toISOString() : null,
+                date: formData.date && formData.date.trim() !== "" ? new Date(formData.date).toISOString() : null,
                 mainImageUrl: formData.mainImageUrl || null,
+                additionalImages: formData.additionalImages,
                 itinerary: formData.itinerary.map(s => ({
                     ...s,
                     imageUrl: s.imageUrl || null
                 }))
             };
-            
             await apiClient.put(`/agency/tours/${tourId}`, payload);
             router.push("/agency/tours");
-        } catch (error) {
-            console.error("Error updating tour:", error);
-            alert("Failed to update tour. Please check your inputs.");
+        } catch (error: any) {
+            console.error("Failed to update tour", error);
+            if (error.response?.data?.errors) {
+                setErrors(error.response.data.errors);
+            }
+            alert("Failed to update adventure. Please check the highlights!");
         } finally {
             setLoading(false);
         }
     };
- 
+
+    const filteredDistricts = DISTRICTS.filter(d => d.toLowerCase().includes(locationSearch.toLowerCase()));
+    const filteredCategories = CATEGORIES.filter(c => c.toLowerCase().includes(categorySearch.toLowerCase()));
+
     if (fetching) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
@@ -158,300 +227,554 @@ export default function EditTourPage() {
     }
 
     return (
-        <div className="max-w-5xl mx-auto space-y-12 animate-in fade-in duration-700 pb-20">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <button 
-                    onClick={() => router.back()}
-                    className="flex items-center gap-2 text-gray-500 hover:text-teal-600 font-bold transition-colors group"
-                >
-                    <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-                    Cancel Edits
-                </button>
-                <div className="flex gap-2">
-                    {[1, 2, 3].map(i => (
-                        <div 
-                            key={i}
-                            className={`h-1.5 w-12 rounded-full transition-all duration-500 ${
-                                step >= i ? 'bg-teal-600' : 'bg-gray-100'
-                            }`}
-                        />
-                    ))}
+        <div className="min-h-screen bg-[#FDFCFB] pt-32 pb-24">
+            <div className="container mx-auto px-4 max-w-5xl">
+                
+                {/* Header with Cancel & Progress */}
+                <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-12">
+                    <button 
+                        onClick={() => router.back()}
+                        className="flex items-center gap-3 text-gray-400 hover:text-gray-900 font-black text-[10px] uppercase tracking-widest transition-all group"
+                    >
+                        <ArrowLeft size={18} className="group-hover:-translate-x-2 transition-transform" />
+                        Cancel Editing
+                    </button>
+
+                    <div className="flex items-center gap-6 bg-white p-4 rounded-3xl border border-gray-100 shadow-sm">
+                        <div className={`flex items-center gap-3 px-6 py-3 rounded-2xl transition-all ${step === 1 ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-400'}`}>
+                            <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center font-black text-[10px]">1</div>
+                            <span className="text-[10px] font-black uppercase tracking-widest italic">Core Narrative</span>
+                        </div>
+                        <ChevronRight size={16} className="text-gray-200" />
+                        <div className={`flex items-center gap-3 px-6 py-3 rounded-2xl transition-all ${step === 2 ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-400'}`}>
+                            <div className="w-6 h-6 rounded-full bg-black/5 flex items-center justify-center font-black text-[10px]">2</div>
+                            <span className="text-[10px] font-black uppercase tracking-widest italic">Daily Itinerary</span>
+                        </div>
+                    </div>
+
+                    <button 
+                        onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
+                        className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${
+                            formData.isActive 
+                            ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-md shadow-emerald-600/5' 
+                            : 'bg-rose-50 text-rose-600 border border-rose-100 shadow-md shadow-rose-600/5'
+                        }`}
+                    >
+                        <Power size={18} />
+                        {formData.isActive ? 'Active' : 'Hidden'}
+                    </button>
                 </div>
-            </div>
- 
-            <AnimatePresence mode="wait">
+
+                <AnimatePresence mode="wait">
                 {step === 1 && (
                     <motion.div 
                         key="step1"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className="space-y-8 bg-white p-12 rounded-[3.5rem] border border-gray-100 shadow-sm"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="space-y-12"
                     >
-                        <div>
-                            <h2 className="text-3xl font-black text-gray-900 tracking-tight italic flex items-center gap-3">
-                                <Type className="text-teal-600" size={32} />
-                                Edit Basic Details
-                            </h2>
-                            <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mt-2 ml-11">Phase 1: Refining your experience</p>
-                        </div>
- 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Tour Title</label>
-                                <input 
-                                    type="text"
-                                    value={formData.title}
-                                    onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                    className="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4 text-sm font-bold focus:bg-white focus:border-teal-200 transition-all outline-none"
-                                />
+                        {/* Single Unified Form Card */}
+                        <div className="bg-white p-8 md:p-16 rounded-[3.5rem] border border-gray-100 shadow-2xl shadow-gray-200/40 space-y-16">
+                            
+                            {/* 1. Identity Section */}
+                            <div className="space-y-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600">
+                                        <Info size={24} />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight italic uppercase">Refine Identity</h2>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Update the core details of your experience</p>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Experience Title</label>
+                                        <input 
+                                            type="text"
+                                            value={formData.title}
+                                            onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                            className={`w-full bg-gray-50 border-transparent rounded-2xl px-8 py-5 text-sm font-bold focus:bg-white focus:border-teal-200 transition-all outline-none ${errors.title ? 'border-rose-300 bg-rose-50/20' : ''}`}
+                                        />
+                                        {errors.title && <p className="text-[9px] font-bold text-rose-500 mt-2 ml-2 uppercase tracking-widest">{errors.title}</p>}
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Assigned Guide</label>
+                                        <div className="relative">
+                                            <Users className="absolute left-6 top-1/2 -translate-y-1/2 text-teal-600" size={18} />
+                                            <select 
+                                                value={formData.guideId || ""}
+                                                onChange={e => setFormData({ ...formData, guideId: e.target.value === "" ? null : e.target.value })}
+                                                className="w-full bg-gray-50 border-transparent rounded-2xl pl-14 pr-6 py-5 text-sm font-bold focus:bg-white focus:border-teal-200 transition-all outline-none appearance-none"
+                                            >
+                                                <option value="">No Specific Guide</option>
+                                                {guides.map(g => <option key={g.userId} value={g.userId}>{g.name}</option>)}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Base Price (USD)</label>
+                                            <div className="relative">
+                                                <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-teal-600" size={18} />
+                                                <input 
+                                                    type="number"
+                                                    value={formData.price}
+                                                    onChange={e => setFormData({ ...formData, price: Number(e.target.value) })}
+                                                    className={`w-full bg-gray-50 border-transparent rounded-2xl pl-14 pr-6 py-5 text-sm font-bold focus:bg-white focus:border-teal-200 transition-all outline-none ${errors.price ? 'border-rose-300 bg-rose-50/20' : ''}`}
+                                                />
+                                                {errors.price && <p className="text-[9px] font-bold text-rose-500 mt-2 ml-2 uppercase tracking-widest">{errors.price}</p>}
+                                            </div>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Duration</label>
+                                            <div className="relative">
+                                                <Clock className="absolute left-6 top-1/2 -translate-y-1/2 text-teal-600" size={18} />
+                                                <input 
+                                                    type="text"
+                                                    value={formData.duration}
+                                                    onChange={e => setFormData({ ...formData, duration: e.target.value })}
+                                                    placeholder="e.g. 3 Days"
+                                                    className={`w-full bg-gray-50 border-transparent rounded-2xl pl-14 pr-6 py-5 text-sm font-bold focus:bg-white focus:border-teal-200 transition-all outline-none ${errors.duration ? 'border-rose-300 bg-rose-50/20' : ''}`}
+                                                />
+                                                {errors.duration && <p className="text-[9px] font-bold text-rose-500 mt-2 ml-2 uppercase tracking-widest">{errors.duration}</p>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Start Date (Optional)</label>
+                                        <input 
+                                            type="date"
+                                            value={formData.date}
+                                            onChange={e => setFormData({ ...formData, date: e.target.value })}
+                                            className="w-full bg-gray-50 border-transparent rounded-2xl px-8 py-5 text-sm font-bold focus:bg-white focus:border-teal-200 transition-all outline-none"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Operating Areas</label>
+                                        <div className="relative">
+                                            <div 
+                                                className="w-full bg-gray-50 border-transparent rounded-2xl pl-14 pr-6 py-5 text-sm font-bold focus-within:bg-white focus-within:border-teal-200 transition-all cursor-pointer flex items-center justify-between"
+                                                onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}
+                                            >
+                                                <MapPin className="absolute left-6 text-teal-600" size={18} />
+                                                <span className={formData.location.length === 0 ? "text-gray-400" : "text-gray-900"}>
+                                                    {formData.location.length === 0 ? "Select Locations" : formData.location.join(", ").length > 30 ? `${formData.location.length} selected` : formData.location.join(", ")}
+                                                </span>
+                                                <ArrowRight className={`text-gray-400 transition-transform duration-300 ${isLocationDropdownOpen ? 'rotate-90' : ''}`} size={16} />
+                                            </div>
+                                            {errors.location && <p className="text-[9px] font-bold text-rose-500 mt-2 ml-2 uppercase tracking-widest">{errors.location}</p>}
+
+                                            <AnimatePresence>
+                                                {isLocationDropdownOpen && (
+                                                    <>
+                                                        <div className="fixed inset-0 z-10" onClick={() => setIsLocationDropdownOpen(false)} />
+                                                        <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="absolute top-full left-0 right-0 mt-3 bg-white border border-gray-100 rounded-[2.5rem] shadow-2xl z-20 overflow-hidden">
+                                                            <div className="p-5 border-b border-gray-50 bg-gray-50/50">
+                                                                <input type="text" placeholder="Search districts..." value={locationSearch} onChange={e => setLocationSearch(e.target.value)} className="w-full bg-white border-transparent rounded-2xl px-6 py-3 text-xs font-bold outline-none" onClick={e => e.stopPropagation()} />
+                                                            </div>
+                                                            <div className="max-h-[300px] overflow-y-auto p-5 custom-scrollbar grid grid-cols-2 gap-2">
+                                                                {filteredDistricts.map(loc => (
+                                                                    <button key={loc} type="button" onClick={(e) => { e.stopPropagation(); toggleLocation(loc); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all ${formData.location.includes(loc) ? 'bg-teal-50 text-teal-600' : 'hover:bg-gray-50 text-gray-500'}`}>
+                                                                        <div className={`w-4 h-4 rounded-lg border flex items-center justify-center ${formData.location.includes(loc) ? 'bg-teal-600 border-teal-600 shadow-lg shadow-teal-600/20' : ' border-gray-200 bg-white'}`}>
+                                                                            {formData.location.includes(loc) && <span className="text-white text-[8px]">✓</span>}
+                                                                        </div>
+                                                                        {loc}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </motion.div>
+                                                    </>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2 mt-4 px-2">
+                                            {formData.location.map(loc => (
+                                                <span key={loc} className="bg-teal-50 text-teal-600 px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest border border-teal-100 flex items-center gap-3">
+                                                    {loc}
+                                                    <button onClick={() => toggleLocation(loc)} className="hover:text-rose-500 text-gray-300">×</button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Experience Categories</label>
+                                        <div className="relative">
+                                            <div 
+                                                className={`w-full bg-gray-50 border-transparent rounded-2xl pl-14 pr-6 py-5 text-sm font-bold focus-within:bg-white focus-within:border-teal-200 transition-all cursor-pointer flex items-center justify-between ${errors.category ? 'border-rose-300 bg-rose-50/20' : ''}`}
+                                                onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                                            >
+                                                <Tag className="absolute left-6 text-teal-600" size={18} />
+                                                <span className={formData.category.length === 0 ? "text-gray-400" : "text-gray-900"}>
+                                                    {formData.category.length === 0 ? "Select Categories" : formData.category.join(", ").length > 30 ? `${formData.category.length} selected` : formData.category.join(", ")}
+                                                </span>
+                                                <ArrowRight className={`text-gray-400 transition-transform duration-300 ${isCategoryDropdownOpen ? 'rotate-90' : ''}`} size={16} />
+                                            </div>
+                                            {errors.category && <p className="text-[9px] font-bold text-rose-500 mt-2 ml-2 uppercase tracking-widest">{errors.category}</p>}
+
+                                            <AnimatePresence>
+                                                {isCategoryDropdownOpen && (
+                                                    <>
+                                                        <div className="fixed inset-0 z-10" onClick={() => setIsCategoryDropdownOpen(false)} />
+                                                        <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="absolute top-full left-0 right-0 mt-3 bg-white border border-gray-100 rounded-[2.5rem] shadow-2xl z-20 overflow-hidden">
+                                                            <div className="p-5 border-b border-gray-50 bg-gray-50/50">
+                                                                <input type="text" placeholder="Search categories..." value={categorySearch} onChange={e => setCategorySearch(e.target.value)} className="w-full bg-white border-transparent rounded-2xl px-6 py-3 text-xs font-bold outline-none" onClick={e => e.stopPropagation()} />
+                                                            </div>
+                                                            <div className="max-h-[300px] overflow-y-auto p-5 custom-scrollbar grid grid-cols-2 gap-2">
+                                                                {filteredCategories.map(cat => (
+                                                                    <button key={cat} type="button" onClick={(e) => { e.stopPropagation(); toggleCategory(cat); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-left text-[10px] font-black uppercase tracking-wider transition-all ${formData.category.includes(cat) ? 'bg-emerald-50 text-emerald-600' : 'hover:bg-gray-50 text-gray-500'}`}>
+                                                                        <div className={`w-4 h-4 rounded-lg border flex items-center justify-center ${formData.category.includes(cat) ? 'bg-emerald-600 border-emerald-600 shadow-lg shadow-emerald-600/20' : 'border-gray-200 bg-white'}`}>
+                                                                            {formData.category.includes(cat) && <span className="text-white text-[8px]">✓</span>}
+                                                                        </div>
+                                                                        {cat}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </motion.div>
+                                                    </>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2 mt-4 px-2">
+                                            {formData.category.map(cat => (
+                                                <span key={cat} className="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100 flex items-center gap-3">
+                                                    {cat}
+                                                    <button onClick={() => toggleCategory(cat)} className="hover:text-rose-500 text-gray-300">×</button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Assign Professional Guide</label>
-                                <div className="relative">
-                                    <Users className="absolute left-6 top-1/2 -translate-y-1/2 text-teal-600" size={18} />
-                                    <select 
-                                        value={formData.guideId}
-                                        onChange={e => setFormData({ ...formData, guideId: e.target.value })}
-                                        className="w-full bg-gray-50 border-transparent rounded-2xl pl-14 pr-6 py-4 text-sm font-bold focus:bg-white focus:border-teal-200 transition-all outline-none appearance-none"
-                                    >
-                                        <option value="">No Guide Assigned (Optional)</option>
-                                        {guides.map(g => <option key={g.userId} value={g.userId}>{g.name}</option>)}
-                                    </select>
+
+                            <hr className="border-gray-50" />
+
+                            {/* 2. Narrative & Map Section */}
+                            <div className="space-y-10">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
+                                            <Send size={24} />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight italic uppercase">Experience Narrative</h2>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Refining the emotional journey</p>
+                                        </div>
+                                    </div>
+                                    <div className="hidden md:block">
+                                        <div className="flex items-center gap-3 px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                            <MapIcon size={18} className="text-teal-600" />
+                                            <input 
+                                                type="url"
+                                                value={formData.mapLink}
+                                                onChange={e => setFormData({ ...formData, mapLink: e.target.value })}
+                                                placeholder="Google Map Link"
+                                                className="bg-transparent border-none text-[10px] font-black uppercase tracking-widest outline-none w-48"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className={`rich-text-container bg-gray-50 rounded-[3rem] border border-transparent focus-within:bg-white focus-within:border-teal-200 transition-all overflow-hidden p-6 ${errors.description ? 'border-rose-300 bg-rose-50/20' : ''}`}>
+                                        <ReactQuill 
+                                            theme="snow"
+                                            value={formData.description}
+                                            onChange={val => setFormData({ ...formData, description: val })}
+                                            className="quill-editor h-80"
+                                        />
+                                    </div>
+                                    {errors.description && <p className="text-[9px] font-bold text-rose-500 mt-2 ml-2 uppercase tracking-widest">{errors.description}</p>}
+                                </div>
+                            </div>
+
+                            <hr className="border-gray-50" />
+
+                            {/* 3. Media Showcase */}
+                            <div className="space-y-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-600">
+                                        <Camera size={24} />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight italic uppercase">Visual Showcase</h2>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Polish the visual attraction</p>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                                    <div className="lg:col-span-12 space-y-8">
+                                        <label className="text-xs font-black text-gray-900 uppercase tracking-[0.2em] ml-2">Cover Image</label>
+                                        <div className="max-w-2xl mx-auto">
+                                            <ImageUpload 
+                                                value={formData.mainImageUrl}
+                                                onChange={(url) => setFormData({ ...formData, mainImageUrl: url })}
+                                                aspectRatio="video"
+                                                className={`shadow-2xl shadow-gray-200/50 ${errors.mainImageUrl ? 'border-2 border-rose-300 ring-4 ring-rose-50' : ''}`}
+                                            />
+                                            {errors.mainImageUrl && <p className="text-[9px] font-bold text-rose-500 mt-4 text-center uppercase tracking-widest">{errors.mainImageUrl}</p>}
+                                        </div>
+                                    </div>
+                                    <div className="lg:col-span-12 space-y-8">
+                                        <div className="flex items-center justify-between px-2">
+                                            <label className="text-xs font-black text-gray-900 uppercase tracking-[0.2em]">Tour Gallery</label>
+                                            <span className="text-[10px] font-black text-teal-600 bg-teal-50 px-4 py-2 rounded-full uppercase tracking-widest italic">Experience Gallery</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                                            {formData.additionalImages.map((img, idx) => (
+                                                <div key={idx} className="relative group aspect-video rounded-3xl overflow-hidden border border-gray-100 shadow-xl shadow-gray-100/50 transform transition-all duration-500 hover:scale-[1.02]">
+                                                    <img src={getImageUrl(img)} className="w-full h-full object-cover" />
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => setFormData(prev => ({ ...prev, additionalImages: prev.additionalImages.filter((_, i) => i !== idx) }))}
+                                                            className="bg-white/90 text-rose-500 p-4 rounded-2xl transform hover:scale-110 transition-all border border-rose-100"
+                                                        >
+                                                            <Trash2 size={20} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {formData.additionalImages.length < 5 && (
+                                                <div className="aspect-video">
+                                                    <ImageUpload 
+                                                        value=""
+                                                        multiple={true}
+                                                        maxCount={5}
+                                                        currentCount={formData.additionalImages.length}
+                                                        onChange={(url) => setFormData(prev => ({ ...prev, additionalImages: [...prev.additionalImages, url] }))}
+                                                        onMultipleChange={(urls) => setFormData(prev => ({ ...prev, additionalImages: [...prev.additionalImages, ...urls].slice(0, 5) }))}
+                                                        aspectRatio="video"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
- 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Location</label>
-                                <div className="relative">
-                                    <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 text-teal-600" size={18} />
-                                    <input 
-                                        type="text"
-                                        value={formData.location}
-                                        onChange={e => setFormData({ ...formData, location: e.target.value })}
-                                        className="w-full bg-gray-50 border-transparent rounded-2xl pl-14 pr-6 py-4 text-sm font-bold focus:bg-white focus:border-teal-200 transition-all outline-none"
-                                    />
-                                </div>
-                            </div>
-                        </div>
- 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Category</label>
-                                <div className="relative">
-                                    <Tag className="absolute left-6 top-1/2 -translate-y-1/2 text-teal-600" size={18} />
-                                    <select 
-                                        value={formData.category}
-                                        onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                        className="w-full bg-gray-50 border-transparent rounded-2xl pl-14 pr-6 py-4 text-sm font-bold focus:bg-white focus:border-teal-200 transition-all outline-none appearance-none"
-                                    >
-                                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="space-y-4">
-                                <ImageUpload 
-                                    label="Main Tour Image"
-                                    value={formData.mainImageUrl}
-                                    onChange={(url) => setFormData({ ...formData, mainImageUrl: url })}
-                                    aspectRatio="video"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Base Price (USD)</label>
-                                <div className="relative">
-                                    <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-teal-600" size={18} />
-                                    <input 
-                                        type="number"
-                                        value={formData.price}
-                                        onChange={e => setFormData({ ...formData, price: Number(e.target.value) })}
-                                        className="w-full bg-gray-50 border-transparent rounded-2xl pl-14 pr-6 py-4 text-sm font-bold focus:bg-white focus:border-teal-200 transition-all outline-none"
-                                    />
-                                </div>
-                            </div>
-                        </div>
- 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Description</label>
-                            <textarea 
-                                value={formData.description}
-                                onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                rows={6}
-                                className="w-full bg-gray-50 border-transparent rounded-[2rem] px-8 py-6 text-sm font-bold focus:bg-white focus:border-teal-200 transition-all outline-none resize-none"
-                            />
-                        </div>
- 
+
+                        {/* Step Navigation */}
                         <div className="flex justify-end pt-8">
                             <button 
                                 onClick={() => setStep(2)}
-                                className="bg-primary text-white px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-secondary transition-all shadow-xl shadow-primary/20 flex items-center gap-3"
+                                className="bg-primary hover:bg-secondary text-white px-12 py-5 rounded-2xl font-black text-[12px] uppercase tracking-[0.2em] transition-all shadow-2xl shadow-primary/30 flex items-center gap-4 group"
                             >
                                 Next Phase
-                                <ArrowRight size={16} />
+                                <ArrowRight size={18} className="group-hover:translate-x-3 transition-transform duration-300" />
                             </button>
                         </div>
                     </motion.div>
                 )}
- 
+
                 {step === 2 && (
                     <motion.div 
                         key="step2"
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
-                        className="space-y-8 bg-white p-12 rounded-[3.5rem] border border-gray-100 shadow-sm"
+                        className="space-y-8 bg-white p-10 md:p-14 rounded-[3.5rem] border border-gray-100 shadow-xl"
                     >
                         <div className="flex items-center justify-between">
-                            <div>
-                                <h2 className="text-3xl font-black text-gray-900 tracking-tight italic flex items-center gap-3">
-                                    <Clock className="text-teal-600" size={32} />
-                                    Daily Itinerary
-                                </h2>
-                                <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mt-2 ml-11">Phase 2: Sculpting the timeline</p>
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600">
+                                    <Clock size={24} />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight italic uppercase text-left">Daily Itinerary</h2>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-left">Refine the moments of the journey</p>
+                                </div>
                             </div>
                             <button 
-                                onClick={addItineraryStep}
-                                className="bg-teal-50 text-teal-600 px-6 py-3 rounded-xl font-bold text-xs hover:bg-teal-600 hover:text-white transition-all flex items-center gap-2"
+                                onClick={handleAddDay}
+                                className="bg-teal-600 hover:bg-teal-700 text-white p-4 rounded-2xl transition-all shadow-lg shadow-teal-600/20"
                             >
-                                <Plus size={16} /> Add Step
+                                <Plus size={20} />
                             </button>
                         </div>
- 
-                        <div className="space-y-6">
-                            {formData.itinerary.map((s, i) => (
-                                <motion.div 
-                                    key={i}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="relative flex gap-6 bg-gray-50/50 p-8 rounded-[2.5rem] border border-transparent hover:border-teal-100 hover:bg-white transition-all group"
-                                >
-                                    <div className="w-24 shrink-0 space-y-2">
-                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Time</label>
-                                        <input 
-                                            type="time"
-                                            value={s.time}
-                                            onChange={e => updateItineraryStep(i, "time", e.target.value)}
-                                            className="w-full bg-white border border-gray-100 rounded-xl px-4 py-3 text-xs font-black focus:border-teal-200 outline-none transition-all"
-                                        />
-                                    </div>
-                                    <div className="flex-1 space-y-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Activity Title</label>
-                                                <input 
-                                                    type="text"
-                                                    value={s.title}
-                                                    onChange={e => updateItineraryStep(i, "title", e.target.value)}
-                                                    className="w-full bg-white border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold focus:border-teal-200 outline-none transition-all"
-                                                />
+
+                        <div className="space-y-16 mt-10 text-left">
+                            {Array.from(new Set(formData.itinerary.map(i => i.dayNumber))).sort((a, b) => a - b).map(dayNum => (
+                                <div key={dayNum} className="space-y-8 p-10 bg-gray-50/50 rounded-[3rem] border border-gray-100/50 relative group/day">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 bg-teal-600 text-white rounded-xl flex items-center justify-center font-black italic shadow-lg shadow-teal-600/20">
+                                                D{dayNum}
                                             </div>
-                                            <div className="space-y-4">
-                                                <ImageUpload 
-                                                    label="Step Image (Optional)"
-                                                    value={s.imageUrl || ""}
-                                                    onChange={(url) => updateItineraryStep(i, "imageUrl", url)}
-                                                    aspectRatio="video"
-                                                />
-                                            </div>
+                                            <h3 className="text-xl font-black text-gray-900 tracking-tight italic uppercase">Day {dayNum} Experience</h3>
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Activity Notes</label>
-                                            <textarea 
-                                                value={s.description}
-                                                onChange={e => updateItineraryStep(i, "description", e.target.value)}
-                                                rows={2}
-                                                className="w-full bg-white border border-gray-100 rounded-[1.5rem] px-6 py-4 text-xs font-medium focus:border-teal-200 outline-none transition-all resize-none"
-                                            />
+                                        <div className="flex items-center gap-3">
+                                            <button 
+                                                onClick={() => handleAddActivity(dayNum)}
+                                                className="flex items-center gap-2 bg-white text-teal-600 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border border-teal-100 hover:bg-teal-50 transition-all shadow-sm"
+                                            >
+                                                <Plus size={14} />
+                                                Add Activity
+                                            </button>
+                                            {dayNum > 1 && (
+                                                <button 
+                                                    onClick={() => handleRemoveDay(dayNum)}
+                                                    className="bg-white text-rose-500 p-2 rounded-xl border border-rose-100 hover:bg-rose-50 transition-all shadow-sm"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
-                                    <button 
-                                        onClick={() => removeItineraryStep(i)}
-                                        className="absolute -right-2 -top-2 w-10 h-10 bg-white border border-gray-100 text-gray-300 hover:text-rose-500 rounded-full flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-all"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </motion.div>
+
+                                    <div className="space-y-8">
+                                        {formData.itinerary.filter(i => i.dayNumber === dayNum).sort((a, b) => a.order - b.order).map((item, idx) => {
+                                            const globalIndex = formData.itinerary.findIndex(it => it === item);
+                                            return (
+                                                <div key={idx} className="relative pl-12 border-l-2 border-dashed border-gray-200 pb-10 last:pb-0">
+                                                    <div className="absolute -left-3 top-0 w-6 h-6 bg-white border-2 border-teal-600 rounded-full flex items-center justify-center shadow-lg shadow-teal-600/20">
+                                                        <div className="w-1.5 h-1.5 bg-teal-600 rounded-full" />
+                                                    </div>
+                                                    
+                                                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                                                        <div className="md:col-span-4 space-y-4">
+                                                            <div className="space-y-2">
+                                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest text-left block">Timing</label>
+                                                                <input 
+                                                                    type="time" 
+                                                                    value={item.time} 
+                                                                    onChange={e => {
+                                                                        const newIt = [...formData.itinerary];
+                                                                        newIt[globalIndex].time = e.target.value;
+                                                                        setFormData({ ...formData, itinerary: newIt });
+                                                                    }}
+                                                                    className="w-full bg-white border-transparent rounded-xl px-4 py-3 text-xs font-bold focus:border-teal-200 transition-all outline-none cursor-pointer"
+                                                                />
+                                                            </div>
+                                                            <ImageUpload 
+                                                                value={item.imageUrl}
+                                                                label="Step Photo"
+                                                                onChange={(url) => {
+                                                                    const newIt = [...formData.itinerary];
+                                                                    newIt[globalIndex].imageUrl = url;
+                                                                    setFormData({ ...formData, itinerary: newIt });
+                                                                }}
+                                                                aspectRatio="video"
+                                                            />
+                                                        </div>
+                                                        <div className="md:col-span-7 space-y-4 text-left">
+                                                            <div className="space-y-2">
+                                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block">Activity Title</label>
+                                                                <input 
+                                                                    type="text" 
+                                                                    value={item.title} 
+                                                                    onChange={e => {
+                                                                        const newIt = [...formData.itinerary];
+                                                                        newIt[globalIndex].title = e.target.value;
+                                                                        setFormData({ ...formData, itinerary: newIt });
+                                                                    }}
+                                                                    placeholder="Activity description"
+                                                                    className="w-full bg-white border-transparent rounded-xl px-6 py-4 text-sm font-bold focus:border-teal-200 transition-all outline-none"
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block">Highlights</label>
+                                                                <textarea 
+                                                                    rows={3}
+                                                                    value={item.description} 
+                                                                    onChange={e => {
+                                                                        const newIt = [...formData.itinerary];
+                                                                        newIt[globalIndex].description = e.target.value;
+                                                                        setFormData({ ...formData, itinerary: newIt });
+                                                                    }}
+                                                                    placeholder="What will they experience?"
+                                                                    className="w-full bg-white border-transparent rounded-xl px-6 py-4 text-xs font-medium text-gray-600 focus:border-teal-200 transition-all outline-none resize-none leading-relaxed"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="md:col-span-1 pt-8">
+                                                            {(formData.itinerary.filter(i => i.dayNumber === dayNum).length > 1) && (
+                                                                <button 
+                                                                    onClick={() => setFormData({ ...formData, itinerary: formData.itinerary.filter(it => it !== item) })}
+                                                                    className="p-3 text-gray-300 hover:text-rose-500 transition-colors"
+                                                                >
+                                                                    <Trash2 size={18} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
                             ))}
-                        </div>
- 
-                        <div className="flex justify-between pt-8">
+                            
                             <button 
-                                onClick={() => setStep(1)}
-                                className="bg-gray-50 text-gray-500 px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-gray-100 transition-all flex items-center gap-3"
+                                onClick={handleAddDay}
+                                className="w-full py-8 border-2 border-dashed border-gray-200 rounded-[3rem] text-gray-400 hover:text-teal-600 hover:border-teal-200 hover:bg-teal-50/30 transition-all flex flex-col items-center gap-3 group"
                             >
-                                <ArrowLeft size={16} />
-                                Go Back
+                                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                                    <Plus size={24} />
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] italic">Add New Adventure Day</span>
                             </button>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-12 border-t border-gray-50">
+                            <button onClick={() => setStep(1)} className="px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest text-gray-400 hover:text-gray-900">Back to Narratives</button>
                             <button 
-                                onClick={() => setStep(3)}
-                                className="bg-primary text-white px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-secondary transition-all shadow-xl shadow-primary/20 flex items-center gap-3"
+                                onClick={handleSubmit} 
+                                disabled={loading}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white px-12 py-5 rounded-2xl font-black text-[12px] uppercase tracking-[0.2em] transition-all shadow-2xl shadow-emerald-600/30 flex items-center gap-3 disabled:opacity-50"
                             >
-                                Next Phase
-                                <ArrowRight size={16} />
+                                {loading ? "Saving Changes..." : "Secure the Updates"}
+                                <Save size={18} />
                             </button>
                         </div>
                     </motion.div>
                 )}
- 
-                {step === 3 && (
-                    <motion.div 
-                        key="step3"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className="space-y-8 bg-white p-12 rounded-[3.5rem] border border-gray-100 shadow-sm"
-                    >
-                        <div>
-                            <h2 className="text-3xl font-black text-gray-900 tracking-tight italic flex items-center gap-3">
-                                <ImageIcon className="text-teal-600" size={32} />
-                                Save Changes
-                            </h2>
-                            <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mt-2 ml-11">Phase 3: Final review</p>
-                        </div>
- 
-                        <div className="bg-teal-50/50 p-10 rounded-[3rem] border border-teal-100 space-y-6">
-                            <h3 className="text-xl font-black text-gray-900 italic tracking-tight">Summary of Updates</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-teal-50">
-                                    <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center font-black text-xs">✓</div>
-                                    <div>
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Title</p>
-                                        <p className="text-sm font-bold text-gray-900">{formData.title}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-teal-50">
-                                    <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center font-black text-xs">✓</div>
-                                    <div>
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Base Price</p>
-                                        <p className="text-sm font-bold text-gray-900">${formData.price}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
- 
-                        <div className="flex justify-between pt-8">
-                            <button 
-                                onClick={() => setStep(2)}
-                                className="bg-gray-50 text-gray-500 px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-gray-100 transition-all flex items-center gap-3"
-                            >
-                                <ArrowLeft size={16} />
-                                Go Back
-                            </button>
-                            <button 
-                                onClick={handleSubmit}
-                                disabled={loading || !formData.title}
-                                className="bg-teal-600 text-white px-12 py-5 rounded-3xl font-black text-[11px] uppercase tracking-[0.3em] hover:bg-teal-700 transition-all shadow-2xl shadow-teal-600/30 flex items-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {loading ? "Saving..." : "Save Changes"}
-                                <Save size={20} />
-                            </button>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                </AnimatePresence>
+            </div>
+
+            <style jsx global>{`
+                .quill-editor .ql-toolbar {
+                    border: none !important;
+                    background: #f8fafc !important;
+                    border-bottom: 1px solid #f1f5f9 !important;
+                    padding: 1.5rem !important;
+                    border-radius: 2rem 2rem 0 0 !important;
+                }
+                .quill-editor .ql-container {
+                    border: none !important;
+                    font-family: inherit !important;
+                }
+                .quill-editor .ql-editor {
+                    padding: 2.5rem !important;
+                    min-height: 250px !important;
+                    font-weight: 500 !important;
+                    color: #1e293b !important;
+                    line-height: 1.8 !important;
+                    font-size: 0.875rem !important;
+                }
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: #f8fafc;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: #e2e8f0;
+                    border-radius: 10px;
+                }
+            `}</style>
         </div>
     );
-}
+};
+
+export default EditTourPage;

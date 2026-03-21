@@ -53,12 +53,13 @@ public class GetAgencyTripsQueryHandler : IRequestHandler<GetAgencyTripsQuery, L
             Title = t.Title,
             Location = t.Location,
             Price = t.Price,
-            Status = "Active",
+            Status = t.IsActive ? "Active" : "Hidden",
             Reviews = tripStats.TryGetValue(t.Id, out var stats) ? stats.Count : (int?)null,
             Rating = tripStats.TryGetValue(t.Id, out var stats2) ? stats2.AverageRating : (double?)null,
             Date = t.Date?.ToString("MMM dd"),
             ImageUrl = t.Images.FirstOrDefault()?.ImageUrl,
-            GuideName = t.Guide?.FullName ?? "Unknown"
+            GuideName = t.Guide?.FullName ?? "Unknown",
+            IsActive = t.IsActive
         }).ToList();
     }
 }

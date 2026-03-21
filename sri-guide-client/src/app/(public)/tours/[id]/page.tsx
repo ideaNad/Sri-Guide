@@ -20,6 +20,7 @@ interface ItineraryStep {
     title: string;
     description: string;
     imageUrl?: string;
+    dayNumber: number;
     order: number;
 }
  
@@ -216,37 +217,52 @@ const TourDetailPage = () => {
                             )}
 
                             {activeTab === "itinerary" && (
-                                <div className="space-y-12">
-                                    {tour.itinerary && tour.itinerary.length > 0 ? tour.itinerary.map((item, i) => (
-                                        <div key={i} className="flex gap-8 relative pb-12 last:pb-0">
-                                            {i !== (tour.itinerary?.length || 0) - 1 && <div className="absolute left-[27px] top-8 bottom-0 w-0.5 bg-gray-100" />}
-                                            <div className="flex-shrink-0 w-14 h-14 bg-white border-2 border-gray-900 flex items-center justify-center text-gray-900 font-black text-xs z-10 transition-all hover:bg-gray-900 hover:text-white group shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
-                                                {i + 1}
-                                            </div>
-                                            <div className="pt-2 flex-1">
-                                                <div className="flex flex-col md:flex-row gap-6">
-                                                    <div className="flex-1">
-                                                        <span className="text-xs font-black text-secondary tracking-widest uppercase mb-2 block">{item.time}</span>
-                                                        <h4 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h4>
-                                                        <p className="text-gray-500 leading-relaxed font-medium">{item.description}</p>
-                                                    </div>
-                                                    {item.imageUrl && (
-                                                        <div className="w-full md:w-48 h-32 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-                                                            <img 
-                                                                src={item.imageUrl.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${item.imageUrl}` : item.imageUrl}
-                                                                alt={item.title}
-                                                                className="w-full h-full object-cover"
-                                                                onError={(e) => {
-                                                                    (e.currentTarget as HTMLImageElement).src = "https://images.unsplash.com/photo-1544013919-add52c3dffbd?q=80&w=400&auto=format";
-                                                                }}
-                                                            />
+                                <div className="space-y-16">
+                                    {tour.itinerary && tour.itinerary.length > 0 ? (
+                                        Array.from(new Set(tour.itinerary.map(s => s.dayNumber))).sort((a, b) => a - b).map(dayNum => {
+                                            const daySteps = tour.itinerary!.filter(s => s.dayNumber === dayNum).sort((a, b) => a.order - b.order);
+                                            return (
+                                                <div key={dayNum} className="space-y-10 group/day">
+                                                    <div className="flex items-center gap-6">
+                                                        <div className="w-16 h-16 bg-gray-900 text-white flex items-center justify-center font-black italic shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)] group-hover/day:shadow-primary/20 transition-all">
+                                                            D{dayNum}
                                                         </div>
-                                                    )}
+                                                        <h4 className="text-2xl font-black text-gray-900 italic uppercase">Day {dayNum} Schedule</h4>
+                                                    </div>
+                                                    
+                                                    <div className="space-y-8 pl-8 md:pl-20 border-l border-gray-100 ml-8 md:ml-8">
+                                                        {daySteps.map((item, i) => (
+                                                            <div key={i} className="flex gap-8 relative pb-12 last:pb-0">
+                                                                <div className="absolute -left-[33px] top-4 w-4 h-4 bg-white border-4 border-gray-900 rounded-full z-10" />
+                                                                <div className="pt-2 flex-1">
+                                                                    <div className="flex flex-col md:flex-row gap-8">
+                                                                        <div className="flex-1">
+                                                                            <span className="text-xs font-black text-secondary tracking-widest uppercase mb-2 block">{item.time || "TBD"}</span>
+                                                                            <h5 className="text-xl font-bold text-gray-900 mb-3 italic uppercase tracking-tight">{item.title}</h5>
+                                                                            <p className="text-gray-500 leading-relaxed font-medium">{item.description}</p>
+                                                                        </div>
+                                                                        {item.imageUrl && (
+                                                                            <div className="w-full md:w-56 h-36 flex-shrink-0 bg-gray-100 rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500">
+                                                                                <img 
+                                                                                    src={item.imageUrl.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${item.imageUrl}` : item.imageUrl}
+                                                                                    alt={item.title}
+                                                                                    className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                                                                                    onError={(e) => {
+                                                                                        (e.currentTarget as HTMLImageElement).src = "https://images.unsplash.com/photo-1544013919-add52c3dffbd?q=80&w=400&auto=format";
+                                                                                    }}
+                                                                                />
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    )) : (
-                                        <div className="text-center py-20 bg-gray-50 rounded-2xl italic text-gray-400 font-bold tracking-widest">
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="text-center py-24 bg-gray-50 rounded-[3rem] italic text-gray-400 font-bold tracking-widest border-2 border-dashed border-gray-100">
                                             The itinerary for this journey is being whispered by the wind...
                                         </div>
                                     )}

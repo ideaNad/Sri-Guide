@@ -14,6 +14,7 @@ public interface IApplicationDbContext
     DbSet<TripImage> TripImages { get; }
     DbSet<TripLike> TripLikes { get; }
     DbSet<ItineraryStep> ItinerarySteps { get; }
+    DbSet<Feedback> Feedbacks { get; }
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

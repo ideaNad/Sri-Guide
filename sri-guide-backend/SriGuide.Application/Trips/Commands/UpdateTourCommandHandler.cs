@@ -41,10 +41,13 @@ public class UpdateTourCommandHandler : IRequestHandler<UpdateTourCommand, bool>
 
         if (trip == null) return false;
 
-        trip.Title = request.Title;
-        trip.Description = request.Description;
-        trip.Location = request.Location;
-        trip.Category = request.Category;
+        trip.Title = request.Title ?? trip.Title;
+        trip.Description = request.Description ?? trip.Description;
+        trip.Location = request.Location ?? trip.Location;
+        trip.Category = request.Category ?? trip.Category;
+        trip.Duration = request.Duration;
+        trip.MapLink = request.MapLink;
+        trip.IsActive = request.IsActive;
         trip.Price = request.Price;
         trip.GuideId = request.GuideId; // Nullable
         trip.Date = request.Date.HasValue ? DateTime.SpecifyKind(request.Date.Value, DateTimeKind.Utc) : null;
@@ -59,11 +62,20 @@ public class UpdateTourCommandHandler : IRequestHandler<UpdateTourCommand, bool>
                 Title = s.Title,
                 Description = s.Description,
                 ImageUrl = s.ImageUrl,
+                DayNumber = s.DayNumber,
                 Order = s.Order
             }).ToList();
         }
 
-        // Update Main Image if provided
+        // Update Images
+        // 1. Remove non-main-view images to refresh gallery
+        var galleryImagesToRemove = trip.Images.Where(i => i.Caption != "Main View").ToList();
+        foreach (var img in galleryImagesToRemove)
+        {
+            trip.Images.Remove(img);
+        }
+
+        // 2. Update or Add Main View Image
         if (!string.IsNullOrEmpty(request.MainImageUrl))
         {
             var mainImage = trip.Images.FirstOrDefault(i => i.Caption == "Main View");
@@ -78,6 +90,22 @@ public class UpdateTourCommandHandler : IRequestHandler<UpdateTourCommand, bool>
                     ImageUrl = request.MainImageUrl,
                     Caption = "Main View"
                 });
+            }
+        }
+
+        // 3. Add Additional Images from request
+        if (request.AdditionalImages != null)
+        {
+            foreach (var imgUrl in request.AdditionalImages)
+            {
+                if (!string.IsNullOrEmpty(imgUrl))
+                {
+                    trip.Images.Add(new TripImage
+                    {
+                        ImageUrl = imgUrl,
+                        Caption = "Gallery Image"
+                    });
+                }
             }
         }
 
