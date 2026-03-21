@@ -97,7 +97,7 @@ const EditTourPage = () => {
                 guideId: tour.guideId || null,
                 itinerary: tour.itinerary || [],
                 dayDescriptions: tour.dayDescriptions || [],
-                isActive: tour.isActive ?? true
+                isActive: (tour as any).isActive ?? (tour as any).IsActive ?? true
             });
         } catch (error) {
             console.error("Failed to fetch tour", error);
@@ -242,16 +242,28 @@ const EditTourPage = () => {
         <div className="min-h-screen bg-[#FDFCFB] pt-32 pb-24">
             <div className="container mx-auto px-4 max-w-5xl">
                 
-                {/* Modern Progress Stepper */}
-                <div className="flex items-center gap-6 mb-12 bg-white p-4 rounded-3xl border border-gray-100 shadow-sm w-fit mx-auto">
-                    <div className={`flex items-center gap-3 px-6 py-3 rounded-2xl transition-all ${step === 1 ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-400'}`}>
-                        <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center font-black text-[10px]">1</div>
-                        <span className="text-[10px] font-black uppercase tracking-widest italic">Core Narrative</span>
+                <div className="flex flex-col md:flex-row items-center gap-6 mb-12 bg-white p-4 rounded-[2.5rem] border border-gray-100 shadow-sm w-fit mx-auto px-10">
+                    <div className="flex items-center gap-4 border-r border-gray-100 pr-8 mr-2">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">Current Status:</span>
+                        <div className={`px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${
+                            formData.isActive 
+                                ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
+                                : 'bg-orange-50 text-orange-600 border-orange-100'
+                        }`}>
+                            {formData.isActive ? 'Publicly Visible' : 'Hidden Inventory'}
+                        </div>
                     </div>
-                    <ChevronRight size={16} className="text-gray-200" />
-                    <div className={`flex items-center gap-3 px-6 py-3 rounded-2xl transition-all ${step === 2 ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-400'}`}>
-                        <div className="w-6 h-6 rounded-full bg-black/5 flex items-center justify-center font-black text-[10px]">2</div>
-                        <span className="text-[10px] font-black uppercase tracking-widest italic">Daily Itinerary</span>
+                    
+                    <div className="flex items-center gap-6">
+                        <div className={`flex items-center gap-3 px-6 py-3 rounded-2xl transition-all ${step === 1 ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-400'}`}>
+                            <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center font-black text-[10px]">1</div>
+                            <span className="text-[10px] font-black uppercase tracking-widest italic">Core Narrative</span>
+                        </div>
+                        <ChevronRight size={16} className="text-gray-200" />
+                        <div className={`flex items-center gap-3 px-6 py-3 rounded-2xl transition-all ${step === 2 ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-400'}`}>
+                            <div className="w-6 h-6 rounded-full bg-black/5 flex items-center justify-center font-black text-[10px]">2</div>
+                            <span className="text-[10px] font-black uppercase tracking-widest italic">Daily Itinerary</span>
+                        </div>
                     </div>
                 </div>
 
@@ -277,6 +289,19 @@ const EditTourPage = () => {
                                         <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight italic uppercase">Edit Identity</h2>
                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Update the logistics of your experience</p>
                                     </div>
+                                </div>
+
+                                <div className="flex items-center gap-4 bg-gray-50 p-6 rounded-[2rem] border border-gray-100 w-fit">
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Visibility Status</p>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
+                                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                            formData.isActive ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-white text-gray-400 border border-gray-100'
+                                        }`}
+                                    >
+                                        {formData.isActive ? 'Active' : 'Hidden'}
+                                    </button>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">

@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import apiClient from "@/services/api-client";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { useAuth } from "@/providers/AuthContext";
 import Link from "next/link";
 import AuthModal from "@/features/auth/components/AuthModal";
@@ -89,8 +89,11 @@ interface PublicProfile {
 export default function PublicProfilePage() {
     const { id } = useParams();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { user, login } = useAuth();
     const [profile, setProfile] = useState<PublicProfile | null>(null);
+
+    const isAgencyPath = searchParams.get('type') === 'agency';
     const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
     const [reviewFormOpen, setReviewFormOpen] = useState(false);
@@ -99,19 +102,20 @@ export default function PublicProfilePage() {
     const [submittingReview, setSubmittingReview] = useState(false);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-    const handleToggleLike = async (tripId: string) => {
+    const handleToggleLike = async (id: string, type: string) => {
         if (!user) { setIsAuthModalOpen(true); return; }
         try {
-            const response = await apiClient.post<{ liked: boolean }>(`/trip/${tripId}/toggle-like`);
+            const endpoint = type === 'tour' ? `/tours/${id}/toggle-like` : `/trip/${id}/toggle-like`;
+            const response = await apiClient.post<{ liked: boolean }>(endpoint);
             const { liked } = response.data;
             if (profile) {
                 setProfile({
                     ...profile,
                     agencyTours: profile.agencyTours?.map(t =>
-                        t.id === tripId ? { ...t, isLiked: liked } : t
+                        t.id === id ? { ...t, isLiked: liked } : t
                     ) || [],
                     recentTrips: profile.recentTrips?.map(t =>
-                        t.id === tripId ? { ...t, isLiked: liked } : t
+                        t.id === id ? { ...t, isLiked: liked } : t
                     ) || []
                 });
             }
@@ -147,6 +151,13 @@ export default function PublicProfilePage() {
             fetchReviews();
         }
     }, [id]);
+
+    const getImageUrl = (url?: string) => {
+        if (!url) return null;
+        if (url.startsWith('http') || url.startsWith('blob:')) return url;
+        const baseUrl = apiClient.defaults.baseURL?.split('/api')[0];
+        return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+    };
 
     if (loading) {
         return (
@@ -191,13 +202,13 @@ export default function PublicProfilePage() {
                         >
                             <div>
                                 <div className="flex flex-wrap gap-2 mb-6">
-                                    {profile.role === 'Agency' && (
+                                    {isAgencyPath && (
                                         <div className="inline-flex items-center text-xs font-bold px-4 py-1.5 rounded-full shadow-sm bg-blue-50 text-blue-700 border border-blue-200">
                                             <ShieldCheck size={16} className="mr-2" />
                                             Travel Agency
                                         </div>
                                     )}
-                                    {profile.isLegit && (
+                                    {!isAgencyPath && profile.isLegit && (
                                         <div className="inline-flex items-center text-xs font-bold px-4 py-1.5 rounded-full shadow-sm bg-emerald-50 text-emerald-700 border border-emerald-200">
                                             <ShieldCheck size={16} className="mr-2" />
                                             Licensed Guide
@@ -219,13 +230,13 @@ export default function PublicProfilePage() {
                                         </div>
                                     </div>
                                     <span className="text-xs text-gray-500 font-bold tracking-wide">
-                                        {profile.totalReviews} {profile.role === 'Agency' ? 'TOTAL' : 'TRAVELER'} REVIEWS
+                                        {profile.totalReviews} {isAgencyPath ? 'TOTAL' : 'TRAVELER'} REVIEWS
                                     </span>
                                 </div>
                             </div>
 
                             <div className="max-w-xl mx-auto lg:mx-0 mb-8 text-left bg-white/60 backdrop-blur-sm p-6 rounded-2xl border border-gray-100 shadow-sm">
-                                <h3 className="text-sm font-bold text-gray-900 uppercase mb-3 text-center lg:text-left">{profile.role === 'Agency' ? 'Our Story' : 'About Me'}</h3>
+                                <h3 className="text-sm font-bold text-gray-900 uppercase mb-3 text-center lg:text-left">{isAgencyPath ? 'Our Story' : 'About Me'}</h3>
                                 <div className="text-base text-gray-600 leading-relaxed font-medium">
                                     {(profile.bio || "No bio available.").split('\n').filter(p => p.trim() !== '').map((paragraph, idx) => (
                                         <p key={idx} className="mb-4 last:mb-0">{paragraph}</p>
@@ -369,45 +380,46 @@ export default function PublicProfilePage() {
                                     )}
 
                                     {/* Investment */}
-                                    <div className="sm:col-span-2 lg:col-span-1 border-t border-gray-100 pt-4 lg:pt-0 lg:border-t-0 lg:border-l lg:pl-6 sm:mt-4 flex flex-col justify-center">
-                                        <h3 className="text-[11px] font-bold tracking-widest text-gray-900 uppercase mb-2">Investment</h3>
-                                        <div className="flex flex-col gap-4">
-                                            {profile.contactForPrice ? (
-                                                <div className="flex flex-col">
-                                                    <span className="text-[10px] font-bold uppercase text-primary mb-0.5">Custom Quote</span>
-                                                    <span className="text-xl font-black text-secondary uppercase tracking-tight">Contact for Pricing</span>
-                                                </div>
-                                            ) : (
-                                                <div className={`grid ${profile.dailyRate > 0 && profile.hourlyRate > 0 ? 'grid-cols-1 sm:grid-cols-2 gap-6' : 'grid-cols-1 gap-4'}`}>
-                                                    {profile.dailyRate > 0 && (
-                                                        <div className="flex flex-col">
-                                                            <span className="text-[10px] font-bold uppercase text-gray-400 mb-0.5">Daily Base Rate</span>
-                                                            <div className="flex items-baseline gap-1.5">
-                                                                <span className="text-3xl font-black text-secondary">${profile.dailyRate}</span>
-                                                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">/day</span>
+                                    {!isAgencyPath && (
+                                        <div className="sm:col-span-2 lg:col-span-1 border-t border-gray-100 pt-4 lg:pt-0 lg:border-t-0 lg:border-l lg:pl-6 sm:mt-4 flex flex-col justify-center">
+                                            <h3 className="text-[11px] font-bold tracking-widest text-gray-900 uppercase mb-2">Investment</h3>
+                                            <div className="flex flex-col gap-4">
+                                                {profile.contactForPrice ? (
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[10px] font-bold uppercase text-primary mb-0.5">Custom Quote</span>
+                                                        <span className="text-xl font-black text-secondary uppercase tracking-tight">Contact for Pricing</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className={`grid ${profile.dailyRate > 0 && profile.hourlyRate > 0 ? 'grid-cols-1 sm:grid-cols-2 gap-6' : 'grid-cols-1 gap-4'}`}>
+                                                        {profile.dailyRate > 0 && (
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[10px] font-bold uppercase text-gray-400 mb-0.5">Daily Base Rate</span>
+                                                                <div className="flex items-baseline gap-1.5">
+                                                                    <span className="text-3xl font-black text-secondary">${profile.dailyRate}</span>
+                                                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">/day</span>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    )}
-                                                    {profile.hourlyRate > 0 && (
-                                                        <div className="flex flex-col">
-                                                            <span className="text-[10px] font-bold uppercase text-gray-400 mb-0.5">Hourly Rate</span>
-                                                            <div className="flex items-baseline gap-1.5">
-                                                                <span className="text-xl font-black text-secondary">${profile.hourlyRate}</span>
-                                                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">/hr</span>
+                                                        )}
+                                                        {profile.hourlyRate > 0 && (
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[10px] font-bold uppercase text-gray-400 mb-0.5">Hourly Rate</span>
+                                                                <div className="flex items-baseline gap-1.5">
+                                                                    <span className="text-xl font-black text-secondary">${profile.hourlyRate}</span>
+                                                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">/hr</span>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    )}
-                                                    {profile.dailyRate === 0 && profile.hourlyRate === 0 && (
-                                                        <div className="flex flex-col">
-                                                            <span className="text-[10px] font-bold uppercase text-primary mb-0.5">Custom Quote</span>
-                                                            <span className="text-xl font-black text-secondary uppercase tracking-tight">Contact for Pricing</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
+                                                        )}
+                                                        {profile.dailyRate === 0 && profile.hourlyRate === 0 && (
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[10px] font-bold uppercase text-primary mb-0.5">Custom Quote</span>
+                                                                <span className="text-xl font-black text-secondary uppercase tracking-tight">Contact for Pricing</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-
-                                    </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -439,7 +451,7 @@ export default function PublicProfilePage() {
                         >
                             <div className="w-full aspect-[4/5] overflow-hidden shadow-2xl rounded-[3rem] border-8 border-white group relative">
                                 <img
-                                    src={profile.profileImageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${profile.profileImageUrl}` : `https://ui-avatars.com/api/?name=${profile.fullName}&background=F5F4F0&color=2563eb`}
+                                    src={getImageUrl(profile.profileImageUrl) || `https://ui-avatars.com/api/?name=${profile.fullName}&background=F5F4F0&color=2563eb`}
                                     alt={profile.fullName}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                                 />
@@ -454,8 +466,8 @@ export default function PublicProfilePage() {
             <div className="max-w-6xl mx-auto px-4 pt-20">
 
 
-                {/* 3. PORTFOLIO: SIGNATURE TOURS (AGENCY ONLY) */}
-                {profile.role === 'Agency' && (
+                 {/* 3. PORTFOLIO: SIGNATURE TOURS (AGENCY ONLY) */}
+                {isAgencyPath && (
                     <div className="mb-24">
                         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-6 pb-6 border-b border-gray-100">
                             <div>
@@ -499,7 +511,7 @@ export default function PublicProfilePage() {
                     <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-6 pb-6 border-b border-gray-100">
                         <div>
                             <h3 className="text-xs font-bold tracking-widest text-primary uppercase mb-3">Gallery</h3>
-                            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">{profile.role === 'Agency' ? 'Team Adventures' : 'Recent Trips'}</h2>
+                            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">{isAgencyPath ? 'Team Adventures' : 'Recent Trips'}</h2>
                         </div>
                         <Link href="/adventures" className="text-sm font-bold text-gray-600 hover:text-primary flex items-center gap-2 group transition-colors px-6 py-3 rounded-full border border-gray-200 hover:border-primary shadow-sm">
                             View All Stories <span className="group-hover:translate-x-1 transition-transform" aria-hidden="true">→</span>
@@ -533,7 +545,7 @@ export default function PublicProfilePage() {
                 </div>
 
                 {/* AGENCY GUIDES SECTION */}
-                {profile.role === 'Agency' && profile.guides && profile.guides.length > 0 && (
+                {isAgencyPath && profile.guides && profile.guides.length > 0 && (
                     <div className="mb-24">
                         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-6 pb-6 border-b border-gray-100">
                             <div>

@@ -102,13 +102,26 @@ const AdventureSimplePage = () => {
             const data = response.data;
             const mappedData: TripDetail = {
                 ...data,
+                id: data.id || data.Id,
+                title: data.title || data.Title,
+                description: data.description || data.Description,
+                location: data.location || data.Location,
+                category: data.category || data.Category,
+                price: data.price || data.Price,
+                duration: data.duration || data.Duration,
+                mapLink: data.mapLink || data.MapLink,
                 images: data.images || data.Images || [],
-                guideId: data.guideId || data.agencyId,
-                guideName: data.guideName || data.agencyName || "Sri Lankan Agency",
-                guideImageUrl: data.guideImageUrl || data.agencyImageUrl,
-                guideRating: data.guideRating || 4.8,
-                guideTotalReviews: data.guideTotalReviews || 12,
-                isAgencyTour: isTour || !!data.agencyId,
+                guideId: data.guideId || data.agencyId || data.AgencyId,
+                guideName: data.guideName || data.agencyName || data.AgencyName || "Sri Lankan Agency",
+                guideImageUrl: data.guideImageUrl || data.agencyImageUrl || data.AgencyImageUrl,
+                guideRating: data.guideRating ?? data.agencyRating ?? data.AgencyRating ?? 4.8,
+                guideTotalReviews: data.guideTotalReviews ?? data.agencyReviewsCount ?? data.AgencyReviewsCount ?? 0,
+                isAgencyTour: isTour || !!data.agencyId || !!data.AgencyId,
+                agencyId: data.agencyId || data.AgencyId,
+                agencyName: data.agencyName || data.AgencyName,
+                agencyImageUrl: data.agencyImageUrl || data.AgencyImageUrl,
+                likeCount: data.likeCount || data.LikeCount || 0,
+                isLikedByCurrentUser: data.isLikedByCurrentUser || data.IsLikedByCurrentUser || false,
                 itinerary: (data.itinerary || data.Itinerary || []).map((s: any) => ({
                     time: s.time || s.Time,
                     title: s.title || s.Title,
@@ -208,9 +221,21 @@ const AdventureSimplePage = () => {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 pt-12 border-t border-gray-100">
                                 <div className="flex flex-col gap-2">
                                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Operating Location</span>
-                                    <div className="flex items-center text-gray-900 font-black italic uppercase text-lg">
-                                        <MapPin size={18} className="mr-3 text-primary" />
-                                        {tour.location}
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center text-gray-900 font-black italic uppercase text-lg">
+                                            <MapPin size={18} className="mr-3 text-primary" />
+                                            {tour.location}
+                                        </div>
+                                        {tour.mapLink && (
+                                            <a 
+                                                href={tour.mapLink} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-primary hover:text-secondary transition-colors underline underline-offset-4"
+                                            >
+                                                View on Digital Map
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
                                 {tour.duration && (
@@ -416,10 +441,10 @@ const AdventureSimplePage = () => {
                                     <div>
                                         <h4 className="text-2xl font-black text-gray-900 tracking-tighter italic">{tour.guideName || tour.agencyName}</h4>
                                         <div className="flex items-center text-xs font-bold text-gray-400 mt-2">
-                                            {tour.guideTotalReviews > 0 ? (
+                                            {tour.guideTotalReviews > 0 || tour.isAgencyTour ? (
                                                 <>
                                                     <Star className="w-3 h-3 text-yellow-400 fill-yellow-400 mr-1" />
-                                                    {tour.guideRating?.toFixed(1)} ({tour.guideTotalReviews} reviews)
+                                                    {tour.guideRating?.toFixed(1) || "5.0"} ({tour.guideTotalReviews || 0} reviews)
                                                 </>
                                             ) : (
                                                 "New Professional Guide"
@@ -429,7 +454,7 @@ const AdventureSimplePage = () => {
                                 </div>
 
                                 <Link 
-                                    href={tour.isAgencyTour ? `/profile/agency/${tour.agencyId}` : `/profile/${tour.guideId}`}
+                                    href={`/profile/${tour.isAgencyTour ? tour.agencyId : tour.guideId}${tour.isAgencyTour ? '?type=agency' : ''}`}
                                     className="w-full bg-gray-900 text-white flex items-center justify-center py-5 font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-black transition-all relative"
                                 >
                                     View Full Profile <ChevronRight size={14} className="ml-2" />

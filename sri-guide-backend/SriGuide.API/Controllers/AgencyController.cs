@@ -200,4 +200,16 @@ public class AgencyController : ControllerBase
         var result = await _mediator.Send(new UploadTourImageCommand(tourId, Guid.Parse(agencyIdString), file));
         return Ok(new { ImageUrl = result });
     }
+
+    [HttpPatch("tours/{id}/toggle-active")]
+    public async Task<IActionResult> ToggleTourStatus(Guid id)
+    {
+        var agencyIdString = User.FindFirstValue("AgencyProfileId");
+        if (string.IsNullOrEmpty(agencyIdString)) return BadRequest("Agency Profile not found");
+
+        var success = await _mediator.Send(new ToggleTourStatusCommand(id, Guid.Parse(agencyIdString)));
+        if (!success) return NotFound("Tour not found or unauthorized");
+
+        return Ok();
+    }
 }

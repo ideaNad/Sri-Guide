@@ -21,7 +21,7 @@ const DISTRICTS = [
 
 // TOUR CATEGORIES
 const CATEGORIES = [
-    "Adventure", "Cultural", "Wildlife", "Beach", "Hiking", "Spiritual", "Culinary", "Luxury", "Photography", "Surfing", "Wellness"
+    "Adventure", "Culture", "Wild Life", "Beach", "Hiking", "Spiritual", "Culinary", "Luxury", "Photography", "Surfing", "Wellness"
 ];
 
 const CreateTourPage = () => {
@@ -44,7 +44,8 @@ const CreateTourPage = () => {
         itinerary: [] as any[],
         dayDescriptions: [
             { dayNumber: 1, description: "", imageUrl: "" }
-        ]
+        ],
+        isActive: true
     });
 
     const [locationSearch, setLocationSearch] = useState("");
@@ -244,13 +245,16 @@ const CreateTourPage = () => {
                                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Duration</label>
                                         <div className="relative">
                                             <Clock className="absolute left-6 top-1/2 -translate-y-1/2 text-teal-600" size={18} />
-                                            <input 
-                                                type="text"
+                                            <select 
                                                 value={formData.duration}
                                                 onChange={e => setFormData({ ...formData, duration: e.target.value })}
-                                                placeholder="e.g. 3 Days"
-                                                className={`w-full bg-gray-50 border-transparent rounded-2xl pl-14 pr-6 py-5 text-sm font-bold focus:bg-white focus:border-teal-200 transition-all outline-none ${errors.duration ? 'border-rose-300 bg-rose-50/20' : ''}`}
-                                            />
+                                                className={`w-full bg-gray-50 border-transparent rounded-2xl pl-14 pr-6 py-5 text-sm font-bold focus:bg-white focus:border-teal-200 transition-all outline-none appearance-none ${errors.duration ? 'border-rose-300 bg-rose-50/20' : ''}`}
+                                            >
+                                                <option value="">Select Duration</option>
+                                                <option value="1-3 Hours">1-3 Hours</option>
+                                                <option value="Full Day">Full Day</option>
+                                                <option value="Multi-day">Multi-day</option>
+                                            </select>
                                             {errors.duration && <p className="text-[9px] font-bold text-rose-500 mt-2 ml-2 uppercase tracking-widest">{errors.duration}</p>}
                                         </div>
                                     </div>

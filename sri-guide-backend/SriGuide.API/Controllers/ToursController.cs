@@ -75,4 +75,15 @@ public class ToursController : ControllerBase
         var result = await _mediator.Send(new UploadTourImageCommand(tourId, Guid.Parse(agencyIdString), file));
         return Ok(new { ImageUrl = result });
     }
+
+    [HttpPost("{tourId}/toggle-like")]
+    [Authorize]
+    public async Task<IActionResult> ToggleLike(Guid tourId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var result = await _mediator.Send(new ToggleTourLikeCommand(tourId, Guid.Parse(userId)));
+        return Ok(new { liked = result });
+    }
 }

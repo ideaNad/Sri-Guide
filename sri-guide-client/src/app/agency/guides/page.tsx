@@ -104,8 +104,11 @@ export default function AgencyGuidesPage() {
         }
     };
 
-    const handleRemove = async (guideId: string) => {
-        if (!confirm("Are you sure you want to remove this guide from your agency?")) return;
+    const handleRemove = async (guideId: string, isPending: boolean = false) => {
+        const message = isPending 
+            ? "Cancel this recruitment request?" 
+            : "Are you sure you want to remove this guide from your agency?";
+        if (!confirm(message)) return;
         try {
             await apiClient.post("/agency/guides/remove", { guideId });
             await fetchGuides();
@@ -151,11 +154,11 @@ export default function AgencyGuidesPage() {
                         className="bg-white rounded-[2rem] p-5 border border-gray-100 shadow-sm hover:shadow-xl transition-all group flex flex-col relative overflow-hidden"
                     >
                         <button 
-                            onClick={() => handleRemove(guide.userId)}
-                            className="absolute top-4 right-4 p-1.5 text-gray-300 hover:text-rose-500 transition-colors z-20"
-                            title="Remove from Agency"
+                            onClick={() => handleRemove(guide.userId, guide.status === 'Approval Pending')}
+                            className="absolute top-4 right-4 p-2 text-gray-300 hover:text-rose-500 transition-colors z-20 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-transparent hover:border-rose-100"
+                            title={guide.status === 'Approval Pending' ? 'Cancel Request' : 'Remove from Agency'}
                         >
-                            <Trash2 size={16} />
+                            {guide.status === 'Approval Pending' ? <X size={14} /> : <Trash2 size={14} />}
                         </button>
  
                         <div className="flex items-center gap-4 mb-5 relative z-10">

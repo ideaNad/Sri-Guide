@@ -42,4 +42,25 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordCommand command)
+    {
+        await _mediator.Send(command);
+        return Ok(new { message = "If an account exists with that email, a password reset link has been sent." });
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword(ResetPasswordCommand command)
+    {
+        try
+        {
+            await _mediator.Send(command);
+            return Ok(new { message = "Password has been reset successfully." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }

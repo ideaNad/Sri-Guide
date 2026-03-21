@@ -2,7 +2,8 @@ namespace SriGuide.Application.Agencies.DTOs;
 
 public class AgencyDashboardDto
 {
-    public int TotalTours { get; set; }
+    public int TotalActiveTours { get; set; }
+    public int TotalHiddenTours { get; set; }
     public int TotalGuides { get; set; }
     public int TotalBookings { get; set; }
     public decimal TotalRevenue { get; set; }

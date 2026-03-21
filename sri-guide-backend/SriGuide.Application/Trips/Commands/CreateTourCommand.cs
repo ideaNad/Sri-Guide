@@ -24,6 +24,7 @@ public record CreateTourCommand(
     string? Category,
     string? Duration,
     string? MapLink,
+    bool IsActive,
     decimal Price,
     string? MainImageUrl,
     List<string>? AdditionalImages,

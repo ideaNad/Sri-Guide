@@ -233,6 +233,20 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess, defau
                                         onChange={handleInputChange}
                                         className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
                                     />
+                                    {isLogin && (
+                                        <div className="flex justify-end pr-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    onClose();
+                                                    window.location.href = "/forgot-password";
+                                                }}
+                                                className="text-[11px] font-bold text-gray-400 hover:text-primary uppercase tracking-widest transition-colors"
+                                            >
+                                                Forgot Password?
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {error && (

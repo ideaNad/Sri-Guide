@@ -5,6 +5,7 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import Card from "@/components/ui/Card";
 import apiClient from "@/services/api-client";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import { Filter, SlidersHorizontal, Search, MapPin, Calendar, Users, Loader2 } from "lucide-react";
 
 interface Tour {
@@ -27,21 +28,58 @@ const ToursPage = () => {
     const [tours, setTours] = useState<Tour[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState("All");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [priceRange, setPriceRange] = useState(500);
+    const [selectedDurations, setSelectedDurations] = useState<string[]>([]);
+    const [sortBy, setSortBy] = useState("Most Popular");
+    const [pageNumber, setPageNumber] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+
+    const fetchTours = async () => {
+        setLoading(true);
+        try {
+            const params = new URLSearchParams({
+                type: "tour",
+                pageNumber: pageNumber.toString(),
+                pageSize: "12",
+                query: searchQuery,
+                category: activeCategory === "All" ? "" : activeCategory,
+                maxPrice: priceRange.toString(),
+                sortBy: sortBy,
+            });
+            
+            if (selectedDurations.length > 0) {
+                // If multiple are selected, we join them or handle accordingly. 
+                // Currently our backend handles a single string for duration filter.
+                params.append("duration", selectedDurations[selectedDurations.length - 1]);
+            }
+
+            const response = await apiClient.get<{ items: Tour[], totalCount: number, totalPages: number }>("/discovery", { params });
+            setTours(response.data.items || []);
+            setTotalCount(response.data.totalCount || 0);
+            setTotalPages(response.data.totalPages || 1);
+        } catch (error) {
+            console.error("Failed to fetch tours:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchTours = async () => {
-            setLoading(true);
-            try {
-                const response = await apiClient.get<Tour[]>("/discovery?type=tour");
-                setTours(response.data || []);
-            } catch (error) {
-                console.error("Failed to fetch tours:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchTours();
-    }, []);
+        const timer = setTimeout(() => {
+            fetchTours();
+        }, 300); // Debounce search
+        return () => clearTimeout(timer);
+    }, [pageNumber, activeCategory, priceRange, selectedDurations, sortBy]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setPageNumber(1); // Reset to first page on search
+            fetchTours();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
 
     const categories = ["All", "Adventure", "Culture", "Wild Life", "Beach", "Hiking"];
 
@@ -62,6 +100,8 @@ const ToursPage = () => {
                             <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                             <input
                                 type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search for tours, activities..."
                                 className="w-full pl-14 pr-6 py-4 bg-white border border-gray-100 rounded-full focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-medium text-sm shadow-md"
                             />
@@ -102,10 +142,17 @@ const ToursPage = () => {
 
                                 <div>
                                     <h4 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-4">Price Range</h4>
-                                    <input type="range" className="w-full accent-primary" />
+                                    <input 
+                                        type="range" 
+                                        min="10"
+                                        max="2000"
+                                        value={priceRange}
+                                        onChange={(e) => setPriceRange(parseInt(e.target.value))}
+                                        className="w-full accent-primary" 
+                                    />
                                     <div className="flex justify-between mt-2 text-xs font-bold text-gray-500">
                                         <span>$10</span>
-                                        <span>$500+</span>
+                                        <span>${priceRange}</span>
                                     </div>
                                 </div>
 
@@ -114,7 +161,15 @@ const ToursPage = () => {
                                     <div className="space-y-3">
                                         {["1-3 Hours", "Full Day", "Multi-day"].map((item) => (
                                             <label key={item} className="flex items-center space-x-3 cursor-pointer group">
-                                                <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0" />
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={selectedDurations.includes(item)}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) setSelectedDurations(prev => [...prev, item]);
+                                                        else setSelectedDurations(prev => prev.filter(d => d !== item));
+                                                    }}
+                                                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0" 
+                                                />
                                                 <span className="text-sm text-gray-600 font-medium group-hover:text-primary transition-colors">{item}</span>
                                             </label>
                                         ))}
@@ -128,9 +183,11 @@ const ToursPage = () => {
                             <Compass className="absolute -right-4 -bottom-4 w-32 h-32 text-white/10 group-hover:rotate-45 transition-transform duration-700" />
                             <h3 className="text-xl font-bold mb-3 relative z-10">Professional Help?</h3>
                             <p className="text-white/80 text-sm mb-8 leading-relaxed font-medium relative z-10">Let our travel experts plan your perfect itinerary tailored to your needs.</p>
-                            <button className="bg-white text-primary px-6 py-3 font-bold text-sm rounded-xl w-full hover:bg-gray-50 hover:shadow-md transition-all relative z-10">
-                                Talk to an Expert
-                            </button>
+                            <Link href="/contact" className="block">
+                                <button className="bg-white text-primary px-6 py-3 font-bold text-sm rounded-xl w-full hover:bg-gray-50 hover:shadow-md transition-all relative z-10">
+                                    Talk to an Expert
+                                </button>
+                            </Link>
                         </div>
                     </aside>
 
@@ -138,14 +195,18 @@ const ToursPage = () => {
                     <div className="lg:w-3/4">
                         <div className="flex items-center justify-between mb-8">
                             <p className="text-sm text-gray-500 font-medium">
-                                {loading ? "Finding curated experiences..." : `Showing ${tours.length} tours across Sri Lanka`}
+                                {loading ? "Finding curated experiences..." : `Showing ${tours.length} of ${totalCount} tours`}
                             </p>
                             <div className="flex items-center space-x-2 text-sm">
                                 <span className="text-gray-400">Sort by:</span>
-                                <select className="bg-transparent font-bold text-gray-900 outline-none cursor-pointer">
+                                <select 
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                    className="bg-transparent font-bold text-gray-900 outline-none cursor-pointer"
+                                >
                                     <option>Most Popular</option>
                                     <option>Price: Low to High</option>
-                                    <option>Top Rated</option>
+                                    <option>Price: High to Low</option>
                                 </select>
                             </div>
                         </div>
@@ -186,11 +247,23 @@ const ToursPage = () => {
                         </div>
 
                         {/* Pagination UI */}
-                        <div className="mt-16 flex justify-center space-x-2">
-                            <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-gray-100 text-gray-500 hover:border-primary hover:text-primary transition-all font-bold text-sm shadow-sm">1</button>
-                            <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-primary text-white font-bold text-sm shadow-md">2</button>
-                            <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-gray-100 text-gray-500 hover:border-primary hover:text-primary transition-all font-bold text-sm shadow-sm">3</button>
-                        </div>
+                        {totalPages > 1 && (
+                            <div className="mt-16 flex justify-center space-x-2">
+                                {Array.from({ length: totalPages }).map((_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setPageNumber(i + 1)}
+                                        className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold text-sm shadow-sm transition-all ${
+                                            pageNumber === i + 1 
+                                            ? "bg-primary text-white shadow-md" 
+                                            : "bg-white border border-gray-100 text-gray-500 hover:border-primary hover:text-primary"
+                                        }`}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

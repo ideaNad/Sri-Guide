@@ -26,7 +26,7 @@ interface CardProps {
     likeCount?: number;
     isLiked?: boolean;
     mapLink?: string;
-    onToggleLike?: (id: string) => void;
+    onToggleLike?: (id: string, type: string) => void;
 }
 
 import ProtectedContact from "./ProtectedContact";
@@ -120,7 +120,7 @@ const Card: React.FC<CardProps> = ({
                         onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            onToggleLike(id.toString());
+                            onToggleLike(id.toString(), type);
                         }}
                         className={`absolute top-4 right-4 p-2.5 rounded-full backdrop-blur-md transition-all shadow-sm z-30 ${isLiked ? 'bg-rose-500 text-white' : 'bg-white/90 text-gray-400 hover:text-rose-500'}`}
                     >

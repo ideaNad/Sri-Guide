@@ -22,19 +22,55 @@ public class GetLikedTripsQueryHandler : IRequestHandler<GetLikedTripsQuery, Lis
             .Include(l => l.Trip)
                 .ThenInclude(t => t!.Images)
             .Where(l => l.UserId == request.UserId)
-            .OrderByDescending(l => l.CreatedAt)
-            .Select(l => l.Trip)
-            .Where(t => t != null && t.IsActive)
+            .Select(l => new { 
+                Trip = l.Trip, 
+                CreatedAt = l.CreatedAt 
+            })
+            .Where(x => x.Trip != null && x.Trip.IsActive)
             .ToListAsync(cancellationToken);
 
-        return likedTrips.Select(t => new DashboardTripDto(
-            t!.Id,
-            t.Title,
-            t.Images.FirstOrDefault()?.ImageUrl,
-            t.Date,
-            t.Description,
-            t.Location,
-            t.Images.Select(i => i.ImageUrl).ToList()
-        )).ToList();
+        var likedTours = await _context.TourLikes
+            .Include(l => l.Tour)
+                .ThenInclude(t => t!.Images)
+            .Where(l => l.UserId == request.UserId)
+            .Select(l => new { 
+                Tour = l.Tour, 
+                CreatedAt = l.CreatedAt 
+            })
+            .Where(x => x.Tour != null && x.Tour.IsActive)
+            .ToListAsync(cancellationToken);
+
+        var tripResult = likedTrips.Select(x => new {
+            Dto = new DashboardTripDto(
+                x.Trip!.Id,
+                x.Trip.Title,
+                x.Trip.Images.FirstOrDefault()?.ImageUrl,
+                x.Trip.Date,
+                x.Trip.Description,
+                x.Trip.Location,
+                x.Trip.Images.Select(i => i.ImageUrl).ToList(),
+                "adventure"
+            ),
+            CreatedAt = x.CreatedAt
+        });
+
+        var tourResult = likedTours.Select(x => new {
+            Dto = new DashboardTripDto(
+                x.Tour!.Id,
+                x.Tour.Title,
+                x.Tour.Images.FirstOrDefault()?.ImageUrl,
+                null,
+                x.Tour.Description,
+                x.Tour.Location,
+                x.Tour.Images.Select(i => i.ImageUrl).ToList(),
+                "tour"
+            ),
+            CreatedAt = x.CreatedAt
+        });
+
+        return tripResult.Concat(tourResult)
+            .OrderByDescending(x => x.CreatedAt)
+            .Select(x => x.Dto)
+            .ToList();
     }
 }

@@ -12,6 +12,8 @@ public class User : BaseEntity
     public string? ProfileImageUrl { get; set; }
     public UserRole Role { get; set; }
     public bool IsVerified { get; set; }
+    public string? PasswordResetToken { get; set; }
+    public DateTime? ResetTokenExpires { get; set; }
 
     public GuideProfile? GuideProfile { get; set; }
     public AgencyProfile? AgencyProfile { get; set; }

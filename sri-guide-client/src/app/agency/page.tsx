@@ -13,7 +13,8 @@ import { useAuth } from "@/providers/AuthContext";
 import apiClient from "@/services/api-client";
 
 interface DashboardStats {
-    totalTours: number;
+    totalActiveTours: number;
+    totalHiddenTours: number;
     totalGuides: number;
     totalBookings: number;
     totalRevenue: number;
@@ -76,7 +77,8 @@ export default function AgencyDashboardPage() {
     }, []);
     
     const statCards = [
-        { label: "Active Tours", value: stats?.totalTours.toString() ?? "0", icon: <Map size={20} />, color: "bg-teal-50 text-teal-600" },
+        { label: "Active Tours", value: stats?.totalActiveTours.toString() ?? "0", icon: <Map size={20} />, color: "bg-emerald-50 text-emerald-600" },
+        { label: "Hidden Tours", value: stats?.totalHiddenTours.toString() ?? "0", icon: <AlertCircle size={20} />, color: "bg-orange-50 text-orange-600" },
         { label: "Elite Guides", value: stats?.totalGuides.toString() ?? "0", icon: <Users size={20} />, color: "bg-blue-50 text-blue-600" },
     ];
 

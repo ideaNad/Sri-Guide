@@ -34,7 +34,7 @@ public class CreateTourCommandHandler : IRequestHandler<CreateTourCommand, Guid>
             Price = request.Price,
             MainImageUrl = request.MainImageUrl,
             AgencyId = agency.Id,
-            IsActive = true
+            IsActive = request.IsActive
         };
 
         if (request.AdditionalImages != null)

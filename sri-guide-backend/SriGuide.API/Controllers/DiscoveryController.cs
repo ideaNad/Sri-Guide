@@ -22,9 +22,28 @@ public class DiscoveryController : ControllerBase
         [FromQuery] string? type,
         [FromQuery] List<string>? languages,
         [FromQuery] List<string>? specialties,
-        [FromQuery] List<string>? areas)
+        [FromQuery] List<string>? areas,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 12,
+        [FromQuery] string? category = null,
+        [FromQuery] decimal? minPrice = null,
+        [FromQuery] decimal? maxPrice = null,
+        [FromQuery] string? duration = null,
+        [FromQuery] string? sortBy = null)
     {
-        var result = await _mediator.Send(new GetDiscoveryQuery(query, type, languages, specialties, areas));
+        var result = await _mediator.Send(new GetDiscoveryQuery(
+            query, 
+            type, 
+            languages, 
+            specialties, 
+            areas, 
+            pageNumber, 
+            pageSize, 
+            category, 
+            minPrice, 
+            maxPrice, 
+            duration, 
+            sortBy));
         return Ok(result);
     }
 

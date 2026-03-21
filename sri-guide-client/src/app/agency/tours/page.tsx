@@ -32,6 +32,7 @@ export default function AgencyToursPage() {
     const [tours, setTours] = useState<Tour[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'hidden'>('all');
 
     const getImageUrl = (url: string | null | undefined) => {
         if (!url) return null;
@@ -58,17 +59,31 @@ export default function AgencyToursPage() {
     const handleDeleteTour = async (id: string) => {
         if (!confirm("Are you sure you want to delete this tour package? This action cannot be undone.")) return;
         try {
-            await apiClient.delete(`/Tours/${id}`);
+            await apiClient.delete(`/Agency/tours/${id}`);
             setTours(prev => prev.filter(t => t.id !== id));
         } catch (error) {
             console.error("Failed to delete tour", error);
         }
     };
 
-    const filteredTours = tours.filter(t => 
-        t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.location.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const handleToggleActive = async (id: string) => {
+        try {
+            await apiClient.patch(`/Agency/tours/${id}/toggle-active`);
+            setTours(prev => prev.map(t => 
+                t.id === id ? { ...t, isActive: !t.isActive } : t
+            ));
+        } catch (error) {
+            console.error("Failed to toggle tour status", error);
+        }
+    };
+
+    const filteredTours = tours.filter(t => {
+        const matchesSearch = t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              t.location.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || 
+                              (statusFilter === 'active' ? t.isActive : !t.isActive);
+        return matchesSearch && matchesStatus;
+    });
 
     return (
         <div className="min-h-screen bg-[#FDFDFF] p-6 lg:p-12">
@@ -93,18 +108,40 @@ export default function AgencyToursPage() {
                     </button>
                 </div>
 
-                {/* Search Bar */}
-                <div className="relative group mb-12">
-                    <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#3061E3] transition-colors">
-                        <Search size={20} />
+                {/* Filters & Search */}
+                <div className="flex flex-col lg:flex-row gap-6 mb-12">
+                    <div className="flex-1 relative group">
+                        <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#3061E3] transition-colors">
+                            <Search size={20} />
+                        </div>
+                        <input 
+                            type="text" 
+                            placeholder="Search tours..." 
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full bg-white border border-gray-100 rounded-[2rem] pl-16 pr-8 py-6 text-gray-700 font-bold focus:outline-none focus:ring-4 focus:ring-[#3061E3]/5 focus:border-[#3061E3] transition-all shadow-sm"
+                        />
                     </div>
-                    <input 
-                        type="text" 
-                        placeholder="Search tours..." 
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-white border border-gray-100 rounded-[2rem] pl-16 pr-8 py-6 text-gray-700 font-bold focus:outline-none focus:ring-4 focus:ring-[#3061E3]/5 focus:border-[#3061E3] transition-all shadow-sm"
-                    />
+
+                    <div className="flex items-center gap-2 bg-white p-2 rounded-[2rem] border border-gray-100 shadow-sm shrink-0">
+                        {[
+                            { id: 'all', label: 'All' },
+                            { id: 'active', label: 'Active' },
+                            { id: 'hidden', label: 'Hidden' }
+                        ].map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setStatusFilter(tab.id as any)}
+                                className={`px-8 py-4 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                    statusFilter === tab.id 
+                                        ? 'bg-[#1A1F2C] text-white shadow-lg' 
+                                        : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                                }`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Grid */}
@@ -133,9 +170,14 @@ export default function AgencyToursPage() {
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                         <div className="absolute top-6 left-6 flex gap-2">
-                                            <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${tour.isActive ? 'bg-[#E8F5E9] text-[#2E7D32]' : 'bg-gray-100 text-gray-500'}`}>
+                                            <button 
+                                                onClick={() => handleToggleActive(tour.id)}
+                                                className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
+                                                    tour.isActive ? 'bg-[#E8F5E9] text-[#2E7D32] border border-[#2E7D32]/20 shadow-lg shadow-emerald-500/10' : 'bg-gray-100/90 backdrop-blur-md text-gray-500 border border-gray-200 shadow-lg'
+                                                }`}
+                                            >
                                                 {tour.isActive ? 'Active' : 'Hidden'}
-                                            </span>
+                                            </button>
                                         </div>
                                         
                                         {/* Quick Actions (Hover) */}

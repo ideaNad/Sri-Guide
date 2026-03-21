@@ -26,7 +26,7 @@ public class GuideAgencyManagementHandler :
         if (guide == null) return false;
 
         var agency = await _context.AgencyProfiles
-            .FirstOrDefaultAsync(a => a.UserId == request.AgencyId, cancellationToken);
+            .FirstOrDefaultAsync(a => a.Id == request.AgencyId, cancellationToken);
 
         if (agency == null) return false;
 
@@ -44,8 +44,8 @@ public class GuideAgencyManagementHandler :
 
         if (guide == null) return false;
 
-        // Verify the guide belongs to this agency's user
-        if (guide.Agency?.UserId != request.AgencyId) return false;
+        // Verify the guide belongs to this agency
+        if (guide.AgencyId != request.AgencyId) return false;
 
         guide.AgencyId = null;
         guide.AgencyRecruitmentStatus = RecruitmentStatus.None;

@@ -42,7 +42,8 @@ public class GetAgencyDashboardQueryHandler : IRequestHandler<GetAgencyDashboard
         var dto = new AgencyDashboardDto
         {
             TotalGuides = agency.Guides.Count,
-            TotalTours = tours.Count,
+            TotalActiveTours = tours.Count(t => t.IsActive),
+            TotalHiddenTours = tours.Count(t => !t.IsActive),
             TotalBookings = bookings.Count,
             TotalRevenue = bookings.Where(b => b.Status == BookingStatus.Confirmed).Sum(b => b.TotalAmount),
             RecentActivities = bookings

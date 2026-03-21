@@ -19,6 +19,7 @@ public interface IApplicationDbContext
     DbSet<TourDay> TourDays { get; }
     DbSet<TourLike> TourLikes { get; }
     DbSet<Feedback> Feedbacks { get; }
+    DbSet<Inquiry> Inquiries { get; }
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

@@ -25,6 +25,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<TourDay> TourDays => Set<TourDay>();
     public DbSet<TourLike> TourLikes => Set<TourLike>();
     public DbSet<Feedback> Feedbacks => Set<Feedback>();
+    public DbSet<Inquiry> Inquiries => Set<Inquiry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

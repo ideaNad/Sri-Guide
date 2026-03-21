@@ -66,13 +66,14 @@ export default function AdventuresPage() {
         fetchTrips();
     };
 
-    const handleToggleLike = async (tripId: string) => {
+    const handleToggleLike = async (id: string, type: string) => {
         if (!user) { setIsAuthModalOpen(true); return; }
         try {
-            const response = await apiClient.post<{ liked: boolean }>(`/trip/${tripId}/toggle-like`);
+            const endpoint = type === 'tour' ? `/tours/${id}/toggle-like` : `/trip/${id}/toggle-like`;
+            const response = await apiClient.post<{ liked: boolean }>(endpoint);
             const { liked } = response.data;
             setTrips(prev => prev.map(t =>
-                t.id === tripId ? { ...t, isLiked: liked, likeCount: liked ? t.likeCount + 1 : t.likeCount - 1 } : t
+                t.id === id ? { ...t, isLiked: liked, likeCount: liked ? t.likeCount + 1 : t.likeCount - 1 } : t
             ));
         } catch (error) {
             console.error("Failed to toggle like", error);

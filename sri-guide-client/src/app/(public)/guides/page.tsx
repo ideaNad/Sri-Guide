@@ -21,6 +21,14 @@ interface DiscoveryItem {
     agencyName?: string;
 }
 
+interface PaginatedResult<T> {
+    items: T[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+    totalPages: number;
+}
+
 const GuidesPage = () => {
     const [guides, setGuides] = useState<DiscoveryItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -31,6 +39,9 @@ const GuidesPage = () => {
     const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
     const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
     const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+    const [pageNumber, setPageNumber] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
 
     const COMMON_LANGUAGES = ["English", "Sinhala", "Tamil", "German", "French", "Italian", "Japanese", "Chinese", "Russian", "Arabic"];
     const COMMON_AREAS = ["Colombo", "Kandy", "Galle", "Ella", "Nuwara Eliya", "Mirissa", "Sigiriya", "Anuradhapura", "Polonnaruwa", "Yala", "Trincomalee", "Jaffna"];
@@ -40,6 +51,8 @@ const GuidesPage = () => {
         const params = new URLSearchParams();
         if (searchQuery) params.append("query", searchQuery);
         params.append("type", "guide");
+        params.append("pageNumber", pageNumber.toString());
+        params.append("pageSize", "12");
         selectedLanguages.forEach(l => params.append("languages", l));
         selectedSpecialties.forEach(s => params.append("specialties", s));
         selectedAreas.forEach(a => params.append("areas", a));
@@ -50,8 +63,10 @@ const GuidesPage = () => {
         setLoading(true);
         try {
             const qs = buildQueryString();
-            const response = await apiClient.get<DiscoveryItem[]>(`/discovery?${qs}`);
-            setGuides(response.data);
+            const response = await apiClient.get<PaginatedResult<DiscoveryItem>>(`/discovery?${qs}`);
+            setGuides(response.data.items || []);
+            setTotalCount(response.data.totalCount || 0);
+            setTotalPages(response.data.totalPages || 1);
         } catch (error) {
             console.error("Failed to fetch guides", error);
         } finally {
@@ -60,8 +75,13 @@ const GuidesPage = () => {
     };
 
     useEffect(() => {
+        setPageNumber(1);
         fetchGuides();
     }, [selectedLanguages, selectedSpecialties, selectedAreas]);
+
+    useEffect(() => {
+        fetchGuides();
+    }, [pageNumber]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -206,76 +226,97 @@ const GuidesPage = () => {
                         <Loader2 className="w-12 h-12 text-primary animate-spin" />
                     </div>
                 ) : guides.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-                        {guides.map((guide, idx) => (
-                            <motion.div
-                                key={guide.id}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: idx * 0.05 }}
-                                className="group bg-white border border-gray-50/80 p-8 shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden relative rounded-3xl"
-                            >
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-700" />
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+                            {guides.map((guide, idx) => (
+                                <motion.div
+                                    key={guide.id}
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    whileInView={{ opacity: 1, scale: 1 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    className="group bg-white border border-gray-50/80 p-8 shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden relative rounded-3xl"
+                                >
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-700" />
 
-                                <div className="flex items-start justify-between mb-8 relative z-10">
-                                    <div className="w-28 h-28 overflow-hidden shadow-lg rounded-full border-4 border-white transform transition-all group-hover:scale-105 group-hover:rotate-2">
-                                        <img 
-                                            src={guide.image?.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${guide.image}` : guide.image} 
-                                            alt={guide.title} 
-                                            className="w-full h-full object-cover transition-all duration-500" 
-                                        />
-                                    </div>
-                                    <div className="flex flex-col items-end">
-                                        <div className="flex items-center bg-primary px-3 py-1.5 rounded-full shadow-sm">
-                                            <Star className="w-3.5 h-3.5 text-highlight fill-highlight mr-1.5" />
-                                            <span className="text-xs font-bold text-white">{guide.rating || 5.0}</span>
+                                    <div className="flex items-start justify-between mb-8 relative z-10">
+                                        <div className="w-28 h-28 overflow-hidden shadow-lg rounded-full border-4 border-white transform transition-all group-hover:scale-105 group-hover:rotate-2">
+                                            <img 
+                                                src={guide.image?.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${guide.image}` : guide.image} 
+                                                alt={guide.title} 
+                                                className="w-full h-full object-cover transition-all duration-500" 
+                                            />
                                         </div>
-                                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-3">{guide.reviews || 0} REVIEWS</span>
+                                        <div className="flex flex-col items-end">
+                                            <div className="flex items-center bg-primary px-3 py-1.5 rounded-full shadow-sm">
+                                                <Star className="w-3.5 h-3.5 text-highlight fill-highlight mr-1.5" />
+                                                <span className="text-xs font-bold text-white">{guide.rating || 5.0}</span>
+                                            </div>
+                                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-3">{guide.reviews || 0} REVIEWS</span>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="mb-6 relative z-10">
-                                    <h3 className="text-2xl font-bold text-secondary mb-1.5 group-hover:text-primary transition-colors">{guide.title}</h3>
-                                    <p className="text-primary font-medium text-sm">{guide.subtitle || "Local Guide"}</p>
-                                </div>
-
-                                <div className="space-y-3 mb-8 relative z-10">
-                                    <div className="flex items-center text-sm text-gray-500 font-medium">
-                                        <Languages className="w-4 h-4 mr-3 text-secondary/60" />
-                                        {guide.tags?.join(", ") || "English, Sinhala"}
+                                    <div className="mb-6 relative z-10">
+                                        <h3 className="text-2xl font-bold text-secondary mb-1.5 group-hover:text-primary transition-colors">{guide.title}</h3>
+                                        <p className="text-primary font-medium text-sm">{guide.subtitle || "Local Guide"}</p>
                                     </div>
-                                    <div className="flex flex-wrap gap-2 mt-3 mb-1">
-                                        {guide.type === 'agency' && (
-                                            <span className="text-blue-600 font-semibold text-xs flex items-center gap-1.5 bg-blue-50 px-2 py-1 rounded">
-                                                <ShieldCheck className="w-4 h-4 text-blue-500" /> Travel Agency
-                                            </span>
-                                        )}
-                                        {guide.isLegit && (
-                                            <span className="text-emerald-600 font-semibold text-xs flex items-center gap-1.5 bg-emerald-50 px-2 py-1 rounded">
-                                                <ShieldCheck className="w-4 h-4 text-emerald-500" /> Licensed Guide <Star size={10} className="fill-emerald-500 text-emerald-500" />
-                                            </span>
-                                        )}
-                                        {guide.agencyName && (
-                                            <span className="text-blue-600 font-semibold text-xs flex items-center gap-1.5 bg-blue-50 px-2 py-1 rounded">
-                                                <Building2 className="w-4 h-4 text-blue-500" /> {guide.agencyName}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
 
-                                <div className="pt-4 border-t border-gray-50 relative z-10">
-                                    <Link 
-                                        href={`/profile/${guide.id}`}
-                                        className="w-full flex items-center justify-center py-4 rounded-2xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all font-black text-xs uppercase tracking-[0.2em] shadow-sm hover:shadow-xl hover:shadow-primary/20"
+                                    <div className="space-y-3 mb-8 relative z-10">
+                                        <div className="flex items-center text-sm text-gray-500 font-medium">
+                                            <Languages className="w-4 h-4 mr-3 text-secondary/60" />
+                                            {guide.tags?.join(", ") || "English, Sinhala"}
+                                        </div>
+                                        <div className="flex flex-wrap gap-2 mt-3 mb-1">
+                                            {guide.type === 'agency' && (
+                                                <span className="text-blue-600 font-semibold text-xs flex items-center gap-1.5 bg-blue-50 px-2 py-1 rounded">
+                                                    <ShieldCheck className="w-4 h-4 text-blue-500" /> Travel Agency
+                                                </span>
+                                            )}
+                                            {guide.isLegit && (
+                                                <span className="text-emerald-600 font-semibold text-xs flex items-center gap-1.5 bg-emerald-50 px-2 py-1 rounded">
+                                                    <ShieldCheck className="w-4 h-4 text-emerald-500" /> Licensed Guide <Star size={10} className="fill-emerald-500 text-emerald-500" />
+                                                </span>
+                                            )}
+                                            {guide.agencyName && (
+                                                <span className="text-blue-600 font-semibold text-xs flex items-center gap-1.5 bg-blue-50 px-2 py-1 rounded">
+                                                    <Building2 className="w-4 h-4 text-blue-500" /> {guide.agencyName}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-4 border-t border-gray-50 relative z-10">
+                                        <Link 
+                                            href={`/profile/${guide.id}`}
+                                            className="w-full flex items-center justify-center py-4 rounded-2xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all font-black text-xs uppercase tracking-[0.2em] shadow-sm hover:shadow-xl hover:shadow-primary/20"
+                                        >
+                                            <UserCircle className="w-4 h-4 mr-2" />
+                                            View Profile
+                                        </Link>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+
+                        {/* Pagination UI */}
+                        {totalPages > 1 && (
+                            <div className="mt-16 flex justify-center space-x-2">
+                                {Array.from({ length: totalPages }).map((_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setPageNumber(i + 1)}
+                                        className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold text-sm shadow-sm transition-all ${
+                                            pageNumber === i + 1 
+                                            ? "bg-primary text-white shadow-md" 
+                                            : "bg-white border border-gray-100 text-gray-500 hover:border-primary hover:text-primary"
+                                        }`}
                                     >
-                                        <UserCircle className="w-4 h-4 mr-2" />
-                                        View Profile
-                                    </Link>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
+                                        {i + 1}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </>
                 ) : (
                     <div className="py-24 text-center bg-gray-50/50 rounded-3xl border border-gray-100 shadow-sm">
                         <Compass className="w-16 h-16 text-primary/20 mx-auto mb-6" />

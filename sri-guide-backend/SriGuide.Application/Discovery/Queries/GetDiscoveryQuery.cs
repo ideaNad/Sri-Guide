@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SriGuide.Application.Common.Interfaces;
+using SriGuide.Application.Common.Models;
 using SriGuide.Domain.Enums;
 
 namespace SriGuide.Application.Discovery.Queries;
@@ -31,10 +32,17 @@ public record GetDiscoveryQuery(
     string? Type,
     List<string>? Languages = null,
     List<string>? Specialties = null,
-    List<string>? Areas = null
-) : IRequest<List<DiscoveryItemDto>>;
+    List<string>? Areas = null,
+    int PageNumber = 1,
+    int PageSize = 10,
+    string? Category = null,
+    decimal? MinPrice = null,
+    decimal? MaxPrice = null,
+    string? Duration = null,
+    string? SortBy = null
+) : IRequest<PaginatedResult<DiscoveryItemDto>>;
 
-public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<DiscoveryItemDto>>
+public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, PaginatedResult<DiscoveryItemDto>>
 {
     private readonly IApplicationDbContext _context;
 
@@ -43,10 +51,113 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
         _context = context;
     }
 
-    public async Task<List<DiscoveryItemDto>> Handle(GetDiscoveryQuery request, CancellationToken cancellationToken)
+    public async Task<PaginatedResult<DiscoveryItemDto>> Handle(GetDiscoveryQuery request, CancellationToken cancellationToken)
     {
         var results = new List<DiscoveryItemDto>();
 
+        // If type is tour, we do full server-side filtering and pagination directly on the Tour table
+        if (string.Equals(request.Type, "tour", StringComparison.OrdinalIgnoreCase))
+        {
+            var tourQuery = _context.Tours
+                .Include(t => t.Agency)
+                .Include(t => t.Images)
+                .Where(t => t.IsActive);
+
+            if (!string.IsNullOrEmpty(request.Query))
+            {
+                tourQuery = tourQuery.Where(t => t.Title.Contains(request.Query) || t.Description.Contains(request.Query));
+            }
+
+            if (!string.IsNullOrEmpty(request.Category) && request.Category != "All")
+            {
+                tourQuery = tourQuery.Where(t => t.Category != null && t.Category.Contains(request.Category));
+            }
+
+            if (request.MinPrice.HasValue)
+            {
+                tourQuery = tourQuery.Where(t => t.Price >= request.MinPrice.Value);
+            }
+
+            if (request.MaxPrice.HasValue)
+            {
+                tourQuery = tourQuery.Where(t => t.Price <= request.MaxPrice.Value);
+            }
+
+            if (!string.IsNullOrEmpty(request.Duration))
+            {
+                if (request.Duration == "1-3 Hours")
+                {
+                    tourQuery = tourQuery.Where(t => t.Duration != null && (t.Duration.Contains("Hour") || t.Duration.Contains("1-3")));
+                }
+                else if (request.Duration == "Full Day")
+                {
+                    tourQuery = tourQuery.Where(t => t.Duration != null && (t.Duration.Contains("Full Day") || t.Duration.Contains("1 Day")));
+                }
+                else if (request.Duration == "Multi-day")
+                {
+                    tourQuery = tourQuery.Where(t => t.Duration != null && (t.Duration.Contains("Multi-day") || t.Duration.Contains("Days") || t.Duration.Contains("2 Day") || t.Duration.Contains("3 Day")));
+                }
+                else
+                {
+                    tourQuery = tourQuery.Where(t => t.Duration != null && t.Duration.Contains(request.Duration));
+                }
+            }
+
+            // Sorting
+            tourQuery = request.SortBy switch
+            {
+                "Price: Low to High" => tourQuery.OrderBy(t => t.Price),
+                "Price: High to Low" => tourQuery.OrderByDescending(t => t.Price),
+                _ => tourQuery.OrderByDescending(t => t.CreatedAt)
+            };
+
+            var totalToursCount = await tourQuery.CountAsync(cancellationToken);
+            var paginatedTours = await tourQuery
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync(cancellationToken);
+
+            foreach (var t in paginatedTours)
+            {
+                var reviews = await _context.Reviews
+                    .Where(r => r.TargetType == "Tour" && r.TargetId == t.Id)
+                    .ToListAsync(cancellationToken);
+                
+                var avgRating = reviews.Any() ? (decimal)Math.Round(reviews.Average(r => (double)r.Rating), 1) : 5.0m;
+                var reviewCount = reviews.Count;
+
+                var firstImage = t.MainImageUrl ?? t.Images.OrderBy(i => i.CreatedAt).FirstOrDefault()?.ImageUrl;
+
+                results.Add(new DiscoveryItemDto(
+                    t.Id,
+                    t.Title,
+                    t.Agency?.CompanyName ?? "Official Tour",
+                    firstImage != null && !firstImage.StartsWith("/") && !firstImage.StartsWith("http") 
+                        ? "/" + firstImage 
+                        : firstImage ?? "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80",
+                    t.Location ?? "Sri Lanka",
+                    avgRating,
+                    reviewCount,
+                    "tour",
+                    new string[] { "Verified", "Agency" },
+                    null,
+                    null,
+                    null,
+                    true,
+                    t.Agency?.CompanyName,
+                    t.Price,
+                    null,
+                    t.Duration,
+                    t.MapLink
+                ));
+            }
+
+            return new PaginatedResult<DiscoveryItemDto>(results, totalToursCount, request.PageNumber, request.PageSize);
+        }
+
+        // For other types (Guide, Agency, or Mixed), we maintain the current in-memory processing for now but with pagination
+        // This can be further optimized if needed.
+        
         // If type is guide or null, add guides
         var isGuideType = string.IsNullOrEmpty(request.Type) || string.Equals(request.Type, "guide", StringComparison.OrdinalIgnoreCase);
         if (isGuideType)
@@ -101,9 +212,9 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
                     g.IsLegit,
                     g.AgencyId != null && g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted ? g.Agency?.CompanyName : null,
                     g.DailyRate,
-                    null, // Date
-                    null, // Duration
-                    null  // MapLink
+                    null,
+                    null,
+                    null
                 ));
             }
         }
@@ -132,66 +243,23 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
                     a.Phone,
                     a.CompanyEmail,
                     a.WhatsApp,
-                    false, // IsLegit
-                    null,  // AgencyName
-                    null,  // Price
-                    null,  // Date
-                    null,  // Duration
-                    null   // MapLink
+                    false,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
                 ))
                 .ToListAsync(cancellationToken);
             
             results.AddRange(agencies);
         }
 
-        var isTourType = string.Equals(request.Type, "tour", StringComparison.OrdinalIgnoreCase);
-        if (isTourType || string.IsNullOrEmpty(request.Type))
-        {
-            var tours = await _context.Tours
-                .Include(t => t.Agency)
-                .Include(t => t.Images)
-                .Where(t => t.IsActive)
-                .Where(t => string.IsNullOrEmpty(request.Query) || 
-                            t.Title.Contains(request.Query) || 
-                            t.Description.Contains(request.Query))
-                .ToListAsync(cancellationToken);
+        // Filter and Paginate the combined results
+        var sortedResults = results.OrderByDescending(r => r.Rating).ThenByDescending(r => r.Reviews).ToList();
+        var totalCount = sortedResults.Count;
+        var paginatedResults = sortedResults.Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize).ToList();
 
-            foreach (var t in tours)
-            {
-                var reviews = await _context.Reviews
-                    .Where(r => r.TargetType == "Tour" && r.TargetId == t.Id)
-                    .ToListAsync(cancellationToken);
-                
-                var avgRating = reviews.Any() ? (decimal)Math.Round(reviews.Average(r => (double)r.Rating), 1) : 5.0m;
-                var reviewCount = reviews.Count;
-
-                var firstImage = t.MainImageUrl ?? t.Images.OrderBy(i => i.CreatedAt).FirstOrDefault()?.ImageUrl;
-
-                results.Add(new DiscoveryItemDto(
-                    t.Id,
-                    t.Title,
-                    t.Agency?.CompanyName ?? "Official Tour",
-                    firstImage != null && !firstImage.StartsWith("/") && !firstImage.StartsWith("http") 
-                        ? "/" + firstImage 
-                        : firstImage ?? "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80",
-                    t.Location ?? "Sri Lanka",
-                    avgRating,
-                    reviewCount,
-                    "tour",
-                    new string[] { "Verified", "Agency" },
-                    null,
-                    null,
-                    null,
-                    true, // IsLegit for agency tours
-                    t.Agency?.CompanyName,
-                    t.Price,
-                    null, // Date for tours is not a single value usually
-                    t.Duration,
-                    t.MapLink
-                ));
-            }
-        }
-
-        return results.OrderByDescending(r => r.Rating).ThenByDescending(r => r.Reviews).ToList();
+        return new PaginatedResult<DiscoveryItemDto>(paginatedResults, totalCount, request.PageNumber, request.PageSize);
     }
 }

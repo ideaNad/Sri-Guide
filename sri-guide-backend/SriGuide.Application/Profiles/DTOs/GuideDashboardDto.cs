@@ -31,5 +31,6 @@ public record DashboardTripDto(
     DateTime? Date,
     string? Description,
     string? Location,
-    List<string> Images
+    List<string> Images,
+    string Type = "adventure"
 );

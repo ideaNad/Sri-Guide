@@ -28,7 +28,8 @@ public class GetGuideTripsQueryHandler : IRequestHandler<GetGuideTripsQuery, Lis
                 t.Date,
                 t.Description,
                 t.Location,
-                t.Images.Select(i => i.ImageUrl).ToList()
+                t.Images.Select(i => i.ImageUrl).ToList(),
+                "adventure"
             ))
             .ToListAsync(cancellationToken);
     }

@@ -15,6 +15,7 @@ interface LikedTrip {
     description: string;
     location: string;
     images: string[];
+    type: "tour" | "adventure";
 }
 
 export default function SavedToursPage() {
@@ -46,6 +47,17 @@ export default function SavedToursPage() {
         }
     };
 
+    const handleToggleLike = async (id: string, type: string) => {
+        try {
+            const endpoint = type === 'tour' ? `/tours/${id}/toggle-like` : `/trip/${id}/toggle-like`;
+            await apiClient.post(endpoint);
+            // Since we are in the "Saved" page, toggling like always means removing it from the list
+            setLikedTrips(prev => prev.filter(t => t.id !== id));
+        } catch (error) {
+            console.error("Failed to toggle like", error);
+        }
+    };
+
     if (loading || !user || user.role !== "Tourist") {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50/30">
@@ -60,13 +72,13 @@ export default function SavedToursPage() {
                 <div>
                     <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
                         <Heart className="text-rose-500 fill-rose-500" size={28} />
-                        Saved Tours
+                        Saved Adventures
                     </h1>
-                    <p className="text-gray-500 font-medium mt-1">Your personal collection of Sri Lankan adventures</p>
+                    <p className="text-gray-500 font-medium mt-1">Your personal collection of Sri Lankan journeys</p>
                 </div>
                 
                 <button 
-                    onClick={() => router.push('/guides')}
+                    onClick={() => router.push('/adventures')}
                     className="flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-primary transition-all shadow-lg"
                 >
                     <Compass size={18} />
@@ -89,9 +101,11 @@ export default function SavedToursPage() {
                             title={trip.title}
                             image={trip.primaryImageUrl || "/images/placeholder-trip.jpg"}
                             location={trip.location}
-                            type="tour"
+                            type={trip.type}
                             subtitle={trip.description}
                             tags={[]}
+                            isLiked={true}
+                            onToggleLike={handleToggleLike}
                         />
                     ))}
                 </div>
@@ -100,7 +114,7 @@ export default function SavedToursPage() {
                     <div className="w-24 h-24 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6 text-rose-500">
                         <Heart size={40} className="stroke-[1.5px]" />
                     </div>
-                    <h2 className="text-2xl font-black text-gray-900 mb-3">No saved tours yet</h2>
+                    <h2 className="text-2xl font-black text-gray-900 mb-3">No saved items yet</h2>
                     <p className="text-gray-500 max-w-sm mx-auto mb-10 font-medium">
                         Start exploring our curated trips and click the heart icon to save your favorites for later.
                     </p>
