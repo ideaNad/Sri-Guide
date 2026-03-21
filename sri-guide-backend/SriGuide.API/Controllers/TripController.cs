@@ -41,62 +41,73 @@ public class TripController : ControllerBase
     }
 
     [HttpPost]
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Guide")]
+    [Authorize(Roles = "Guide,TravelAgency")]
     public async Task<IActionResult> CreateTrip([FromBody] CreateTripCommand command)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var agencyId = User.FindFirstValue("AgencyProfileId");
+        
         if (userId == null) return Unauthorized();
 
-        var result = await _mediator.Send(command with { GuideId = Guid.Parse(userId) });
+        var result = await _mediator.Send(command with { 
+            GuideId = User.IsInRole("Guide") ? Guid.Parse(userId) : command.GuideId,
+            AgencyId = !string.IsNullOrEmpty(agencyId) ? Guid.Parse(agencyId) : null
+        });
         return Ok(result);
     }
 
     [HttpPost("{tripId}/upload-photo")]
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Guide")]
+    [Authorize(Roles = "Guide,TravelAgency")]
     public async Task<IActionResult> UploadTripImage(Guid tripId, IFormFile file)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var agencyId = User.FindFirstValue("AgencyProfileId");
+        
         if (userId == null) return Unauthorized();
-        var result = await _mediator.Send(new UploadTripImageCommand(tripId, Guid.Parse(userId), file));
+        
+        var result = await _mediator.Send(new UploadTripImageCommand(
+            tripId, 
+            User.IsInRole("Guide") ? Guid.Parse(userId) : null, 
+            !string.IsNullOrEmpty(agencyId) ? Guid.Parse(agencyId) : null, 
+            file));
+            
         return Ok(new { ImageUrl = result });
     }
 
     [HttpDelete("{tripId}")]
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Guide")]
+    [Authorize(Roles = "Guide,TravelAgency")]
     public async Task<IActionResult> DeleteTrip(Guid tripId)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var agencyId = User.FindFirstValue("AgencyProfileId");
+        
         if (userId == null) return Unauthorized();
 
-        var success = await _mediator.Send(new DeleteTripCommand(tripId, Guid.Parse(userId)));
+        var success = await _mediator.Send(new DeleteTripCommand(
+            tripId, 
+            User.IsInRole("Guide") ? Guid.Parse(userId) : null,
+            !string.IsNullOrEmpty(agencyId) ? Guid.Parse(agencyId) : null));
+            
         if (!success) return NotFound("Trip not found or you don't have permission to delete it.");
 
         return Ok();
     }
 
-    [HttpDelete("{tripId}/photo")]
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Guide")]
-    public async Task<IActionResult> DeleteTripImage(Guid tripId, [FromQuery] string imageUrl)
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null) return Unauthorized();
-
-        var success = await _mediator.Send(new DeleteTripImageCommand(tripId, Guid.Parse(userId), imageUrl));
-        if (!success) return NotFound("Trip not found or image not found.");
-
-        return Ok();
-    }
-
     [HttpPut("{tripId}")]
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Guide")]
+    [Authorize(Roles = "Guide,TravelAgency")]
     public async Task<IActionResult> UpdateTrip(Guid tripId, [FromBody] UpdateTripCommand command)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null) return Unauthorized();
+        var agencyId = User.FindFirstValue("AgencyProfileId");
 
+        if (userId == null) return Unauthorized();
         if (tripId != command.TripId) return BadRequest("Trip ID mismatch");
 
-        var success = await _mediator.Send(command with { GuideId = Guid.Parse(userId) });
+        var success = await _mediator.Send(command with { 
+            GuideId = User.IsInRole("Guide") ? Guid.Parse(userId) : null,
+            AgencyId = !string.IsNullOrEmpty(agencyId) ? Guid.Parse(agencyId) : null
+        });
+        
         if (!success) return NotFound("Trip not found or you don't have permission to update it.");
 
         return Ok();

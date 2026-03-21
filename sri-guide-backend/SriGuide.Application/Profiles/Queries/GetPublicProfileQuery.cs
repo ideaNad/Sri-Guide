@@ -89,6 +89,12 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
             }).ToList();
         }
 
+        var toursRaw = await _context.Tours
+            .Include(t => t.Images)
+            .Where(t => t.AgencyId == (isAgency ? agencyProfile!.Id : Guid.Empty) && t.IsActive)
+            .OrderByDescending(t => t.CreatedAt)
+            .ToListAsync(cancellationToken);
+
         var tripsRaw = await _context.Trips
             .Include(t => t.Images)
             .Where(t => (isAgency 
@@ -105,6 +111,18 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
                 .ToListAsync(cancellationToken)
             : new List<Guid>();
 
+        var userLikedTourIds = request.CurrentUserId.HasValue
+            ? await _context.TourLikes
+                .Where(tl => tl.UserId == request.CurrentUserId.Value)
+                .Select(tl => tl.TourId)
+                .ToListAsync(cancellationToken)
+            : new List<Guid>();
+
+        var tourIds = toursRaw.Select(t => t.Id).ToList();
+        var tourReviews = await _context.Reviews
+            .Where(r => r.TargetType == "Tour" && tourIds.Contains(r.TargetId))
+            .ToListAsync(cancellationToken);
+
         var tripIds = tripsRaw.Select(t => t.Id).ToList();
         var tripReviews = await _context.Reviews
             .Where(r => r.TargetType == "Trip" && tripIds.Contains(r.TargetId))
@@ -112,35 +130,49 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
 
         if (isAgency)
         {
-            // For agency, total reviews could be sum of all trip reviews
-            totalReviews = tripReviews.Count;
-            averageRating = tripReviews.Any() ? Math.Round(tripReviews.Average(r => (double)r.Rating), 1) : 5.0;
+            // For agency, average rating from both tours and trips
+            var allReviews = tourReviews.Concat(tripReviews).ToList();
+            totalReviews = allReviews.Count;
+            averageRating = allReviews.Any() ? Math.Round(allReviews.Average(r => (double)r.Rating), 1) : 5.0;
         }
 
-        var allPublicTrips = tripsRaw.Select(t => {
+        var agencyTours = toursRaw.Select(t => {
+            var reviewsForTour = tourReviews.Where(r => r.TargetId == t.Id).ToList();
+            var rating = reviewsForTour.Any() ? Math.Round(reviewsForTour.Average(r => (double)r.Rating), 1) : 5.0;
+            var reviewCount = reviewsForTour.Count;
+
+            return new PublicTripDto(
+                t.Id,
+                t.Title,
+                t.MainImageUrl ?? t.Images.OrderBy(i => i.CreatedAt).Select(i => i.ImageUrl).FirstOrDefault() ?? "",
+                null,
+                t.Description,
+                t.Location,
+                rating,
+                reviewCount,
+                t.Images.Select(i => i.ImageUrl).ToList(),
+                userLikedTourIds.Contains(t.Id)
+            );
+        }).ToList();
+
+        var recentTrips = tripsRaw.Select(t => {
             var reviewsForTrip = tripReviews.Where(r => r.TargetId == t.Id).ToList();
             var rating = reviewsForTrip.Any() ? Math.Round(reviewsForTrip.Average(r => (double)r.Rating), 1) : 5.0;
             var reviewCount = reviewsForTrip.Count;
 
-            return new {
-                IsAgencyTour = t.IsAgencyTour,
-                Dto = new PublicTripDto(
-                    t.Id,
-                    t.Title,
-                    t.Images.OrderBy(i => i.CreatedAt).Select(i => i.ImageUrl != null && !i.ImageUrl.StartsWith("/") && !i.ImageUrl.Contains("://") ? "/" + i.ImageUrl : i.ImageUrl).FirstOrDefault() ?? "",
-                    t.Date,
-                    t.Description,
-                    t.Location,
-                    rating,
-                    reviewCount,
-                    t.Images.Select(i => i.ImageUrl != null && !i.ImageUrl.StartsWith("/") && !i.ImageUrl.Contains("://") ? "/" + i.ImageUrl : i.ImageUrl).Where(url => url != null).Cast<string>().ToList(),
-                    userLikedTripIds.Contains(t.Id)
-                )
-            };
+            return new PublicTripDto(
+                t.Id,
+                t.Title,
+                t.Images.OrderBy(i => i.CreatedAt).Select(i => i.ImageUrl != null && !i.ImageUrl.StartsWith("/") && !i.ImageUrl.Contains("://") ? "/" + i.ImageUrl : i.ImageUrl).FirstOrDefault() ?? "",
+                t.Date,
+                t.Description,
+                t.Location,
+                rating,
+                reviewCount,
+                t.Images.Select(i => i.ImageUrl != null && !i.ImageUrl.StartsWith("/") && !i.ImageUrl.Contains("://") ? "/" + i.ImageUrl : i.ImageUrl).Where(url => url != null).Cast<string>().ToList(),
+                userLikedTripIds.Contains(t.Id)
+            );
         }).ToList();
-
-        var agencyTours = allPublicTrips.Where(x => x.IsAgencyTour).Select(x => x.Dto).ToList();
-        var recentTrips = allPublicTrips.Where(x => !x.IsAgencyTour).Select(x => x.Dto).ToList();
 
         return new PublicProfileDto(
             user.Id,

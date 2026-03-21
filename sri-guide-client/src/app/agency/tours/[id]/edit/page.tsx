@@ -53,7 +53,8 @@ const EditTourPage = () => {
         additionalImages: [] as string[],
         guideId: null as string | null,
         isActive: true,
-        itinerary: [] as any[]
+        itinerary: [] as any[],
+        dayDescriptions: [] as { dayNumber: number, description: string, imageUrl?: string }[]
     });
 
     const [locationSearch, setLocationSearch] = useState("");
@@ -90,7 +91,14 @@ const EditTourPage = () => {
                     additionalImages: gallery,
                     guideId: tour.guideId || null,
                     isActive: tour.isActive ?? true,
-                    itinerary: tour.itinerary || []
+                    itinerary: tour.itinerary || [],
+                    dayDescriptions: (tour.dayDescriptions && tour.dayDescriptions.length > 0)
+                        ? tour.dayDescriptions
+                        : (tour.itinerary && tour.itinerary.length > 0)
+                            ? Array.from(new Set(tour.itinerary.map((i: any) => i.dayNumber)))
+                                .sort((a: any, b: any) => a - b)
+                                .map(dayNum => ({ dayNumber: dayNum as number, description: "", imageUrl: "" }))
+                            : [{ dayNumber: 1, description: "", imageUrl: "" }]
                 });
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -131,19 +139,17 @@ const EditTourPage = () => {
         setFormData({
             ...formData,
             itinerary: [...formData.itinerary, { 
-                time: "09:00 AM", title: "", description: "", imageUrl: "", dayNumber, order: newOrder 
+                time: "", title: "", description: "", imageUrl: "", dayNumber, order: newOrder 
             }]
         });
     };
 
     const handleAddDay = () => {
-        const maxDay = formData.itinerary.length > 0 ? Math.max(...formData.itinerary.map(i => i.dayNumber)) : 0;
+        const maxDay = formData.dayDescriptions.length > 0 ? Math.max(...formData.dayDescriptions.map(d => d.dayNumber)) : 0;
         const newDay = maxDay + 1;
         setFormData({
             ...formData,
-            itinerary: [...formData.itinerary, { 
-                time: "09:00 AM", title: `Day ${newDay} Start`, description: "", imageUrl: "", dayNumber: newDay, order: 1 
-            }]
+            dayDescriptions: [...formData.dayDescriptions, { dayNumber: newDay, description: "", imageUrl: "" }]
         });
     };
 
@@ -157,7 +163,15 @@ const EditTourPage = () => {
                     }
                     return i;
                 });
-            return { ...prev, itinerary: newItinerary };
+            const newDayDescriptions = prev.dayDescriptions
+                .filter(d => d.dayNumber !== dayNumber)
+                .map(d => {
+                    if (d.dayNumber > dayNumber) {
+                        return { ...d, dayNumber: d.dayNumber - 1 };
+                    }
+                    return d;
+                });
+            return { ...prev, itinerary: newItinerary, dayDescriptions: newDayDescriptions };
         });
     };
 
@@ -200,7 +214,8 @@ const EditTourPage = () => {
                 itinerary: formData.itinerary.map(s => ({
                     ...s,
                     imageUrl: s.imageUrl || null
-                }))
+                })),
+                dayDescriptions: formData.dayDescriptions
             };
             await apiClient.put(`/agency/tours/${tourId}`, payload);
             router.push("/agency/tours");
@@ -604,7 +619,9 @@ const EditTourPage = () => {
                         </div>
 
                         <div className="space-y-16 mt-10 text-left">
-                            {Array.from(new Set(formData.itinerary.map(i => i.dayNumber))).sort((a, b) => a - b).map(dayNum => (
+                            {formData.dayDescriptions.sort((a, b) => a.dayNumber - b.dayNumber).map(day => {
+                                const dayNum = day.dayNumber;
+                                return (
                                 <div key={dayNum} className="space-y-8 p-10 bg-gray-50/50 rounded-[3rem] border border-gray-100/50 relative group/day">
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-4">
@@ -632,88 +649,146 @@ const EditTourPage = () => {
                                         </div>
                                     </div>
 
+                                    <div className="space-y-4 px-2 mb-8">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Day Overview</label>
+                                        <textarea 
+                                            rows={2}
+                                            value={formData.dayDescriptions.find(d => d.dayNumber === dayNum)?.description || ""} 
+                                            onChange={e => {
+                                                const newDays = [...formData.dayDescriptions];
+                                                const dayIdx = newDays.findIndex(d => d.dayNumber === dayNum);
+                                                if (dayIdx > -1) {
+                                                    newDays[dayIdx].description = e.target.value;
+                                                    setFormData({ ...formData, dayDescriptions: newDays });
+                                                }
+                                            }}
+                                            placeholder="What makes this day special? (Optional)"
+                                            className="w-full bg-white border-transparent rounded-[1.5rem] px-8 py-5 text-sm font-medium text-gray-700 focus:border-indigo-200 transition-all outline-none resize-none leading-relaxed shadow-sm italic text-left"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-4 px-2 mb-8 text-left">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Day Image</label>
+                                        <div className="max-w-xs">
+                                            <ImageUpload 
+                                                value={formData.dayDescriptions.find(d => d.dayNumber === dayNum)?.imageUrl || ""} 
+                                                onChange={url => {
+                                                    const newDays = [...formData.dayDescriptions];
+                                                    const dayIdx = newDays.findIndex(d => d.dayNumber === dayNum);
+                                                    if (dayIdx > -1) {
+                                                        newDays[dayIdx].imageUrl = url;
+                                                        setFormData({ ...formData, dayDescriptions: newDays });
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+
                                     <div className="space-y-8">
-                                        {formData.itinerary.filter(i => i.dayNumber === dayNum).sort((a, b) => a.order - b.order).map((item, idx) => {
-                                            const globalIndex = formData.itinerary.findIndex(it => it === item);
-                                            return (
-                                                <div key={idx} className="relative pl-12 border-l-2 border-dashed border-gray-200 pb-10 last:pb-0">
-                                                    <div className="absolute -left-3 top-0 w-6 h-6 bg-white border-2 border-teal-600 rounded-full flex items-center justify-center shadow-lg shadow-teal-600/20">
-                                                        <div className="w-1.5 h-1.5 bg-teal-600 rounded-full" />
-                                                    </div>
-                                                    
-                                                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-                                                        <div className="md:col-span-4 space-y-4">
-                                                            <div className="space-y-2">
-                                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest text-left block">Timing</label>
-                                                                <input 
-                                                                    type="time" 
-                                                                    value={item.time} 
-                                                                    onChange={e => {
-                                                                        const newIt = [...formData.itinerary];
-                                                                        newIt[globalIndex].time = e.target.value;
-                                                                        setFormData({ ...formData, itinerary: newIt });
+                                        {formData.itinerary.filter(i => i.dayNumber === dayNum).length > 0 ? (
+                                            formData.itinerary.filter(i => i.dayNumber === dayNum).sort((a, b) => a.order - b.order).map((item, idx) => {
+                                                const globalIndex = formData.itinerary.findIndex(it => it === item);
+                                                return (
+                                                    <motion.div 
+                                                        key={idx}
+                                                        layout
+                                                        initial={{ opacity: 0, scale: 0.95 }}
+                                                        animate={{ opacity: 1, scale: 1 }}
+                                                        className="relative bg-gray-50/50 rounded-[2.5rem] p-10 border border-gray-100 hover:border-indigo-100 transition-all group"
+                                                    >
+                                                        <button 
+                                                            onClick={() => {
+                                                                const newItinerary = [...formData.itinerary];
+                                                                newItinerary.splice(globalIndex, 1);
+                                                                setFormData({ ...formData, itinerary: newItinerary });
+                                                            }}
+                                                            className="absolute -top-3 -right-3 p-3 bg-white text-rose-500 rounded-2xl shadow-xl border border-rose-50 hover:bg-rose-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left">
+                                                            <div className="space-y-8">
+                                                                <div className="flex gap-4">
+                                                                    <div className="flex-1 space-y-3">
+                                                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Title</label>
+                                                                        <input 
+                                                                            type="text"
+                                                                            value={item.title}
+                                                                            onChange={e => {
+                                                                                const newItinerary = [...formData.itinerary];
+                                                                                newItinerary[globalIndex].title = e.target.value;
+                                                                                setFormData({ ...formData, itinerary: newItinerary });
+                                                                            }}
+                                                                            placeholder="Activity Title"
+                                                                            className="w-full bg-white border-transparent rounded-2xl px-6 py-4 text-sm font-bold text-gray-900 focus:border-indigo-200 transition-all outline-none"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="w-32 space-y-3">
+                                                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Time</label>
+                                                                        <input 
+                                                                            type="text"
+                                                                            value={item.time}
+                                                                            onChange={e => {
+                                                                                const newItinerary = [...formData.itinerary];
+                                                                                newItinerary[globalIndex].time = e.target.value;
+                                                                                setFormData({ ...formData, itinerary: newItinerary });
+                                                                            }}
+                                                                            placeholder="Time"
+                                                                            className="w-full bg-white border-transparent rounded-2xl px-6 py-4 text-sm font-bold text-gray-900 focus:border-indigo-200 transition-all outline-none"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div className="space-y-3">
+                                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Highlights</label>
+                                                                    <textarea 
+                                                                        rows={3}
+                                                                        value={item.description}
+                                                                        onChange={e => {
+                                                                            const newItinerary = [...formData.itinerary];
+                                                                            newItinerary[globalIndex].description = e.target.value;
+                                                                            setFormData({ ...formData, itinerary: newItinerary });
+                                                                        }}
+                                                                        placeholder="Brief description"
+                                                                        className="w-full bg-white border-transparent rounded-[1.5rem] px-8 py-5 text-sm font-medium text-gray-700 focus:border-indigo-200 transition-all outline-none resize-none"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div className="space-y-4">
+                                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Point Visual</label>
+                                                                <ImageUpload 
+                                                                    value={item.imageUrl} 
+                                                                    onChange={url => {
+                                                                        const newItinerary = [...formData.itinerary];
+                                                                        newItinerary[globalIndex].imageUrl = url;
+                                                                        setFormData({ ...formData, itinerary: newItinerary });
                                                                     }}
-                                                                    className="w-full bg-white border-transparent rounded-xl px-4 py-3 text-xs font-bold focus:border-teal-200 transition-all outline-none cursor-pointer"
                                                                 />
                                                             </div>
-                                                            <ImageUpload 
-                                                                value={item.imageUrl}
-                                                                label="Step Photo"
-                                                                onChange={(url) => {
-                                                                    const newIt = [...formData.itinerary];
-                                                                    newIt[globalIndex].imageUrl = url;
-                                                                    setFormData({ ...formData, itinerary: newIt });
-                                                                }}
-                                                                aspectRatio="video"
-                                                            />
                                                         </div>
-                                                        <div className="md:col-span-7 space-y-4 text-left">
-                                                            <div className="space-y-2">
-                                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block">Activity Title</label>
-                                                                <input 
-                                                                    type="text" 
-                                                                    value={item.title} 
-                                                                    onChange={e => {
-                                                                        const newIt = [...formData.itinerary];
-                                                                        newIt[globalIndex].title = e.target.value;
-                                                                        setFormData({ ...formData, itinerary: newIt });
-                                                                    }}
-                                                                    placeholder="Activity description"
-                                                                    className="w-full bg-white border-transparent rounded-xl px-6 py-4 text-sm font-bold focus:border-teal-200 transition-all outline-none"
-                                                                />
-                                                            </div>
-                                                            <div className="space-y-2">
-                                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block">Highlights</label>
-                                                                <textarea 
-                                                                    rows={3}
-                                                                    value={item.description} 
-                                                                    onChange={e => {
-                                                                        const newIt = [...formData.itinerary];
-                                                                        newIt[globalIndex].description = e.target.value;
-                                                                        setFormData({ ...formData, itinerary: newIt });
-                                                                    }}
-                                                                    placeholder="What will they experience?"
-                                                                    className="w-full bg-white border-transparent rounded-xl px-6 py-4 text-xs font-medium text-gray-600 focus:border-teal-200 transition-all outline-none resize-none leading-relaxed"
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                        <div className="md:col-span-1 pt-8">
-                                                            {(formData.itinerary.filter(i => i.dayNumber === dayNum).length > 1) && (
-                                                                <button 
-                                                                    onClick={() => setFormData({ ...formData, itinerary: formData.itinerary.filter(it => it !== item) })}
-                                                                    className="p-3 text-gray-300 hover:text-rose-500 transition-colors"
-                                                                >
-                                                                    <Trash2 size={18} />
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
+                                                    </motion.div>
+                                                );
+                                            })
+                                        ) : (
+                                            <div className="py-12 border-2 border-dashed border-gray-100 rounded-[3rem] text-center">
+                                                <Info className="w-12 h-12 text-gray-100 mx-auto mb-4" />
+                                                <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest leading-loose max-w-xs mx-auto">
+                                                    No activities scheduled for this day. Added activities will appear here.
+                                                </p>
+                                            </div>
+                                        )}
+                                        
+                                        <button 
+                                            onClick={() => handleAddActivity(dayNum)}
+                                            className="w-full py-6 rounded-[2rem] border-2 border-dashed border-indigo-100 text-indigo-600 font-black text-[10px] uppercase tracking-widest hover:bg-indigo-50/50 hover:border-indigo-300 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <Plus size={16} /> Add Activity for Day {dayNum}
+                                        </button>
                                     </div>
                                 </div>
-                            ))}
+                            ); })}
                             
                             <button 
                                 onClick={handleAddDay}

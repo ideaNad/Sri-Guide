@@ -19,7 +19,10 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponse>
 
     public async Task<AuthResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
+        var user = await _context.Users
+            .Include(u => u.AgencyProfile)
+            .Include(u => u.GuideProfile)
+            .FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
 
         if (user == null || !BC.Verify(request.Password, user.PasswordHash))
         {

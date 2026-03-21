@@ -38,8 +38,9 @@ public class GetRecentTripsQueryHandler : IRequestHandler<GetRecentTripsQuery, L
     {
         var recentTrips = await _context.Trips
             .Include(t => t.Guide)
+            .Include(t => t.Agency)
             .Include(t => t.Images)
-            .Where(t => t.IsActive && (!t.IsAgencyTour || t.GuideId != null))
+            .Where(t => t.IsActive)
             .OrderByDescending(t => t.CreatedAt)
             .Take(6)
             .ToListAsync(cancellationToken);
@@ -62,18 +63,18 @@ public class GetRecentTripsQueryHandler : IRequestHandler<GetRecentTripsQuery, L
             !t.Images.OrderBy(i => i.CreatedAt).Select(i => i.ImageUrl).FirstOrDefault()!.StartsWith("http")
                 ? "/" + t.Images.OrderBy(i => i.CreatedAt).Select(i => i.ImageUrl).FirstOrDefault()
                 : t.Images.OrderBy(i => i.CreatedAt).Select(i => i.ImageUrl).FirstOrDefault(),
-            t.Guide != null ? t.Guide.FullName : "Unknown Guide",
+            t.Guide != null ? t.Guide.FullName : (t.Agency != null ? t.Agency.CompanyName : "Unknown"),
             t.Guide != null && t.Guide.ProfileImageUrl != null && !t.Guide.ProfileImageUrl.StartsWith("/") && !t.Guide.ProfileImageUrl.StartsWith("http")
                 ? "/" + t.Guide.ProfileImageUrl
-                : (t.Guide != null ? t.Guide.ProfileImageUrl : null),
-            t.GuideId,
+                : (t.Guide != null ? t.Guide.ProfileImageUrl : (t.Agency != null ? "https://ui-avatars.com/api/?name=" + t.Agency.CompanyName : null)),
+            t.GuideId ?? t.AgencyId,
             _context.TripLikes.Count(tl => tl.TripId == t.Id),
             userLikedTripIds.Contains(t.Id),
-            t.Price,
-            t.Duration,
-            t.MapLink,
-            t.Category,
-            t.IsAgencyTour
+            null, // Price
+            null, // Duration
+            null, // MapLink
+            null, // Category
+            false // IsAgencyTour
         )).ToList();
     }
 }

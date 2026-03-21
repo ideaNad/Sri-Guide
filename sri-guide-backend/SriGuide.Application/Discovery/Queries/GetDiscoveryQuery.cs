@@ -145,12 +145,12 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
         }
 
         var isTourType = string.Equals(request.Type, "tour", StringComparison.OrdinalIgnoreCase);
-        if (isTourType)
+        if (isTourType || string.IsNullOrEmpty(request.Type))
         {
-            var tours = await _context.Trips
+            var tours = await _context.Tours
                 .Include(t => t.Agency)
                 .Include(t => t.Images)
-                .Where(t => t.IsAgencyTour && t.IsActive && t.GuideId == null)
+                .Where(t => t.IsActive)
                 .Where(t => string.IsNullOrEmpty(request.Query) || 
                             t.Title.Contains(request.Query) || 
                             t.Description.Contains(request.Query))
@@ -159,13 +159,13 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
             foreach (var t in tours)
             {
                 var reviews = await _context.Reviews
-                    .Where(r => r.TargetType == "Trip" && r.TargetId == t.Id)
+                    .Where(r => r.TargetType == "Tour" && r.TargetId == t.Id)
                     .ToListAsync(cancellationToken);
                 
                 var avgRating = reviews.Any() ? (decimal)Math.Round(reviews.Average(r => (double)r.Rating), 1) : 5.0m;
                 var reviewCount = reviews.Count;
 
-                var firstImage = t.Images.OrderBy(i => i.CreatedAt).FirstOrDefault()?.ImageUrl;
+                var firstImage = t.MainImageUrl ?? t.Images.OrderBy(i => i.CreatedAt).FirstOrDefault()?.ImageUrl;
 
                 results.Add(new DiscoveryItemDto(
                     t.Id,
@@ -185,7 +185,7 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, List<
                     true, // IsLegit for agency tours
                     t.Agency?.CompanyName,
                     t.Price,
-                    t.Date?.ToString("MMM dd, yyyy"),
+                    null, // Date for tours is not a single value usually
                     t.Duration,
                     t.MapLink
                 ));

@@ -6,11 +6,12 @@ namespace SriGuide.Application.Trips.Commands;
 
 public record UpdateTripCommand(
     Guid TripId,
-    Guid GuideId,
+    Guid? GuideId,
     string Title,
     string Location,
     string Description,
-    DateTime? Date
+    DateTime? Date,
+    Guid? AgencyId = null
 ) : IRequest<bool>;
 
 public class UpdateTripCommandHandler : IRequestHandler<UpdateTripCommand, bool>
@@ -25,14 +26,16 @@ public class UpdateTripCommandHandler : IRequestHandler<UpdateTripCommand, bool>
     public async Task<bool> Handle(UpdateTripCommand request, CancellationToken cancellationToken)
     {
         var trip = await _context.Trips
-            .FirstOrDefaultAsync(t => t.Id == request.TripId && t.GuideId == request.GuideId, cancellationToken);
+            .FirstOrDefaultAsync(t => t.Id == request.TripId && 
+                (request.GuideId != null ? t.GuideId == request.GuideId : t.AgencyId == request.AgencyId), 
+                cancellationToken);
 
         if (trip == null) return false;
 
         trip.Title = request.Title;
         trip.Location = request.Location;
         trip.Description = request.Description;
-        trip.Date = request.Date;
+        trip.Date = request.Date.HasValue ? DateTime.SpecifyKind(request.Date.Value, DateTimeKind.Utc) : null;
 
         await _context.SaveChangesAsync(cancellationToken);
         return true;

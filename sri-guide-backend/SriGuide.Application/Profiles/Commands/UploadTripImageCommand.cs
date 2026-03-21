@@ -7,7 +7,7 @@ using System.IO;
 
 namespace SriGuide.Application.Profiles.Commands;
 
-public record UploadTripImageCommand(Guid TripId, Guid UserId, IFormFile File) : IRequest<string>;
+public record UploadTripImageCommand(Guid TripId, Guid? GuideId, Guid? AgencyId, IFormFile File) : IRequest<string>;
 
 public class UploadTripImageCommandHandler : IRequestHandler<UploadTripImageCommand, string>
 {
@@ -21,7 +21,9 @@ public class UploadTripImageCommandHandler : IRequestHandler<UploadTripImageComm
     public async Task<string> Handle(UploadTripImageCommand request, CancellationToken cancellationToken)
     {
         var trip = await _context.Trips
-            .FirstOrDefaultAsync(t => t.Id == request.TripId && t.GuideId == request.UserId, cancellationToken);
+            .FirstOrDefaultAsync(t => t.Id == request.TripId && 
+                (request.GuideId != null ? t.GuideId == request.GuideId : t.AgencyId == request.AgencyId), 
+                cancellationToken);
 
         if (trip == null)
             throw new Exception("Trip not found or unauthorized");

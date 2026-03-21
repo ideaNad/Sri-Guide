@@ -13,12 +13,17 @@ public record ItineraryStepDto(
     int Order
 );
 
+public record TripDayDto(
+    int DayNumber,
+    string Description,
+    string? ImageUrl = null
+);
+
 public record TripDetailDto(
     Guid Id,
     string Title,
     string Description,
     string Location,
-    string? Category,
     DateTime? Date,
     List<string> Images,
     Guid? GuideId,
@@ -28,12 +33,9 @@ public record TripDetailDto(
     int GuideTotalReviews,
     int LikeCount,
     bool IsLikedByCurrentUser,
-    List<ItineraryStepDto> Itinerary,
     List<OtherTripDto> OtherTrips,
-    string? Duration = null,
-    string? MapLink = null,
     bool IsActive = true,
-    decimal? Price = null
+    int ViewCount = 0
 );
 
 public record OtherTripDto(
@@ -58,11 +60,15 @@ public class GetTripDetailQueryHandler : IRequestHandler<GetTripDetailQuery, Tri
     {
         var trip = await _context.Trips
             .Include(t => t.Guide)
+            .Include(t => t.Agency)
             .Include(t => t.Images)
-            .Include(t => t.Itinerary)
             .FirstOrDefaultAsync(t => t.Id == request.TripId, cancellationToken);
 
         if (trip == null) throw new Exception("Trip not found");
+
+        // Increment view count
+        trip.ViewCount++;
+        await _context.SaveChangesAsync(cancellationToken);
 
         double guideRating = 0;
         int guideTotalReviews = 0;
@@ -85,24 +91,21 @@ public class GetTripDetailQueryHandler : IRequestHandler<GetTripDetailQuery, Tri
             trip.Title,
             trip.Description,
             trip.Location,
-            trip.Category,
             trip.Date,
             trip.Images.Select(i => i.ImageUrl != null && !i.ImageUrl.StartsWith("/") && !i.ImageUrl.StartsWith("http") ? "/" + i.ImageUrl : i.ImageUrl).Where(url => url != null).Cast<string>().ToList(),
             trip.GuideId,
-            trip.Guide?.FullName ?? "Unknown Guide",
+            trip.Guide?.FullName ?? (trip.Agency?.CompanyName ?? "Unknown"),
             trip.Guide != null && trip.Guide.ProfileImageUrl != null && !trip.Guide.ProfileImageUrl.StartsWith("/") && !trip.Guide.ProfileImageUrl.StartsWith("http") 
                 ? "/" + trip.Guide.ProfileImageUrl 
-                : (trip.Guide != null ? trip.Guide.ProfileImageUrl : null),
+                : (trip.Guide != null ? trip.Guide.ProfileImageUrl : (trip.Agency != null ? "https://ui-avatars.com/api/?name=" + trip.Agency.CompanyName : null)),
             guideRating,
             guideTotalReviews,
             likeCount,
             isLiked,
-            trip.Itinerary.OrderBy(s => s.DayNumber).ThenBy(s => s.Order).Select(s => new ItineraryStepDto(
-                s.Time, s.Title, s.Description, s.ImageUrl, s.DayNumber, s.Order
-            )).ToList(),
             await _context.Trips
                 .Include(t => t.Images)
-                .Where(t => t.GuideId == trip.GuideId && t.Id != trip.Id)
+                .Where(t => (trip.GuideId != null && t.GuideId == trip.GuideId) || (trip.AgencyId != null && t.AgencyId == trip.AgencyId))
+                .Where(t => t.Id != trip.Id)
                 .OrderByDescending(t => t.CreatedAt)
                 .Take(3)
                 .Select(t => new OtherTripDto(
@@ -112,10 +115,8 @@ public class GetTripDetailQueryHandler : IRequestHandler<GetTripDetailQuery, Tri
                     t.Location
                 ))
                 .ToListAsync(cancellationToken),
-            trip.Duration,
-            trip.MapLink,
             trip.IsActive,
-            trip.Price
+            trip.ViewCount
         );
     }
 }

@@ -232,7 +232,7 @@ export default function Home() {
                   }`}
               >
                 <img
-                  src={place.image}
+                  src={place.image || "https://placehold.co/600x400?text=Destination"}
                   alt={place.name}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
@@ -320,7 +320,7 @@ export default function Home() {
                 >
                   <div className="w-32 h-32 rounded-full overflow-hidden mb-6 border-4 border-white shadow-md">
                     <img 
-                      src={guide.image ? (guide.image.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${guide.image}` : guide.image) : `https://ui-avatars.com/api/?name=${guide.title}&background=FFCC00&color=000&bold=true`} 
+                      src={guide.image?.trim() ? (guide.image.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${guide.image}` : guide.image) : `https://ui-avatars.com/api/?name=${guide.title}&background=FFCC00&color=000&bold=true`} 
                       alt={guide.title} 
                       className="w-full h-full object-cover transition-all duration-700" 
                     />
@@ -399,7 +399,7 @@ export default function Home() {
                 >
                   <div className="w-24 h-24 rounded-3xl overflow-hidden mb-8 shadow-xl border-4 border-white rotate-3 group-hover:rotate-0 transition-transform">
                     <img 
-                      src={agency.image ? (agency.image.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${agency.image}` : agency.image) : `https://ui-avatars.com/api/?name=${agency.title}&background=000&color=fff&bold=true`} 
+                      src={agency.image?.trim() ? (agency.image.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${agency.image}` : agency.image) : `https://ui-avatars.com/api/?name=${agency.title}&background=000&color=fff&bold=true`} 
                       alt={agency.title} 
                       className="w-full h-full object-cover" 
                     />

@@ -26,7 +26,6 @@ public class GetAgencyGuidesQueryHandler : IRequestHandler<GetAgencyGuidesQuery,
                 .ThenInclude(g => g.User)
             .Include(a => a.Guides.Where(g => g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted || g.AgencyRecruitmentStatus == RecruitmentStatus.Requested))
                 .ThenInclude(g => g.Trips)
-                    .ThenInclude(t => t.Bookings)
             .FirstOrDefaultAsync(a => a.UserId == request.UserId, cancellationToken);
 
         if (agency == null) return new PaginatedResult<AgencyGuideDto>(new List<AgencyGuideDto>(), 0, request.PageNumber, request.PageSize);
@@ -40,8 +39,6 @@ public class GetAgencyGuidesQueryHandler : IRequestHandler<GetAgencyGuidesQuery,
             .Select(g => new { UserId = g.Key, AverageRating = Math.Round(g.Average(r => (double)r.Rating), 1) })
             .ToDictionaryAsync(x => x.UserId, x => x.AverageRating, cancellationToken);
 
-        var today = DateTime.UtcNow.Date;
-
         var allGuides = agency.Guides.Select(g => new AgencyGuideDto
         {
             Id = g.Id,
@@ -50,9 +47,7 @@ public class GetAgencyGuidesQueryHandler : IRequestHandler<GetAgencyGuidesQuery,
             Role = g.Specialties?.FirstOrDefault() ?? "Guide",
             Rating = ratings.GetValueOrDefault(g.UserId, 5.0), 
             Location = g.OperatingAreas?.FirstOrDefault() ?? "Sri Lanka",
-            Status = g.Trips.Any(t => t.Bookings.Any(b => b.BookingDate.Date == today && b.Status == BookingStatus.Confirmed)) 
-                ? "On Tour" 
-                : (g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted ? "Approved" : "Approval Pending"),
+            Status = g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted ? "Active" : "Approval Pending",
             TripCount = g.Trips.Count,
             ProfileImageUrl = g.User?.ProfileImageUrl
         }).ToList();

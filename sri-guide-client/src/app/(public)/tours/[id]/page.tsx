@@ -6,7 +6,7 @@ import { POPULAR_TOURS, REVIEWS } from "@/data/mock-data";
 import {
     Star, MapPin, Clock, Users, ShieldCheck,
     Calendar, Info, ChevronRight, Check, Plus,
-    Share2, Heart, MessageCircle
+    Share2, Heart, MessageCircle, Loader2
 } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionHeader from "@/components/ui/SectionHeader";
@@ -47,11 +47,26 @@ const TourDetailPage = () => {
     const [tour, setTour] = useState<TripDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("overview");
+    const [bookingDate, setBookingDate] = useState("");
+    const [guests, setGuests] = useState(1);
+    const [isBooking, setIsBooking] = useState(false);
+    const [bookingSuccess, setBookingSuccess] = useState(false);
 
     const fetchTour = async () => {
         try {
-            const response = await apiClient.get<TripDetail>(`/trip/${id}`);
-            setTour(response.data);
+            const response = await apiClient.get<any>(`/Tours/${id}`);
+            const data = response.data;
+            const mappedData: TripDetail = {
+                ...data,
+                images: data.images || [],
+                guideId: data.guideId || data.agencyId,
+                guideName: data.guideName || data.agencyName || "Sri Lankan Agency",
+                guideImageUrl: data.guideImageUrl || data.agencyImageUrl,
+                guideRating: data.guideRating || 4.8,
+                guideTotalReviews: data.guideTotalReviews || 12,
+                itinerary: data.itinerary || []
+            };
+            setTour(mappedData);
         } catch (error) {
             console.error("Failed to fetch tour", error);
         } finally {
@@ -76,6 +91,35 @@ const TourDetailPage = () => {
             }
         } catch (error) {
             console.error("Failed to toggle like", error);
+        }
+    };
+
+    const handleBooking = async () => {
+        if (!user) {
+            alert("Please log in to book a tour.");
+            return;
+        }
+
+        if (!bookingDate) {
+            alert("Please select a date for your tour.");
+            return;
+        }
+
+        setIsBooking(true);
+        try {
+            await apiClient.post("/bookings", {
+                tourId: id,
+                bookingDate: bookingDate,
+                guests: guests,
+                notes: ""
+            });
+            setBookingSuccess(true);
+            alert("Booking request sent successfully! The agency will contact you soon.");
+        } catch (error) {
+            console.error("Failed to create booking", error);
+            alert("Failed to create booking. Please try again.");
+        } finally {
+            setIsBooking(false);
         }
     };
 
@@ -319,54 +363,19 @@ const TourDetailPage = () => {
                                         <span className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] block mb-2">Total Likes</span>
                                         <div className="text-4xl font-black">{tour.likeCount} <span className="text-lg text-white/40 font-normal">Likes</span></div>
                                     </div>
-                                    <div className="bg-white p-4 border-2 border-primary flex flex-col items-center shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]">
-                                        <span className="text-[10px] font-black uppercase text-gray-900 tracking-tighter">Best Deal</span>
-                                        <Check className="w-4 h-4 text-primary" />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4 mb-10">
-                                    {tour.date && (
-                                        <div className="bg-white/5 border border-white/10 p-6">
-                                            <div className="flex items-center space-x-3 text-white/30 mb-2">
-                                                <Calendar className="w-4 h-4" />
-                                                <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Start Date</span>
-                                            </div>
-                                            <p className="font-black text-sm text-white">
-                                                {new Date(tour.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()}
-                                            </p>
-                                        </div>
-                                    )}
-                                    <div className="bg-white/5 border border-white/10 p-6">
-                                        <div className="flex items-center space-x-3 text-white/30 mb-2">
-                                            <Users className="w-4 h-4" />
-                                            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Travelers</span>
-                                        </div>
-                                        <p className="font-black text-sm text-white">2 ADULTS, 1 CHILD</p>
-                                    </div>
-                                </div>
-
-                                {/* Booking feature disabled for now
-                                <div className="space-y-4">
-                                    <button className="w-full bg-white text-gray-900 hover:bg-primary hover:text-white py-6 font-black text-xs uppercase tracking-[0.3em] shadow-2xl flex items-center justify-center transition-all group">
-                                        Book Experience
-                                        <ChevronRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
-                                    </button>
-                                    <p className="text-center text-xs text-white/30 font-medium italic">No payment required yet</p>
-                                </div>
-                                */}
-
-                                <div className="mt-10 pt-10 border-t border-white/10 space-y-4">
+                                {/* Booking feature disabled for MVP */}
+                                <div className="space-y-4 pt-10 border-t border-white/10">
                                     <div className="flex items-center text-xs text-white/60">
                                         <ShieldCheck className="w-4 h-4 mr-3 text-secondary" />
-                                        <span>Free cancellation up to 48h before</span>
+                                        <span>Official Agency Verified Experience</span>
                                     </div>
                                     <div className="flex items-center text-xs text-white/60">
                                         <Info className="w-4 h-4 mr-3 text-highlight" />
-                                        <span>No hidden service fees</span>
+                                        <span>Direct communication with Expert</span>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
                             {/* Guide Profile Promo */}                            <Link href={`/profile/${tour.guideId}`} className="bg-white p-8 border border-gray-100 shadow-sm flex items-center gap-6 group hover:shadow-2xl transition-all cursor-pointer">
                                 <div className="w-24 h-24 overflow-hidden shadow-xl border-4 border-white">

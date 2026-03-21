@@ -4,7 +4,8 @@ import React from "react";
 import { 
     Users, Map, Briefcase, TrendingUp, 
     ArrowUpRight, AlertCircle, Plus, Calendar,
-    Building2, Globe, Clock, ArrowRight, ShieldCheck
+    Building2, Globe, Clock, ArrowRight, ShieldCheck,
+    Image as ImageIcon
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -17,6 +18,7 @@ interface DashboardStats {
     totalBookings: number;
     totalRevenue: number;
     recentActivities: any[];
+    recentTours: any[];
 }
 
 interface Guide {
@@ -50,9 +52,9 @@ export default function AgencyDashboardPage() {
  
     const getImageUrl = (url: string | null | undefined) => {
         if (!url) return null;
-        if (url.startsWith('http')) return url;
+        if (url.startsWith('http') || url.startsWith('blob:')) return url;
         const baseUrl = apiClient.defaults.baseURL?.split('/api')[0];
-        return `${baseUrl}${url}`;
+        return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
     };
  
     React.useEffect(() => {
@@ -76,8 +78,6 @@ export default function AgencyDashboardPage() {
     const statCards = [
         { label: "Active Tours", value: stats?.totalTours.toString() ?? "0", icon: <Map size={20} />, color: "bg-teal-50 text-teal-600" },
         { label: "Elite Guides", value: stats?.totalGuides.toString() ?? "0", icon: <Users size={20} />, color: "bg-blue-50 text-blue-600" },
-        { label: "Total Bookings", value: stats?.totalBookings.toString() ?? "0", icon: <Calendar size={20} />, color: "bg-primary/10 text-primary" },
-        { label: "Total Revenue", value: `$${(stats?.totalRevenue ?? 0).toLocaleString()}`, icon: <TrendingUp size={20} />, color: "bg-emerald-50 text-emerald-600" },
     ];
 
     if (loading) return <div className="flex items-center justify-center min-h-[400px]">
@@ -95,6 +95,12 @@ export default function AgencyDashboardPage() {
                     <p className="text-gray-500 font-bold mt-2">Overseeing first-class Sri Lankan experiences for your agency.</p>
                 </div>
                 <div className="flex gap-4">
+                    <button 
+                        onClick={() => router.push("/agency/trips")}
+                        className="bg-white text-gray-900 border-2 border-gray-100 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-gray-50 transition-all shadow-sm flex items-center gap-2"
+                    >
+                        <ImageIcon size={16} /> Manage Gallery
+                    </button>
                     <button 
                         onClick={() => router.push("/agency/tours")}
                         className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-secondary transition-all shadow-xl shadow-primary/20 flex items-center gap-2"
@@ -131,6 +137,74 @@ export default function AgencyDashboardPage() {
                         </div>
                     </motion.div>
                 ))}
+            </div>
+
+            {/* Recent Tours Section */}
+            <div className="space-y-8">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-xl font-black text-gray-900 uppercase italic tracking-tight underline decoration-teal-600/30 decoration-4 underline-offset-8">Recent Tour Packages</h3>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Latest additions to your travel inventory</p>
+                    </div>
+                    <button 
+                        onClick={() => router.push("/agency/tours")}
+                        className="bg-teal-50 text-teal-600 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-teal-600 hover:text-white transition-all flex items-center gap-2 group/btn shadow-sm"
+                    >
+                        Full Inventory <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+                    </button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {stats?.recentTours.map((tour: any, i: number) => (
+                        <motion.div
+                            key={tour.id}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: i * 0.1 }}
+                            onClick={() => router.push(`/agency/tours/edit/${tour.id}`)}
+                            className="bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all group cursor-pointer relative"
+                        >
+                            <div className="h-48 relative overflow-hidden">
+                                <img 
+                                    src={getImageUrl(tour.imageUrl) || "https://images.unsplash.com/photo-1544013919-add52c3dffbd?q=80&w=1200&auto=format"} 
+                                    alt={tour.title}
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-full text-[9px] font-black uppercase text-teal-600 border border-white shadow-xl">
+                                    {tour.status}
+                                </div>
+                                <div className="absolute bottom-6 left-6 opacity-0 group-hover:opacity-100 transition-all translate-y-4 group-hover:translate-y-0">
+                                    <span className="text-[10px] font-black text-white uppercase tracking-widest bg-teal-600 px-4 py-2 rounded-xl shadow-lg">Manage Tour</span>
+                                </div>
+                            </div>
+                            <div className="p-8">
+                                {tour.date && (
+                                    <span className="text-[9px] font-black text-teal-600 uppercase tracking-[0.2em] mb-3 block">{tour.date}</span>
+                                )}
+                                <h4 className="text-lg font-black text-gray-900 uppercase italic truncate mb-4 group-hover:text-teal-600 transition-colors">{tour.title}</h4>
+                                <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                                    <div className="flex flex-col">
+                                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Base Price</span>
+                                        <span className="text-xl font-black text-gray-900 italic leading-none">${tour.price}</span>
+                                    </div>
+                                    <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-300 group-hover:bg-teal-600 group-hover:text-white transition-all">
+                                        <ArrowRight size={18} />
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                    {(!stats?.recentTours || stats.recentTours.length === 0) && (
+                        <div className="col-span-full py-16 border-4 border-dashed border-gray-50 rounded-[3rem] text-center flex flex-col items-center group hover:bg-teal-50/50 transition-colors">
+                            <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-200 mb-6 group-hover:bg-teal-100 group-hover:text-teal-600 transition-all">
+                                <Plus size={32} />
+                            </div>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] max-w-[200px] leading-loose">
+                                No inventory found. Click &quot;New Tour&quot; to begin.
+                            </p>
+                        </div>
+                    )}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">

@@ -21,87 +21,82 @@ public class UpdateTourCommandHandler : IRequestHandler<UpdateTourCommand, bool>
 
     public async Task<bool> Handle(UpdateTourCommand request, CancellationToken cancellationToken)
     {
-        Guid? agencyProfileId = null;
-        List<Guid?> guideUserIds = new List<Guid?>();
-
-        if (request.AgencyId.HasValue)
-        {
-            var agency = await _context.AgencyProfiles
-                .Include(a => a.Guides)
-                .FirstOrDefaultAsync(a => a.UserId == request.AgencyId.Value, cancellationToken);
-            if (agency == null) throw new Exception("Agency profile not found for this user");
-            agencyProfileId = agency.Id;
-            guideUserIds = agency.Guides.Select(g => (Guid?)g.UserId).ToList();
-        }
-
-        var trip = await _context.Trips
+        var tour = await _context.Tours
             .Include(t => t.Itinerary)
             .Include(t => t.Images)
-            .FirstOrDefaultAsync(t => t.Id == request.TripId && (t.AgencyId == agencyProfileId || (t.GuideId.HasValue && guideUserIds.Contains(t.GuideId.Value)) || t.GuideId == request.AgencyId), cancellationToken);
+            .Include(t => t.DayDescriptions)
+            .FirstOrDefaultAsync(t => t.Id == request.TourId && t.AgencyId == request.AgencyId, cancellationToken);
 
-        if (trip == null) return false;
+        if (tour == null) return false;
 
-        trip.Title = request.Title ?? trip.Title;
-        trip.Description = request.Description ?? trip.Description;
-        trip.Location = request.Location ?? trip.Location;
-        trip.Category = request.Category ?? trip.Category;
-        trip.Duration = request.Duration;
-        trip.MapLink = request.MapLink;
-        trip.IsActive = request.IsActive;
-        trip.Price = request.Price;
-        trip.GuideId = request.GuideId; // Nullable
-        trip.Date = request.Date.HasValue ? DateTime.SpecifyKind(request.Date.Value, DateTimeKind.Utc) : null;
+        tour.Title = request.Title ?? tour.Title;
+        tour.Description = request.Description ?? tour.Description;
+        tour.Location = request.Location ?? tour.Location;
+        tour.Category = request.Category ?? tour.Category;
+        tour.Duration = request.Duration;
+        tour.MapLink = request.MapLink;
+        tour.IsActive = request.IsActive;
+        tour.Price = request.Price;
+        tour.MainImageUrl = request.MainImageUrl;
 
         // Update Itinerary
-        _context.ItinerarySteps.RemoveRange(trip.Itinerary);
+        var oldItinerary = await _context.TourItinerarySteps
+            .Where(s => s.TourId == tour.Id)
+            .ToListAsync(cancellationToken);
+        _context.TourItinerarySteps.RemoveRange(oldItinerary);
+        
         if (request.Itinerary != null)
         {
-            trip.Itinerary = request.Itinerary.Select(s => new ItineraryStep
+            foreach (var s in request.Itinerary)
             {
-                Time = s.Time,
-                Title = s.Title,
-                Description = s.Description,
-                ImageUrl = s.ImageUrl,
-                DayNumber = s.DayNumber,
-                Order = s.Order
-            }).ToList();
-        }
-
-        // Update Images
-        // 1. Remove non-main-view images to refresh gallery
-        var galleryImagesToRemove = trip.Images.Where(i => i.Caption != "Main View").ToList();
-        foreach (var img in galleryImagesToRemove)
-        {
-            trip.Images.Remove(img);
-        }
-
-        // 2. Update or Add Main View Image
-        if (!string.IsNullOrEmpty(request.MainImageUrl))
-        {
-            var mainImage = trip.Images.FirstOrDefault(i => i.Caption == "Main View");
-            if (mainImage != null)
-            {
-                mainImage.ImageUrl = request.MainImageUrl;
-            }
-            else
-            {
-                trip.Images.Add(new TripImage
+                _context.TourItinerarySteps.Add(new TourItineraryStep
                 {
-                    ImageUrl = request.MainImageUrl,
-                    Caption = "Main View"
+                    TourId = tour.Id,
+                    Time = s.Time,
+                    Title = s.Title,
+                    Description = s.Description,
+                    ImageUrl = s.ImageUrl,
+                    DayNumber = s.DayNumber,
+                    Order = s.Order
                 });
             }
         }
 
-        // 3. Add Additional Images from request
+        // Update Day Descriptions
+        var oldDays = await _context.TourDays
+            .Where(d => d.TourId == tour.Id)
+            .ToListAsync(cancellationToken);
+        _context.TourDays.RemoveRange(oldDays);
+
+        if (request.DayDescriptions != null)
+        {
+            foreach (var d in request.DayDescriptions)
+            {
+                _context.TourDays.Add(new TourDay
+                {
+                    TourId = tour.Id,
+                    DayNumber = d.DayNumber,
+                    Description = d.Description,
+                    ImageUrl = d.ImageUrl
+                });
+            }
+        }
+
+        // Update Images
+        var oldImages = await _context.TourImages
+            .Where(i => i.TourId == tour.Id)
+            .ToListAsync(cancellationToken);
+        _context.TourImages.RemoveRange(oldImages);
+
         if (request.AdditionalImages != null)
         {
             foreach (var imgUrl in request.AdditionalImages)
             {
                 if (!string.IsNullOrEmpty(imgUrl))
                 {
-                    trip.Images.Add(new TripImage
+                    _context.TourImages.Add(new TourImage
                     {
+                        TourId = tour.Id,
                         ImageUrl = imgUrl,
                         Caption = "Gallery Image"
                     });

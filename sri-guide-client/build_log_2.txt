@@ -1,0 +1,22 @@
+
+> sri-guide-client@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 2.8s
+  Running TypeScript ...
+Failed to compile.
+
+./src/features/home/components/HeroAnimation.tsx:4:18
+Type error: Cannot find module 'gsap' or its corresponding type declarations.
+
+  2 |
+  3 | import React, { useEffect } from "react";
+> 4 | import gsap from "gsap";
+    |                  ^
+  5 | import { MotionPathPlugin } from "gsap/MotionPathPlugin";
+  6 |
+  7 | gsap.registerPlugin(MotionPathPlugin);
+Next.js build worker exited with code: 1 and signal: null

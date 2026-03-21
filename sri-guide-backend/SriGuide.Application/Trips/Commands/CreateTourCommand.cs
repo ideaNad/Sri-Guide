@@ -2,6 +2,7 @@ using MediatR;
 using SriGuide.Domain.Entities;
 using System;
 using System.Collections.Generic;
+using SriGuide.Application.Trips.Queries;
 
 namespace SriGuide.Application.Trips.Commands;
 
@@ -27,5 +28,6 @@ public record CreateTourCommand(
     string? MainImageUrl,
     List<string>? AdditionalImages,
     DateTime? Date,
-    List<ItineraryStepDto> Itinerary
+    List<ItineraryStepDto> Itinerary,
+    List<TripDayDto> DayDescriptions
 ) : IRequest<Guid>;

@@ -19,16 +19,11 @@ public class CreateTourCommandHandler : IRequestHandler<CreateTourCommand, Guid>
 
     public async Task<Guid> Handle(CreateTourCommand request, CancellationToken cancellationToken)
     {
-        Guid? agencyProfileId = null;
-        if (request.AgencyId.HasValue)
-        {
-            var agency = await _context.AgencyProfiles
-                .FirstOrDefaultAsync(a => a.UserId == request.AgencyId.Value, cancellationToken);
-            if (agency == null) throw new Exception("Agency profile not found for this user");
-            agencyProfileId = agency.Id;
-        }
+        var agency = await _context.AgencyProfiles
+            .FirstOrDefaultAsync(a => a.Id == request.AgencyId, cancellationToken);
+        if (agency == null) throw new Exception("Agency profile not found");
 
-        var trip = new Trip
+        var tour = new Tour
         {
             Title = request.Title,
             Description = request.Description,
@@ -36,23 +31,11 @@ public class CreateTourCommandHandler : IRequestHandler<CreateTourCommand, Guid>
             Category = request.Category,
             Duration = request.Duration,
             MapLink = request.MapLink,
-            IsActive = true,
             Price = request.Price,
-            IsAgencyTour = agencyProfileId.HasValue,
-            AgencyId = agencyProfileId,
-            GuideId = request.GuideId, // Nullable
-            Date = request.Date.HasValue ? DateTime.SpecifyKind(request.Date.Value, DateTimeKind.Utc) : null,
-            Images = new List<TripImage>()
+            MainImageUrl = request.MainImageUrl,
+            AgencyId = agency.Id,
+            IsActive = true
         };
-
-        if (!string.IsNullOrEmpty(request.MainImageUrl))
-        {
-            trip.Images.Add(new TripImage
-            {
-                ImageUrl = request.MainImageUrl,
-                Caption = "Main View"
-            });
-        }
 
         if (request.AdditionalImages != null)
         {
@@ -60,7 +43,7 @@ public class CreateTourCommandHandler : IRequestHandler<CreateTourCommand, Guid>
             {
                 if (!string.IsNullOrEmpty(imgUrl))
                 {
-                    trip.Images.Add(new TripImage
+                    tour.Images.Add(new TourImage
                     {
                         ImageUrl = imgUrl,
                         Caption = "Gallery Image"
@@ -71,7 +54,7 @@ public class CreateTourCommandHandler : IRequestHandler<CreateTourCommand, Guid>
 
         if (request.Itinerary != null)
         {
-            trip.Itinerary = request.Itinerary.Select(s => new ItineraryStep
+            tour.Itinerary = request.Itinerary.Select(s => new TourItineraryStep
             {
                 Time = s.Time,
                 Title = s.Title,
@@ -82,9 +65,19 @@ public class CreateTourCommandHandler : IRequestHandler<CreateTourCommand, Guid>
             }).ToList();
         }
 
-        _context.Trips.Add(trip);
+        if (request.DayDescriptions != null)
+        {
+            tour.DayDescriptions = request.DayDescriptions.Select(d => new TourDay
+            {
+                DayNumber = d.DayNumber,
+                Description = d.Description,
+                ImageUrl = d.ImageUrl
+            }).ToList();
+        }
+
+        _context.Tours.Add(tour);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return trip.Id;
+        return tour.Id;
     }
 }

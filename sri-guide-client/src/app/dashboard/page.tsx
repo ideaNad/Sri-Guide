@@ -68,7 +68,8 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-start gap-4">
+                {/* Upcoming Trips hidden for MVP */}
+                {/* <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-start gap-4">
                     <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shrink-0">
                         <Calendar size={20} />
                     </div>
@@ -76,7 +77,7 @@ export default function DashboardPage() {
                         <h3 className="font-bold text-gray-900 text-lg">{statsLoading ? "..." : stats?.upcomingTripsCount ?? 0}</h3>
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">Upcoming Trips</p>
                     </div>
-                </div>
+                </div> */}
 
                 <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-start gap-4 hover:border-rose-100 transition-colors cursor-pointer" onClick={() => router.push('/dashboard/saved')}>
                     <div className="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-500 shrink-0">
@@ -128,7 +129,9 @@ export default function DashboardPage() {
                                 ))}
                             </div>
                         ) : stats?.recentActivities && stats.recentActivities.length > 0 ? (
-                            stats.recentActivities.map((activity, index) => (
+                            stats.recentActivities
+                                .filter(a => a.type !== 'Booking')
+                                .map((activity, index) => (
                                 <div key={index} className="flex items-start gap-4 group">
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                                         activity.type === 'Like' ? 'bg-rose-50 text-rose-500' : 'bg-primary/10 text-primary'

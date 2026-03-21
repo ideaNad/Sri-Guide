@@ -20,7 +20,7 @@ public class DeleteTourCommandHandler : IRequestHandler<DeleteTourCommand, bool>
         // Resolve agency profile id from user id
         var agency = await _context.AgencyProfiles
             .Include(a => a.Guides)
-            .FirstOrDefaultAsync(a => a.UserId == request.UserId, cancellationToken);
+            .FirstOrDefaultAsync(a => a.Id == request.UserId, cancellationToken);
             
         if (agency == null) return false;
 

@@ -23,19 +23,31 @@ export default function AgencyBookingsPage() {
     const [bookings, setBookings] = React.useState<Booking[]>([]);
     const [loading, setLoading] = React.useState(true);
 
+    const fetchBookings = async () => {
+        setLoading(true);
+        try {
+            const res = await apiClient.get<Booking[]>("/agency/bookings");
+            setBookings(res.data);
+        } catch (error) {
+            console.error("Error fetching bookings:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     React.useEffect(() => {
-        const fetchBookings = async () => {
-            try {
-                const res = await apiClient.get<Booking[]>("/agency/bookings");
-                setBookings(res.data);
-            } catch (error) {
-                console.error("Error fetching bookings:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchBookings();
     }, []);
+
+    const handleUpdateStatus = async (id: string, status: number) => {
+        try {
+            await apiClient.put(`/bookings/${id}/status`, status);
+            fetchBookings();
+        } catch (error) {
+            console.error("Error updating booking status:", error);
+            alert("Failed to update booking status.");
+        }
+    };
 
     if (loading) return <div className="flex items-center justify-center min-h-[400px]">
         <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
@@ -126,15 +138,34 @@ export default function AgencyBookingsPage() {
                                     </td>
                                     <td className="px-10 py-8">
                                         <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
-                                            row.status === 'Confirmed' ? 'border-emerald-100 bg-emerald-50 text-emerald-600' : 'border-orange-100 bg-orange-50 text-orange-600'
+                                            row.status === 'Confirmed' ? 'border-emerald-100 bg-emerald-50 text-emerald-600' : 
+                                            row.status === 'Cancelled' ? 'border-red-100 bg-red-50 text-red-600' :
+                                            'border-orange-100 bg-orange-50 text-orange-600'
                                         }`}>
                                             {row.status}
                                         </span>
                                     </td>
-                                    <td className="px-10 py-8">
-                                        <button className="p-2 text-gray-300 hover:text-gray-900 transition-colors">
-                                            <MoreHorizontal size={20} />
-                                        </button>
+                                    <td className="px-10 py-8 text-right">
+                                        {row.status === 'Pending' ? (
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button 
+                                                    onClick={() => handleUpdateStatus(row.id, 1)} // 1 = Confirmed
+                                                    className="px-4 py-2 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 transition-all shadow-md active:scale-95"
+                                                >
+                                                    Confirm
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleUpdateStatus(row.id, 2)} // 2 = Cancelled
+                                                    className="px-4 py-2 bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-red-100 transition-all active:scale-95"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <button className="p-2 text-gray-300 hover:text-gray-900 transition-colors">
+                                                <MoreHorizontal size={20} />
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             ))}

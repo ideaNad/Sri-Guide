@@ -17,6 +17,7 @@ import { MessageSquare } from "lucide-react";
 const AGENCY_NAV = [
     { name: "Overview", href: "/agency", icon: <LayoutDashboard size={20} /> },
     { name: "Manage Tours", href: "/agency/tours", icon: <Map size={20} /> },
+    { name: "Manage Trips", href: "/agency/trips", icon: <Compass size={20} /> },
     { name: "Guide Roster", href: "/agency/guides", icon: <Users size={20} /> },
     { name: "My Profile", href: "/agency/profile", icon: <Building2 size={20} /> },
 ];

@@ -21,22 +21,22 @@ public class GetAgencyBookingsQueryHandler : IRequestHandler<GetAgencyBookingsQu
     public async Task<List<AgencyBookingDto>> Handle(GetAgencyBookingsQuery request, CancellationToken cancellationToken)
     {
         var agency = await _context.AgencyProfiles
-            .Include(a => a.Guides.Where(g => g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted))
-                .ThenInclude(g => g.Trips)
-                    .ThenInclude(t => t.Bookings)
-                        .ThenInclude(b => b.Customer)
             .FirstOrDefaultAsync(a => a.UserId == request.UserId, cancellationToken);
 
         if (agency == null) return new List<AgencyBookingDto>();
 
-        var bookings = agency.Guides.SelectMany(g => g.Trips).SelectMany(t => t.Bookings).ToList();
+        var bookings = await _context.Bookings
+            .Include(b => b.Tour)
+            .Include(b => b.Customer)
+            .Where(b => b.Tour.AgencyId == agency.Id)
+            .ToListAsync(cancellationToken);
 
         return bookings.Select(b => new AgencyBookingDto
         {
             Id = b.Id,
             CustomerName = b.Customer?.FullName ?? "Unknown",
-            TourName = b.Trip?.Title ?? "Unknown Tour",
-            Guests = 1, // NumberOfGuests field missing in Domain, keeping placeholder but ready for future
+            TourName = b.Tour?.Title ?? "Unknown Tour",
+            Guests = 1, 
             DateRange = b.BookingDate.ToString("MMM dd, yyyy"),
             Status = b.Status.ToString()
         }).ToList();

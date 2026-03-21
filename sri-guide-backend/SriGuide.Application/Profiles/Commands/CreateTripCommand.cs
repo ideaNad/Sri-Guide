@@ -4,7 +4,7 @@ using SriGuide.Domain.Entities;
 
 namespace SriGuide.Application.Profiles.Commands;
 
-public record CreateTripCommand(Guid GuideId, string Title, string Description, string Location, DateTime? Date) : IRequest<Guid>;
+public record CreateTripCommand(Guid? GuideId, string Title, string Description, string Location, DateTime? Date, Guid? AgencyId = null) : IRequest<Guid>;
 
 public class CreateTripCommandHandler : IRequestHandler<CreateTripCommand, Guid>
 {
@@ -20,6 +20,7 @@ public class CreateTripCommandHandler : IRequestHandler<CreateTripCommand, Guid>
         var trip = new Trip
         {
             GuideId = request.GuideId,
+            AgencyId = request.AgencyId,
             Title = request.Title,
             Description = request.Description,
             Location = request.Location,

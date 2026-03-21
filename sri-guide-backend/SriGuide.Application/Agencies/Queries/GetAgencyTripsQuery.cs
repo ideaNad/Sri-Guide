@@ -22,44 +22,38 @@ public class GetAgencyTripsQueryHandler : IRequestHandler<GetAgencyTripsQuery, L
     {
         var agency = await _context.AgencyProfiles
             .Include(a => a.Guides.Where(g => g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted))
-                .ThenInclude(g => g.Trips)
-                    .ThenInclude(t => t.Images)
-            .Include(a => a.Guides.Where(g => g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted))
                 .ThenInclude(g => g.User)
             .FirstOrDefaultAsync(a => a.UserId == request.UserId, cancellationToken);
 
         if (agency == null) return new List<AgencyTripDto>();
 
-        var guideUserIds = agency.Guides.Select(g => g.UserId).ToList();
+        var guideUserIds = agency.Guides.Select(g => (Guid?)g.UserId).ToList();
 
         var trips = await _context.Trips
             .Include(t => t.Images)
             .Include(t => t.Guide)
-            .Where(t => t.AgencyId == agency.Id || (t.GuideId.HasValue && guideUserIds.Contains(t.GuideId.Value)))
+            .Where(t => t.AgencyId == agency.Id || guideUserIds.Contains(t.GuideId))
             .ToListAsync(cancellationToken);
 
         var tripIds = trips.Select(t => t.Id).ToList();
-
-        // Calculate real ratings and review counts for trips
-        var tripStats = await _context.Reviews
-            .Where(r => tripIds.Contains(r.TargetId) && r.TargetType == "Trip")
-            .GroupBy(r => r.TargetId)
-            .Select(g => new { TripId = g.Key, AverageRating = Math.Round(g.Average(r => (double)r.Rating), 1), Count = g.Count() })
-            .ToDictionaryAsync(x => x.TripId, x => x, cancellationToken);
 
         return trips.Select(t => new AgencyTripDto
         {
             Id = t.Id,
             Title = t.Title,
             Location = t.Location,
-            Price = t.Price,
+            Price = null,
             Status = t.IsActive ? "Active" : "Hidden",
-            Reviews = tripStats.TryGetValue(t.Id, out var stats) ? stats.Count : (int?)null,
-            Rating = tripStats.TryGetValue(t.Id, out var stats2) ? stats2.AverageRating : (double?)null,
+            Reviews = 0, // Simplified for gallery trips
+            Rating = 0,
             Date = t.Date?.ToString("MMM dd"),
-            ImageUrl = t.Images.FirstOrDefault()?.ImageUrl,
+            RawDate = t.Date?.ToString("yyyy-MM-dd"),
+            Description = t.Description,
+            ImageUrl = t.Images.OrderBy(i => i.CreatedAt).Select(i => i.ImageUrl != null && !i.ImageUrl.StartsWith("/") && !i.ImageUrl.StartsWith("http") ? "/" + i.ImageUrl : i.ImageUrl).FirstOrDefault(),
+            Images = t.Images.Select(i => i.ImageUrl != null && !i.ImageUrl.StartsWith("/") && !i.ImageUrl.StartsWith("http") ? "/" + i.ImageUrl : i.ImageUrl).Where(url => url != null).Cast<string>().ToList(),
             GuideName = t.Guide?.FullName ?? "Unknown",
-            IsActive = t.IsActive
+            IsActive = t.IsActive,
+            IsAgencyTour = false
         }).ToList();
     }
 }

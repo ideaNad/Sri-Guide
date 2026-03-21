@@ -32,6 +32,16 @@ public class JwtService : IJwtService
             new Claim(ClaimTypes.Role, user.Role.ToString())
         };
 
+        if (user.GuideProfile != null)
+        {
+            claims.Add(new Claim("GuideProfileId", user.GuideProfile.Id.ToString()));
+        }
+
+        if (user.AgencyProfile != null)
+        {
+            claims.Add(new Claim("AgencyProfileId", user.AgencyProfile.Id.ToString()));
+        }
+
         var token = new JwtSecurityToken(
             issuer: jwtSettings.GetValue<string>("Issuer"),
             audience: jwtSettings.GetValue<string>("Audience"),

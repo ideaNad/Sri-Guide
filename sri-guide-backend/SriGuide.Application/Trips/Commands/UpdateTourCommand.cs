@@ -1,11 +1,12 @@
 using MediatR;
 using System;
 using System.Collections.Generic;
+using SriGuide.Application.Trips.Queries;
 
 namespace SriGuide.Application.Trips.Commands;
 
 public record UpdateTourCommand(
-    Guid TripId,
+    Guid TourId,
     Guid? AgencyId,
     Guid? GuideId,
     string? Title,
@@ -19,5 +20,6 @@ public record UpdateTourCommand(
     string? MainImageUrl,
     List<string>? AdditionalImages,
     DateTime? Date,
-    List<ItineraryStepDto> Itinerary
+    List<ItineraryStepDto> Itinerary,
+    List<TripDayDto> DayDescriptions
 ) : IRequest<bool>;

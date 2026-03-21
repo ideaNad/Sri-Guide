@@ -48,8 +48,10 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
         // If Guide, create profile
         if (user.Role == UserRole.Guide)
         {
-            _context.GuideProfiles.Add(new GuideProfile { UserId = user.Id });
+            var profile = new GuideProfile { UserId = user.Id };
+            _context.GuideProfiles.Add(profile);
             await _context.SaveChangesAsync(cancellationToken);
+            user.GuideProfile = profile;
         }
 
         var token = _jwtService.GenerateToken(user);

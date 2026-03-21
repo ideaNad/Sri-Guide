@@ -7,6 +7,17 @@ public class AgencyDashboardDto
     public int TotalBookings { get; set; }
     public decimal TotalRevenue { get; set; }
     public List<AgencyRecentActivityDto> RecentActivities { get; set; } = new();
+    public List<AgencyRecentTourDto> RecentTours { get; set; } = new();
+}
+
+public class AgencyRecentTourDto
+{
+    public Guid Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string? ImageUrl { get; set; }
+    public decimal Price { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string? Date { get; set; }
 }
 
 public class AgencyRecentActivityDto

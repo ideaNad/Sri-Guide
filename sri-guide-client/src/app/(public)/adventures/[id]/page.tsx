@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import {
     Star, MapPin, Share2, Heart, ArrowRight,
-    MessageCircle, Calendar, ChevronRight, Clock, Tag
+    MessageCircle, Calendar, ChevronRight, Clock, Tag, Building2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/services/api-client";
@@ -28,6 +28,12 @@ interface OtherTrip {
     location: string;
 }
 
+interface TripDay {
+    dayNumber: number;
+    description: string;
+    imageUrl?: string;
+}
+
 interface TripDetail {
     id: string;
     title: string;
@@ -36,9 +42,12 @@ interface TripDetail {
     category?: string;
     date?: string;
     images: string[];
-    guideId: string;
-    guideName: string;
+    guideId?: string;
+    guideName?: string;
     guideImageUrl?: string;
+    agencyId?: string;
+    agencyName?: string;
+    agencyImageUrl?: string;
     guideRating: number;
     guideTotalReviews: number;
     likeCount: number;
@@ -49,10 +58,13 @@ interface TripDetail {
     mapLink?: string;
     price?: number;
     isAgencyTour?: boolean;
+    dayDescriptions?: TripDay[];
 }
 
 const AdventureSimplePage = () => {
     const { id } = useParams();
+    const searchParams = useSearchParams();
+    const type = searchParams.get("type");
     const { user, login } = useAuth();
     const [tour, setTour] = useState<TripDetail | null>(null);
     const [loading, setLoading] = useState(true);
@@ -74,10 +86,53 @@ const AdventureSimplePage = () => {
 
     const fetchTour = async () => {
         try {
-            const response = await apiClient.get<TripDetail>(`/trip/${id}`);
-            setTour(response.data);
+            const isTour = type === "tour";
+            let response;
+            
+            if (isTour) {
+                response = await apiClient.get<any>(`/Tours/${id}`);
+            } else {
+                try {
+                    response = await apiClient.get<any>(`/trip/${id}`);
+                } catch (e) {
+                    response = await apiClient.get<any>(`/Tours/${id}`);
+                }
+            }
+            
+            const data = response.data;
+            const mappedData: TripDetail = {
+                ...data,
+                images: data.images || data.Images || [],
+                guideId: data.guideId || data.agencyId,
+                guideName: data.guideName || data.agencyName || "Sri Lankan Agency",
+                guideImageUrl: data.guideImageUrl || data.agencyImageUrl,
+                guideRating: data.guideRating || 4.8,
+                guideTotalReviews: data.guideTotalReviews || 12,
+                isAgencyTour: isTour || !!data.agencyId,
+                itinerary: (data.itinerary || data.Itinerary || []).map((s: any) => ({
+                    time: s.time || s.Time,
+                    title: s.title || s.Title,
+                    description: s.description || s.Description,
+                    imageUrl: s.imageUrl || s.ImageUrl,
+                    dayNumber: s.dayNumber || s.DayNumber,
+                    order: s.order || s.Order
+                })),
+                otherTrips: (data.otherTrips || data.OtherTrips || []).map((t: any) => ({
+                    id: t.id || t.Id,
+                    title: t.title || t.Title,
+                    imageUrl: t.imageUrl || t.ImageUrl,
+                    location: t.location || t.Location
+                })),
+                dayDescriptions: (data.dayDescriptions || data.DayDescriptions || []).map((d: any) => ({
+                    dayNumber: d.dayNumber || d.DayNumber,
+                    description: d.description || d.Description,
+                    imageUrl: d.imageUrl || d.ImageUrl
+                }))
+            };
+            
+            setTour(mappedData);
         } catch (error) {
-            console.error("Failed to fetch adventure", error);
+            console.error("Failed to fetch adventure detail", error);
         } finally {
             setLoading(false);
         }
@@ -125,7 +180,9 @@ const AdventureSimplePage = () => {
 
     const getImageUrl = (url?: string) => {
         if (!url) return "https://images.unsplash.com/photo-1544013919-add52c3dffbd?q=80&w=1200&auto=format";
-        return url.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${url}` : url;
+        if (url.startsWith('http') || url.startsWith('blob:')) return url;
+        const baseUrl = apiClient.defaults.baseURL?.split('/api')[0];
+        return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
     };
 
     const categories = tour.category ? tour.category.split(", ").filter(c => c) : [];
@@ -197,16 +254,19 @@ const AdventureSimplePage = () => {
                         />
 
                         {/* Itinerary / Experience Timeline */}
-                        {tour.itinerary && tour.itinerary.length > 0 && (
+                        {((tour.itinerary && tour.itinerary.length > 0) || (tour.dayDescriptions && tour.dayDescriptions.length > 0)) && (
                             <div className="mb-20">
                                 <h3 className="text-sm font-black text-secondary uppercase tracking-[0.3em] mb-12 flex items-center gap-4">
                                     <div className="w-12 h-[2px] bg-primary" />
-                                    The Journey Schedule
+                                    {tour.itinerary && tour.itinerary.length > 0 ? "The Journey Schedule & Activities" : "The Journey Schedule"}
                                 </h3>
                                 
                                 <div className="flex flex-col gap-8">
-                                    {Array.from(new Set(tour.itinerary.map(s => s.dayNumber))).sort((a, b) => a - b).map(dayNum => {
-                                        const daySteps = tour.itinerary.filter(s => s.dayNumber === dayNum).sort((a, b) => a.order - b.order);
+                                    {Array.from(new Set([
+                                        ...(tour.itinerary?.map(s => s.dayNumber) || []),
+                                        ...(tour.dayDescriptions?.map(d => d.dayNumber) || [])
+                                    ])).sort((a, b) => a - b).map(dayNum => {
+                                        const daySteps = (tour.itinerary || []).filter(s => s.dayNumber === dayNum).sort((a, b) => a.order - b.order);
                                         const isDayExpanded = expandedDays.includes(dayNum);
                                         
                                         return (
@@ -219,9 +279,11 @@ const AdventureSimplePage = () => {
                                                         <div className="w-16 h-16 bg-gray-900 text-white rounded-2xl flex items-center justify-center font-black italic shadow-xl">
                                                             D{dayNum}
                                                         </div>
-                                                        <div className="text-left">
+                                                        <div className="text-left flex-1 min-w-0">
                                                             <h4 className="text-2xl font-black text-gray-900 italic uppercase tracking-tighter">Day {dayNum}</h4>
-                                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">{daySteps.length} Scheduled Points</p>
+                                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                                                                {daySteps.length > 0 ? `${daySteps.length} Scheduled Points` : "Day Overview"}
+                                                            </p>
                                                         </div>
                                                     </div>
                                                     <ChevronRight className={`transform transition-transform duration-300 text-gray-300 ${isDayExpanded ? 'rotate-90 text-primary' : ''}`} />
@@ -235,50 +297,77 @@ const AdventureSimplePage = () => {
                                                             exit={{ height: 0, opacity: 0 }}
                                                             className="overflow-hidden"
                                                         >
-                                                            <div className="pt-8 pb-12 space-y-4 pl-8 md:pl-20 border-l-2 border-gray-100 ml-8 md:ml-20 mt-4">
-                                                                {daySteps.map((step, idx) => {
-                                                                    const stepId = `${dayNum}-${idx}`;
-                                                                    const isStepExpanded = expandedSteps.includes(stepId);
-                                                                    
-                                                                    return (
-                                                                        <div key={idx} className="relative">
-                                                                            <button 
-                                                                                onClick={() => toggleStep(stepId)}
-                                                                                className="w-full text-left bg-white border border-gray-50 rounded-2xl p-6 hover:shadow-md transition-all group"
-                                                                            >
-                                                                                <div className="flex items-center justify-between">
-                                                                                    <div className="flex items-center gap-4">
-                                                                                        <span className="text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-3 py-1 rounded-full">
-                                                                                            {step.time || "TBD"}
-                                                                                        </span>
-                                                                                        <h5 className="text-sm font-black text-gray-900 uppercase italic group-hover:text-primary transition-colors">{step.title}</h5>
-                                                                                    </div>
-                                                                                    <ChevronRight size={14} className={`text-gray-300 transform transition-transform ${isStepExpanded ? 'rotate-90 text-primary' : ''}`} />
-                                                                                </div>
-
-                                                                                <AnimatePresence>
-                                                                                    {isStepExpanded && (
-                                                                                        <motion.div 
-                                                                                            initial={{ opacity: 0, height: 0 }}
-                                                                                            animate={{ opacity: 1, height: "auto" }}
-                                                                                            exit={{ opacity: 0, height: 0 }}
-                                                                                            className="pt-6"
-                                                                                        >
-                                                                                            <div className="flex flex-col md:flex-row gap-6">
-                                                                                                {step.imageUrl && (
-                                                                                                    <div className="md:w-32 h-32 shrink-0 rounded-xl overflow-hidden shadow-sm">
-                                                                                                        <img src={getImageUrl(step.imageUrl)} alt={step.title} className="w-full h-full object-cover" />
-                                                                                                    </div>
-                                                                                                )}
-                                                                                                <p className="text-xs text-gray-500 font-medium leading-relaxed">{step.description}</p>
-                                                                                            </div>
-                                                                                        </motion.div>
-                                                                                    )}
-                                                                                </AnimatePresence>
-                                                                            </button>
+                                                            <div className="pt-4 pb-12 ml-8 md:ml-20 mt-4">
+                                                                {/* Day Description & Image */}
+                                                                {/* Refined Day Overview Layout */}
+                                                                <div className="mb-10 pl-8 md:pl-20 border-l-2 border-primary/20 flex flex-col md:flex-row gap-8 items-start">
+                                                                    <div className="flex-1">
+                                                                        {tour.dayDescriptions?.find(d => d.dayNumber === dayNum)?.description && (
+                                                                            <p className="text-sm font-medium text-gray-600 leading-relaxed italic">
+                                                                                &quot;{tour.dayDescriptions.find(d => d.dayNumber === dayNum)?.description}&quot;
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                    {tour.dayDescriptions?.find(d => d.dayNumber === dayNum)?.imageUrl && (
+                                                                        <div className="w-full md:w-64 h-40 shrink-0 rounded-3xl overflow-hidden shadow-2xl rotate-2 hover:rotate-0 transition-transform duration-500">
+                                                                            <img 
+                                                                                src={getImageUrl(tour.dayDescriptions.find(d => d.dayNumber === dayNum)!.imageUrl!)} 
+                                                                                alt={`Day ${dayNum} Overview`} 
+                                                                                className="w-full h-full object-cover" 
+                                                                            />
                                                                         </div>
-                                                                    );
-                                                                })}
+                                                                    )}
+                                                                </div>
+
+                                                                {daySteps.length > 0 && (
+                                                                    <div className="space-y-4 pl-8 md:pl-20 border-l-2 border-gray-100">
+                                                                        {daySteps.map((step, idx) => {
+                                                                            const stepId = `${dayNum}-${idx}`;
+                                                                            const isStepExpanded = expandedSteps.includes(stepId);
+                                                                            
+                                                                            return (
+                                                                                <div key={idx} className="relative">
+                                                                                    <button 
+                                                                                        onClick={() => toggleStep(stepId)}
+                                                                                        className="w-full text-left bg-white border border-gray-50 rounded-2xl p-6 hover:shadow-md transition-all group"
+                                                                                    >
+                                                                                        <div className="flex items-center justify-between">
+                                                                                            <div className="flex items-center gap-4">
+                                                                                                {step.time && (
+                                                                                                    <span className="text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-3 py-1 rounded-full">
+                                                                                                        {step.time}
+                                                                                                    </span>
+                                                                                                )}
+                                                                                                <h5 className="text-sm font-black text-gray-900 uppercase italic group-hover:text-primary transition-colors">{step.title}</h5>
+                                                                                            </div>
+                                                                                            <ChevronRight size={14} className={`text-gray-300 transform transition-transform ${isStepExpanded ? 'rotate-90 text-primary' : ''}`} />
+                                                                                        </div>
+
+                                                                                        <AnimatePresence>
+                                                                                            {isStepExpanded && (
+                                                                                                <motion.div 
+                                                                                                    initial={{ opacity: 0, height: 0 }}
+                                                                                                    animate={{ opacity: 1, height: "auto" }}
+                                                                                                    exit={{ opacity: 0, height: 0 }}
+                                                                                                    className="pt-6"
+                                                                                                >
+                                                                                                    <div className="flex flex-col md:flex-row gap-6">
+                                                                                                        {step.imageUrl && (
+                                                                                                            <div className="md:w-32 h-32 shrink-0 rounded-xl overflow-hidden shadow-sm">
+                                                                                                                <img src={getImageUrl(step.imageUrl)} alt={step.title} className="w-full h-full object-cover" />
+                                                                                                            </div>
+                                                                                                        )}
+                                                                                                        <p className="text-xs text-gray-500 font-medium leading-relaxed">{step.description}</p>
+                                                                                                    </div>
+                                                                                                </motion.div>
+                                                                                            )}
+                                                                                        </AnimatePresence>
+                                                                                    </button>
+                                                                                </div>
+                                                                            );
+                                                                        })}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </motion.div>
                                                     )}
@@ -304,22 +393,28 @@ const AdventureSimplePage = () => {
                     {/* Simple Sidebar */}
                     <aside className="lg:w-1/3 space-y-12">
                         {/* Essential Guide Card */}
-                        {tour.guideId && (
+                        {(tour.guideId || tour.agencyId) && (
                             <div className="bg-white p-10 border border-gray-100 shadow-2xl relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 -mr-12 -mt-12 rounded-full transition-all group-hover:scale-[3]" />
                                 
-                                <p className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] mb-8 relative">The Storyteller</p>
+                                <p className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] mb-8 relative">
+                                    {tour.isAgencyTour ? "Official Agency" : "The Storyteller"}
+                                </p>
                                 
                                 <div className="flex items-center gap-6 mb-8 relative">
-                                    <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-xl">
-                                        <img 
-                                            src={tour.guideImageUrl ? (tour.guideImageUrl.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${tour.guideImageUrl}` : tour.guideImageUrl) : `https://ui-avatars.com/api/?name=${tour.guideName}&background=FFCC00&color=000&bold=true`} 
-                                            alt={tour.guideName} 
-                                            className="w-full h-full object-cover transition-all grayscale group-hover:grayscale-0 duration-700" 
-                                        />
+                                    <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-xl bg-gray-50 flex items-center justify-center">
+                                        {tour.guideImageUrl || tour.agencyImageUrl ? (
+                                            <img 
+                                                src={getImageUrl(tour.guideImageUrl || tour.agencyImageUrl)} 
+                                                alt={tour.guideName || tour.agencyName} 
+                                                className="w-full h-full object-cover transition-all grayscale group-hover:grayscale-0 duration-700" 
+                                            />
+                                        ) : (
+                                            <Building2 size={32} className="text-gray-300" />
+                                        )}
                                     </div>
                                     <div>
-                                        <h4 className="text-2xl font-black text-gray-900 tracking-tighter italic">{tour.guideName}</h4>
+                                        <h4 className="text-2xl font-black text-gray-900 tracking-tighter italic">{tour.guideName || tour.agencyName}</h4>
                                         <div className="flex items-center text-xs font-bold text-gray-400 mt-2">
                                             {tour.guideTotalReviews > 0 ? (
                                                 <>
@@ -334,7 +429,7 @@ const AdventureSimplePage = () => {
                                 </div>
 
                                 <Link 
-                                    href={`/profile/${tour.guideId}`}
+                                    href={tour.isAgencyTour ? `/profile/agency/${tour.agencyId}` : `/profile/${tour.guideId}`}
                                     className="w-full bg-gray-900 text-white flex items-center justify-center py-5 font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-black transition-all relative"
                                 >
                                     View Full Profile <ChevronRight size={14} className="ml-2" />
@@ -376,7 +471,33 @@ const AdventureSimplePage = () => {
                 </div>
             </div>
 
-            {/* Removed Gallery per request */}
+            {/* Tour Gallery section */}
+            {tour.images && tour.images.length > 0 && (
+                <div className="container mx-auto px-4 mt-24">
+                    <h3 className="text-sm font-black text-secondary uppercase tracking-[0.3em] mb-12 flex items-center gap-4">
+                        <div className="w-12 h-[2px] bg-primary" />
+                        Experience Gallery
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {tour.images.map((img, idx) => (
+                            <div 
+                                key={idx} 
+                                className={`overflow-hidden rounded-[2rem] border border-gray-100 shadow-sm group ${
+                                    idx === 0 ? "md:col-span-2 md:row-span-2 h-[500px]" : "h-[242px]"
+                                }`}
+                            >
+                                <img 
+                                    src={getImageUrl(img)} 
+                                    alt={`${tour.title} gallery ${idx + 1}`} 
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Existing footer/modal space */}
         </div>
         <AuthModal
             isOpen={isAuthModalOpen}

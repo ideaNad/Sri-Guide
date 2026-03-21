@@ -54,11 +54,28 @@ const Card: React.FC<CardProps> = ({
     onToggleLike
 }) => {
     const isProfile = type === "guide" || type === "agency";
-    const profileLink = (type === "tour" || type === "adventure") ? `/adventures/${id}` : (id ? `/profile/${id}` : "#");
+    const profileLink = (type === "tour" || type === "adventure") 
+        ? `/adventures/${id}?type=${type}` 
+        : (id ? `/profile/${id}` : "#");
 
-    const displayImage = image?.startsWith("/") && !image?.startsWith("http") 
-        ? `${apiClient.defaults.baseURL?.replace('/api', '')}${image}` 
-        : image;
+    const displayImage = React.useMemo(() => {
+        if (!image || image.trim() === "") {
+            return "https://placehold.co/600x400?text=No+Image+Available";
+        }
+        if (image.startsWith('http') || image.startsWith('data:') || image.startsWith('blob:')) {
+            return image;
+        }
+        
+        // Ensure we use the base URL for relative paths
+        const baseUrl = apiClient.defaults.baseURL?.split('/api')[0];
+        if (baseUrl) {
+            // Remove double slashes if any
+            const cleanPath = image.startsWith('/') ? image : `/${image}`;
+            return `${baseUrl}${cleanPath}`;
+        }
+        
+        return image; // Fallback if no baseUrl and not an absolute URL
+    }, [image]);
 
     return (
         <div className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-lg hover:shadow-2xl transition-all duration-500 relative flex flex-col h-full">

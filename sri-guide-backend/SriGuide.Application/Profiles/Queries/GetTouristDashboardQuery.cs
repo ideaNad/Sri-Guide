@@ -52,6 +52,8 @@ public class GetTouristDashboardQueryHandler : IRequestHandler<GetTouristDashboa
         }
 
         var recentBookings = await _context.Bookings
+            .Include(b => b.Tour)
+                .ThenInclude(t => t.Agency)
             .Include(b => b.Guide)
             .Where(b => b.CustomerId == request.UserId)
             .OrderByDescending(b => b.CreatedAt)
@@ -62,9 +64,9 @@ public class GetTouristDashboardQueryHandler : IRequestHandler<GetTouristDashboa
         {
             activities.Add(new DashboardActivityDto(
                 "Booking",
-                $"Booking for {booking.BookingDate:MMM dd, yyyy}",
+                $"Booking for {booking.Tour?.Title ?? "Experience"} on {booking.BookingDate:MMM dd, yyyy}",
                 GetTimeAgo(booking.CreatedAt),
-                booking.Guide?.FullName
+                booking.Tour?.Agency?.CompanyName ?? booking.Guide?.FullName ?? "Travel Agency"
             ));
         }
 

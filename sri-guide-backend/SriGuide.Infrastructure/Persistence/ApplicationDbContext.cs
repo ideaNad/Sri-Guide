@@ -19,7 +19,11 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Trip> Trips => Set<Trip>();
     public DbSet<TripImage> TripImages => Set<TripImage>();
     public DbSet<TripLike> TripLikes => Set<TripLike>();
-    public DbSet<ItineraryStep> ItinerarySteps => Set<ItineraryStep>();
+    public DbSet<Tour> Tours => Set<Tour>();
+    public DbSet<TourImage> TourImages => Set<TourImage>();
+    public DbSet<TourItineraryStep> TourItinerarySteps => Set<TourItineraryStep>();
+    public DbSet<TourDay> TourDays => Set<TourDay>();
+    public DbSet<TourLike> TourLikes => Set<TourLike>();
     public DbSet<Feedback> Feedbacks => Set<Feedback>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -68,27 +72,28 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .HasForeignKey(b => b.CustomerId)
             .OnDelete(DeleteBehavior.NoAction);
 
-        // Trip relationships
+        modelBuilder.Entity<Booking>()
+            .HasOne(b => b.Tour)
+            .WithMany(t => t.Bookings)
+            .HasForeignKey(b => b.TourId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Trip relationships (Past Trips)
         modelBuilder.Entity<Trip>()
             .HasOne(t => t.Guide)
             .WithMany()
             .HasForeignKey(t => t.GuideId);
 
         modelBuilder.Entity<Trip>()
-            .HasMany(t => t.Images)
-            .WithOne(i => i.Trip)
-            .HasForeignKey(i => i.TripId);
-
-        modelBuilder.Entity<Trip>()
-            .HasMany(t => t.Itinerary)
-            .WithOne(i => i.Trip)
-            .HasForeignKey(i => i.TripId);
-
-        modelBuilder.Entity<Trip>()
             .HasOne(t => t.Agency)
             .WithMany()
             .HasForeignKey(t => t.AgencyId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Trip>()
+            .HasMany(t => t.Images)
+            .WithOne(i => i.Trip)
+            .HasForeignKey(i => i.TripId);
 
         // TripLike — unique per user per trip
         modelBuilder.Entity<TripLike>()
@@ -97,11 +102,44 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
         modelBuilder.Entity<TripLike>()
             .HasOne(tl => tl.Trip)
-            .WithMany()
+            .WithMany(t => t.Likes)
             .HasForeignKey(tl => tl.TripId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<TripLike>()
+        // Tour relationships
+        modelBuilder.Entity<Tour>()
+            .HasOne(t => t.Agency)
+            .WithMany()
+            .HasForeignKey(t => t.AgencyId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Tour>()
+            .HasMany(t => t.Images)
+            .WithOne(i => i.Tour)
+            .HasForeignKey(i => i.TourId);
+
+        modelBuilder.Entity<Tour>()
+            .HasMany(t => t.Itinerary)
+            .WithOne(i => i.Tour)
+            .HasForeignKey(i => i.TourId);
+
+        modelBuilder.Entity<Tour>()
+            .HasMany(t => t.DayDescriptions)
+            .WithOne(d => d.Tour)
+            .HasForeignKey(d => d.TourId);
+
+        // TourLike
+        modelBuilder.Entity<TourLike>()
+            .HasIndex(tl => new { tl.UserId, tl.TourId })
+            .IsUnique();
+
+        modelBuilder.Entity<TourLike>()
+            .HasOne(tl => tl.Tour)
+            .WithMany(t => t.Likes)
+            .HasForeignKey(tl => tl.TourId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<TourLike>()
             .HasOne(tl => tl.User)
             .WithMany()
             .HasForeignKey(tl => tl.UserId)

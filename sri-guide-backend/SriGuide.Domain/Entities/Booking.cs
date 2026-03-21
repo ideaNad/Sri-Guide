@@ -11,10 +11,11 @@ public class Booking : BaseEntity
     public Guid CustomerId { get; set; }
     public User? Customer { get; set; }
 
-    public Guid? TripId { get; set; }
-    public Trip? Trip { get; set; }
+    public Guid? TourId { get; set; }
+    public Tour? Tour { get; set; }
 
     public DateTime BookingDate { get; set; }
+    public int Guests { get; set; }
     public BookingStatus Status { get; set; } = BookingStatus.Pending;
     public decimal TotalAmount { get; set; }
     public string? Notes { get; set; }

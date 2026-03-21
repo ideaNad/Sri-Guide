@@ -1,0 +1,16 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  SriGuide.Domain -> C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.Domain\bin\Debug\net9.0\SriGuide.Domain.dll
+  SriGuide.Application -> C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.Application\bin\Debug\net9.0\SriGuide.Application.dll
+  SriGuide.Infrastructure -> C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.Infrastructure\bin\Debug\net9.0\SriGuide.Infrastructure.dll
+C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.API\Controllers\ToursController.cs(35,60): error CS0246: The type or namespace name 'CreateTourCommand' could not be found (are you missing a using directive or an assembly reference?) [C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.API\SriGuide.API.csproj]
+C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.API\Controllers\ToursController.cs(45,69): error CS0246: The type or namespace name 'UpdateTourCommand' could not be found (are you missing a using directive or an assembly reference?) [C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.API\SriGuide.API.csproj]
+
+Build FAILED.
+
+C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.API\Controllers\ToursController.cs(35,60): error CS0246: The type or namespace name 'CreateTourCommand' could not be found (are you missing a using directive or an assembly reference?) [C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.API\SriGuide.API.csproj]
+C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.API\Controllers\ToursController.cs(45,69): error CS0246: The type or namespace name 'UpdateTourCommand' could not be found (are you missing a using directive or an assembly reference?) [C:\Sources\SriGuide\Sri-Guide\sri-guide-backend\SriGuide.API\SriGuide.API.csproj]
+    0 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:00.92

@@ -1,175 +1,201 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { 
-    Map, Plus, Search, Filter, 
-    MoreVertical, Eye, Edit3, Trash2,
-    Calendar, MapPin, Users, Star, ArrowUpRight
+    Plus, Search, Map as MapIcon, 
+    Loader2, ChevronLeft, ArrowUpRight,
+    Star, Trash2, Edit3, MapPin
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/services/api-client";
+import { useAuth } from "@/providers/AuthContext";
 import { useRouter } from "next/navigation";
 
 interface Tour {
     id: string;
     title: string;
+    description: string;
     location: string;
     price: number;
+    imageUrl?: string;
     status: string;
-    reviews: number | null;
-    rating: number | null;
-    date: string | null;
-    imageUrl: string | null;
+    isActive: boolean;
     guideName: string;
+    date?: string;
+    rating?: number;
+    reviews?: number;
 }
 
 export default function AgencyToursPage() {
+    const { user } = useAuth();
     const router = useRouter();
-    const [tours, setTours] = React.useState<Tour[]>([]);
-    const [loading, setLoading] = React.useState(true);
+    const [tours, setTours] = useState<Tour[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");
 
-    React.useEffect(() => {
-        const fetchTours = async () => {
-            try {
-                const res = await apiClient.get<Tour[]>("/agency/trips");
-                setTours(res.data);
-            } catch (error) {
-                console.error("Error fetching tours:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchTours();
-    }, []);
+    const getImageUrl = (url: string | null | undefined) => {
+        if (!url) return null;
+        if (url.startsWith('http') || url.startsWith('blob:')) return url;
+        const baseUrl = apiClient.defaults.baseURL?.split('/api')[0];
+        return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+    };
 
-    const handleDelete = async (id: string) => {
-        if (!window.confirm("Are you sure you want to delete this tour? This action cannot be undone.")) {
-            return;
-        }
+    useEffect(() => {
+        if (user?.id) fetchTours();
+    }, [user]);
 
+    const fetchTours = async () => {
         try {
-            await apiClient.delete(`/agency/tours/${id}`);
-            setTours(tours.filter(t => t.id !== id));
+            const response = await apiClient.get('/Agency/tours');
+            setTours(response.data as Tour[]);
         } catch (error) {
-            console.error("Error deleting tour:", error);
-            alert("Failed to delete tour. Please try again.");
+            console.error("Failed to fetch tours", error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    if (loading) return <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
-    </div>;
+    const handleDeleteTour = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this tour package? This action cannot be undone.")) return;
+        try {
+            await apiClient.delete(`/Tours/${id}`);
+            setTours(prev => prev.filter(t => t.id !== id));
+        } catch (error) {
+            console.error("Failed to delete tour", error);
+        }
+    };
+
+    const filteredTours = tours.filter(t => 
+        t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.location.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
-        <div className="space-y-12 animate-in fade-in duration-700 pb-20">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                    <h1 className="text-4xl font-black text-gray-900 tracking-tight flex items-center gap-4">
-                        <Map className="text-teal-600" size={36} />
-                        Tour Inventory
-                    </h1>
-                    <p className="text-gray-500 font-medium mt-2">Manage and monitor your curated Sri Lankan experiences</p>
+        <div className="min-h-screen bg-[#FDFDFF] p-6 lg:p-12">
+            {/* Header Section */}
+            <div className="max-w-[1400px] mx-auto mb-12">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+                    <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 bg-[#E8F5E9] rounded-2xl flex items-center justify-center text-[#2E7D32] shrink-0">
+                            <MapIcon size={24} />
+                        </div>
+                        <div>
+                            <h1 className="text-3xl font-black text-[#1A1F2C] tracking-tight mb-1">Tour Inventory</h1>
+                            <p className="text-gray-500 font-medium">Manage and monitor your curated Sri Lankan experiences</p>
+                        </div>
+                    </div>
+                    
+                    <button 
+                        onClick={() => router.push("/agency/tours/create")}
+                        className="bg-[#3061E3] hover:bg-[#2549B0] text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-[0_10px_30px_rgba(48,97,227,0.2)] flex items-center gap-3 w-fit"
+                    >
+                        <Plus size={18} /> Create New Package
+                    </button>
                 </div>
-                <button 
-                    onClick={() => router.push("/agency/tours/create")}
-                    className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-secondary transition-all shadow-xl shadow-primary/20 flex items-center gap-2"
-                >
-                    <Plus size={16} /> Create New Package
-                </button>
-            </div>
 
-            {/* Filter Bar */}
-            <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-3xl border border-gray-100 shadow-sm items-center">
-                <div className="flex-1 relative w-full">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                {/* Search Bar */}
+                <div className="relative group mb-12">
+                    <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#3061E3] transition-colors">
+                        <Search size={20} />
+                    </div>
                     <input 
                         type="text" 
                         placeholder="Search tours..." 
-                        className="w-full bg-gray-50 border-transparent rounded-2xl pl-12 pr-4 py-3 text-sm font-bold focus:bg-white focus:border-teal-200 transition-all outline-none"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full bg-white border border-gray-100 rounded-[2rem] pl-16 pr-8 py-6 text-gray-700 font-bold focus:outline-none focus:ring-4 focus:ring-[#3061E3]/5 focus:border-[#3061E3] transition-all shadow-sm"
                     />
                 </div>
-            </div>
 
-            {/* Tour Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                {tours.map((tour, i) => (
-                    <motion.div
-                        key={tour.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                        className="bg-white rounded-[3rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all group flex flex-col"
-                    >
-                        <div className="relative aspect-[4/3] overflow-hidden">
-                            <img 
-                                src={tour.imageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${tour.imageUrl}` : "https://images.unsplash.com/photo-1544013919-add52c3dffbd?q=80&w=1200&auto=format"} 
-                                alt={tour.title}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-8">
-                                <div className="flex gap-4">
-                                     <button 
-                                         onClick={() => router.push(`/agency/tours/${tour.id}/edit`)}
-                                         className="p-3 bg-white text-gray-900 rounded-xl hover:bg-primary hover:text-white transition-all shadow-xl"
-                                     >
-                                         <Edit3 size={18} />
-                                     </button>
-                                     <button 
-                                         onClick={() => handleDelete(tour.id)}
-                                         className="p-3 bg-white text-gray-900 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-xl"
-                                     >
-                                         <Trash2 size={18} />
-                                     </button>
-                                </div>
-                            </div>
-                            <div className={`absolute top-6 right-6 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-xl ${
-                                tour.status === 'Active' ? 'bg-white text-emerald-600 border-white' : 'bg-white text-orange-600 border-white'
-                            }`}>
-                                {tour.status}
-                            </div>
+                {/* Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {loading ? (
+                        <div className="col-span-full py-20 flex flex-center flex-col gap-4 text-gray-400">
+                            <Loader2 className="animate-spin" size={48} />
+                            <p className="font-bold uppercase tracking-widest text-xs">Loading Inventory...</p>
                         </div>
-
-                        <div className="p-8 flex-1 flex flex-col">
-                            <div className="flex items-center justify-between mb-2">
-                                {tour.date && (
-                                    <span className="text-[10px] font-black text-teal-600 uppercase tracking-widest">{tour.date}</span>
-                                )}
-                                {tour.rating && tour.rating > 0 ? (
-                                    <div className="flex items-center gap-1.5 ml-auto">
-                                        <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                                        <span className="text-[10px] font-black text-gray-900">{tour.rating.toFixed(1)}</span>
+                    ) : (
+                        <>
+                            {filteredTours.map((tour) => (
+                                <motion.div 
+                                    layout
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    key={tour.id}
+                                    className="group bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden hover:shadow-2xl hover:shadow-[#3061E3]/10 transition-all duration-500"
+                                >
+                                    {/* Image Container */}
+                                    <div className="relative h-56 w-full overflow-hidden">
+                                    <img 
+                                        src={getImageUrl(tour.imageUrl) || "https://images.unsplash.com/photo-1546708973-b339540b5162?q=80&w=1000&auto=format&fit=crop"} 
+                                        alt={tour.title}
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                        <div className="absolute top-6 left-6 flex gap-2">
+                                            <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${tour.isActive ? 'bg-[#E8F5E9] text-[#2E7D32]' : 'bg-gray-100 text-gray-500'}`}>
+                                                {tour.isActive ? 'Active' : 'Hidden'}
+                                            </span>
+                                        </div>
+                                        
+                                        {/* Quick Actions (Hover) */}
+                                        <div className="absolute top-6 right-6 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button 
+                                                onClick={() => router.push(`/agency/tours/edit/${tour.id}`)}
+                                                className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-gray-700 hover:bg-[#3061E3] hover:text-white transition-all shadow-lg"
+                                            >
+                                                <Edit3 size={16} />
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDeleteTour(tour.id)}
+                                                className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-lg"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
                                     </div>
-                                ) : (
-                                    <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest ml-auto">No Reviews</span>
-                                )}
-                            </div>
-                            <h3 className="text-xl font-black text-gray-900 tracking-tight italic mb-2 hover:text-teal-600 transition-colors cursor-pointer">{tour.title}</h3>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">Guide: {tour.guideName}</p>
-                            
-                            <div className="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between">
-                                <div>
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">Base Price</span>
-                                    <span className="text-2xl font-black text-gray-900 italic">${tour.price}</span>
-                                </div>
-                                <button className="p-3 rounded-2xl bg-gray-50 text-gray-400 hover:bg-teal-600 hover:text-white transition-all">
-                                    <ArrowUpRight size={20} />
-                                </button>
-                            </div>
-                        </div>
-                    </motion.div>
-                ))}
 
-                {/* Create Card */}
-                <button 
-                    onClick={() => router.push("/agency/tours/create")}
-                    className="border-4 border-dashed border-gray-100 rounded-[3rem] p-12 flex flex-col items-center justify-center text-center group hover:border-teal-200 transition-all hover:bg-teal-50/30"
-                >
-                    <div className="w-16 h-16 bg-gray-50 rounded-[1.5rem] flex items-center justify-center text-gray-400 mb-6 group-hover:scale-110 group-hover:bg-teal-600 group-hover:text-white transition-all shadow-sm">
-                        <Plus size={32} />
-                    </div>
-                    <h4 className="text-lg font-black text-gray-400 group-hover:text-teal-600 uppercase italic transition-colors">New Package</h4>
-                    <p className="text-xs font-bold text-gray-300 mt-2 max-w-[180px]">Expand your inventory with a new destination</p>
-                </button>
+                                    {/* Content */}
+                                    <div className="p-8">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="text-[10px] font-black text-[#2E7D32] uppercase tracking-[0.2em]">
+                                                {tour.date || "Mar 21"}
+                                            </div>
+                                            <div className="text-[10px] font-black text-gray-300 uppercase tracking-widest flex items-center gap-1">
+                                                {tour.reviews ? `${tour.reviews} Reviews` : "No Reviews"}
+                                            </div>
+                                        </div>
+
+                                        <h3 className="text-2xl font-black text-[#1A1F2C] mb-1 group-hover:text-[#3061E3] transition-colors">{tour.title}</h3>
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-8">GUIDE: {tour.guideName || "UNKNOWN"}</p>
+
+                                        <div className="flex items-end justify-between border-t border-gray-50 pt-6">
+                                            <div>
+                                                <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mb-1">Base Price</p>
+                                                <p className="text-3xl font-black text-[#1A1F2C] tracking-tighter">${tour.price}</p>
+                                            </div>
+                                            <button className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-[#3061E3] hover:text-white transition-all">
+                                                <ArrowUpRight size={20} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+
+                            {/* New Package Placeholder */}
+                            <motion.div 
+                                onClick={() => router.push("/agency/tours/create")}
+                                className="group cursor-pointer border-2 border-dashed border-gray-200 rounded-[2.5rem] flex flex-col items-center justify-center p-12 hover:border-[#3061E3] hover:bg-[#3061E3]/[0.02] transition-all duration-300"
+                            >
+                                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 group-hover:bg-[#3061E3]/10 group-hover:text-[#3061E3] transition-all mb-6">
+                                    <Plus size={32} />
+                                </div>
+                                <h3 className="text-xl font-black text-[#1A1F2C] mb-2 uppercase tracking-tight">New Package</h3>
+                                <p className="text-center text-gray-400 font-medium text-sm">Expand your inventory with a<br />new destination</p>
+                            </motion.div>
+                        </>
+                    )}
+                </div>
             </div>
         </div>
     );

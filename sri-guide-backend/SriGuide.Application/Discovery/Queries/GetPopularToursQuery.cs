@@ -22,47 +22,40 @@ public class GetPopularToursQueryHandler : IRequestHandler<GetPopularToursQuery,
 
     public async Task<List<RecentTripDto>> Handle(GetPopularToursQuery request, CancellationToken cancellationToken)
     {
-        var popularTours = await _context.Trips
-            .Include(t => t.Guide)
+        var popularTours = await _context.Tours
             .Include(t => t.Agency)
             .Include(t => t.Images)
-            .Where(t => t.IsAgencyTour && t.IsActive && t.GuideId == null)
-            .OrderByDescending(t => _context.TripLikes.Count(tl => tl.TripId == t.Id))
+            .Where(t => t.IsActive)
+            .OrderByDescending(t => _context.TourLikes.Count(tl => tl.TourId == t.Id))
             .Take(4)
             .ToListAsync(cancellationToken);
 
-        var combinedTours = popularTours;
-
-        var userLikedTripIds = request.CurrentUserId.HasValue 
-            ? await _context.TripLikes
+        var userLikedTourIds = request.CurrentUserId.HasValue 
+            ? await _context.TourLikes
                 .Where(tl => tl.UserId == request.CurrentUserId.Value)
-                .Select(tl => tl.TripId)
+                .Select(tl => tl.TourId)
                 .ToListAsync(cancellationToken)
             : new List<Guid>();
 
-        return combinedTours.Select(t => new RecentTripDto(
+        return popularTours.Select(t => new RecentTripDto(
             t.Id,
             t.Title,
             t.Description,
             t.Location,
-            t.Date,
-            t.Images.OrderBy(i => i.CreatedAt).Select(i => i.ImageUrl).FirstOrDefault() != null && 
-            !t.Images.OrderBy(i => i.CreatedAt).Select(i => i.ImageUrl).FirstOrDefault()!.StartsWith("/") && 
-            !t.Images.OrderBy(i => i.CreatedAt).Select(i => i.ImageUrl).FirstOrDefault()!.StartsWith("http")
-                ? "/" + t.Images.OrderBy(i => i.CreatedAt).Select(i => i.ImageUrl).FirstOrDefault()
-                : t.Images.OrderBy(i => i.CreatedAt).Select(i => i.ImageUrl).FirstOrDefault(),
-            t.Guide != null ? t.Guide.FullName : (t.Agency != null ? t.Agency.CompanyName : "Sri Lankan Agency"),
-            t.Guide != null && t.Guide.ProfileImageUrl != null 
-                ? (!t.Guide.ProfileImageUrl.StartsWith("/") && !t.Guide.ProfileImageUrl.StartsWith("http") ? "/" + t.Guide.ProfileImageUrl : t.Guide.ProfileImageUrl)
-                : (t.Agency != null ? "https://ui-avatars.com/api/?name=" + t.Agency.CompanyName : null),
-            t.GuideId ?? t.AgencyId,
-            _context.TripLikes.Count(tl => tl.TripId == t.Id),
-            userLikedTripIds.Contains(t.Id),
+            null, // Date
+            t.MainImageUrl != null && !t.MainImageUrl.StartsWith("/") && !t.MainImageUrl.StartsWith("http")
+                ? "/" + t.MainImageUrl
+                : t.MainImageUrl,
+            t.Agency?.CompanyName ?? "Sri Lankan Agency",
+            t.Agency?.User?.ProfileImageUrl, // Simplified
+            t.AgencyId,
+            _context.TourLikes.Count(tl => tl.TourId == t.Id),
+            userLikedTourIds.Contains(t.Id),
             t.Price,
             t.Duration,
             t.MapLink,
             t.Category,
-            t.IsAgencyTour
+            true // IsAgencyTour
         )).ToList();
     }
 }

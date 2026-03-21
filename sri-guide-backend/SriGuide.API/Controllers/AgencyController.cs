@@ -6,8 +6,10 @@ using SriGuide.Application.Agencies.Queries;
 using SriGuide.Application.Agencies.Commands;
 using SriGuide.Application.Common.Models;
 using SriGuide.Application.Trips.Commands;
+using SriGuide.Application.Profiles.Commands;
 using SriGuide.Domain.Enums;
 using System.Security.Claims;
+using SriGuide.Application.Trips.Queries;
 
 namespace SriGuide.API.Controllers;
 
@@ -53,6 +55,14 @@ public class AgencyController : ControllerBase
         return await _mediator.Send(new GetAgencyTripsQuery(Guid.Parse(userId)));
     }
 
+    [HttpGet("tours")]
+    public async Task<ActionResult<List<AgencyTripDto>>> GetTours()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+        return await _mediator.Send(new GetAgencyToursQuery(Guid.Parse(userId)));
+    }
+
     [HttpGet("bookings")]
     public async Task<ActionResult<List<AgencyBookingDto>>> GetBookings()
     {
@@ -67,7 +77,10 @@ public class AgencyController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null) return Unauthorized();
         
-        var success = await _mediator.Send(command with { AgencyId = Guid.Parse(userId) });
+        var agency = await _mediator.Send(new GetAgencyProfileQuery(Guid.Parse(userId)));
+        if (agency == null) return NotFound("Agency profile not found");
+        
+        var success = await _mediator.Send(command with { AgencyId = agency.Id });
         return success ? Ok() : BadRequest("Guide not found or already in agency");
     }
 
@@ -77,39 +90,114 @@ public class AgencyController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null) return Unauthorized();
         
-        var success = await _mediator.Send(command with { AgencyId = Guid.Parse(userId) });
+        var agency = await _mediator.Send(new GetAgencyProfileQuery(Guid.Parse(userId)));
+        if (agency == null) return NotFound("Agency profile not found");
+
+        var success = await _mediator.Send(command with { AgencyId = agency.Id });
         return success ? Ok() : BadRequest("Guide not found or not part of this agency");
     }
 
-    [HttpPost("tours")]
-    public async Task<ActionResult<Guid>> CreateTour([FromBody] CreateTourCommand command)
+    [HttpPost("trips")]
+    public async Task<IActionResult> CreateTrip([FromBody] CreateTripCommand command)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null) return Unauthorized();
-        
-        var result = await _mediator.Send(command with { AgencyId = Guid.Parse(userId) });
+        var agencyIdString = User.FindFirstValue("AgencyProfileId");
+        if (string.IsNullOrEmpty(agencyIdString)) return BadRequest("Agency Profile not found");
+
+        var result = await _mediator.Send(command with { AgencyId = Guid.Parse(agencyIdString) });
+        return Ok(result);
+    }
+
+    [HttpPut("trips/{id}")]
+    public async Task<IActionResult> UpdateTrip(Guid id, [FromBody] UpdateTripCommand command)
+    {
+        var agencyIdString = User.FindFirstValue("AgencyProfileId");
+        if (string.IsNullOrEmpty(agencyIdString)) return BadRequest("Agency Profile not found");
+
+        if (id != command.TripId) return BadRequest("Trip ID mismatch");
+
+        var success = await _mediator.Send(command with { AgencyId = Guid.Parse(agencyIdString) });
+        if (!success) return NotFound("Trip not found or unauthorized");
+
+        return Ok();
+    }
+
+    [HttpDelete("trips/{id}")]
+    public async Task<IActionResult> DeleteTrip(Guid id)
+    {
+        var agencyIdString = User.FindFirstValue("AgencyProfileId");
+        if (string.IsNullOrEmpty(agencyIdString)) return BadRequest("Agency Profile not found");
+
+        var success = await _mediator.Send(new DeleteTripCommand(id, null, Guid.Parse(agencyIdString)));
+        if (!success) return NotFound("Trip not found or unauthorized");
+
+        return Ok();
+    }
+
+    [HttpPost("trips/{tripId}/upload-photo")]
+    public async Task<IActionResult> UploadTripPhoto(Guid tripId, IFormFile file)
+    {
+        var agencyIdString = User.FindFirstValue("AgencyProfileId");
+        if (string.IsNullOrEmpty(agencyIdString)) return BadRequest("Agency Profile not found");
+
+        var result = await _mediator.Send(new UploadTripImageCommand(tripId, null, Guid.Parse(agencyIdString), file));
+        return Ok(new { ImageUrl = result });
+    }
+
+    [HttpDelete("trips/{tripId}/photo")]
+    public async Task<IActionResult> DeleteTripPhoto(Guid tripId, [FromQuery] string imageUrl)
+    {
+        var agencyIdString = User.FindFirstValue("AgencyProfileId");
+        if (string.IsNullOrEmpty(agencyIdString)) return BadRequest("Agency Profile not found");
+
+        var success = await _mediator.Send(new DeleteTripImageCommand(tripId, null, imageUrl, Guid.Parse(agencyIdString)));
+        if (!success) return NotFound("Trip or image not found or unauthorized");
+
+        return Ok();
+    }
+
+    [HttpPost("tours")]
+    public async Task<IActionResult> CreateTour([FromBody] CreateTourCommand command)
+    {
+        var agencyIdString = User.FindFirstValue("AgencyProfileId");
+        if (string.IsNullOrEmpty(agencyIdString)) return BadRequest("Agency Profile not found");
+
+        var result = await _mediator.Send(command with { AgencyId = Guid.Parse(agencyIdString) });
         return Ok(result);
     }
 
     [HttpPut("tours/{id}")]
     public async Task<IActionResult> UpdateTour(Guid id, [FromBody] UpdateTourCommand command)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null) return Unauthorized();
-        
-        if (id != command.TripId) return BadRequest("Tour ID mismatch");
-        
-        var success = await _mediator.Send(command with { AgencyId = Guid.Parse(userId) });
-        return success ? Ok() : NotFound("Tour not found or you don't have permission to update it.");
+        var agencyIdString = User.FindFirstValue("AgencyProfileId");
+        if (string.IsNullOrEmpty(agencyIdString)) return BadRequest("Agency Profile not found");
+
+        if (id != command.TourId) return BadRequest("Tour ID mismatch");
+
+        var success = await _mediator.Send(command with { AgencyId = Guid.Parse(agencyIdString) });
+        if (!success) return NotFound("Tour not found or unauthorized");
+
+        return Ok();
     }
 
     [HttpDelete("tours/{id}")]
     public async Task<IActionResult> DeleteTour(Guid id)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null) return Unauthorized();
-        
-        var success = await _mediator.Send(new DeleteTourCommand(id, Guid.Parse(userId)));
-        return success ? Ok() : NotFound("Tour not found or you don't have permission to delete it.");
+        var agencyIdString = User.FindFirstValue("AgencyProfileId");
+        if (string.IsNullOrEmpty(agencyIdString)) return BadRequest("Agency Profile not found");
+
+        var success = await _mediator.Send(new DeleteTourCommand(id, Guid.Parse(agencyIdString)));
+        if (!success) return NotFound("Tour not found or unauthorized");
+
+        return Ok();
+    }
+
+    [HttpPost("tours/{tourId}/upload-photo")]
+    public async Task<IActionResult> UploadTourPhoto(Guid tourId, IFormFile file)
+    {
+        var agencyIdString = User.FindFirstValue("AgencyProfileId");
+        if (string.IsNullOrEmpty(agencyIdString)) return BadRequest("Agency Profile not found");
+
+        var result = await _mediator.Send(new UploadTourImageCommand(tourId, Guid.Parse(agencyIdString), file));
+        return Ok(new { ImageUrl = result });
     }
 }
