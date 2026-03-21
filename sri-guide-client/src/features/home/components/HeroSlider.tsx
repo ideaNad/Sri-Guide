@@ -46,30 +46,35 @@ const HeroSection = () => {
             </div>
 
             {/* Centered Huge Typography (Static) */}
-            <div className="relative z-10 flex-1 flex items-center justify-center pointer-events-none">
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9, y: 30 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                    className="text-center -mt-1 sm:-mt-15 lg:mt-0"
-                >
-                    <h1 className="text-[29vw] lg:text-[18rem] font-black text-white leading-none tracking-tighter opacity-50 drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex flex-col sm:flex-row items-center justify-center w-full">
-                        <div className="flex items-baseline self-start sm:self-auto">
-                            <span id="letter-0" className="inline-block transition-all duration-300">S</span>
-                            <span id="letter-1" className="inline-block transition-all duration-300">R</span>
-                            <span id="letter-2" className="inline-block transition-all duration-300">I</span>
-                        </div>
-                        <div className="flex items-baseline self-end sm:self-auto">
-                            <span id="letter-3" className="hidden sm:inline-block">&nbsp;</span>
-                            <span id="letter-4" className="inline-block transition-all duration-300">L</span>
-                            <span id="letter-5" className="inline-block transition-all duration-300">A</span>
-                            <span id="letter-6" className="inline-block transition-all duration-300">N</span>
-                            <span id="letter-7" className="inline-block transition-all duration-300">K</span>
-                            <span id="letter-8" className="inline-block transition-all duration-300">A</span>
-                        </div>
-                    </h1>
-                </motion.div>
+<div className="relative z-10 flex-1 flex items-center justify-center pointer-events-none">
+    <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 30 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        className="text-center -mt-1 sm:-mt-15 lg:mt-0"
+    >
+        <h1 className="text-[29vw] lg:text-[18rem] font-black text-white leading-none tracking-tighter opacity-50 drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex flex-col sm:flex-row items-center justify-center w-full">
+            
+            {/* SRI */}
+            <div className="flex items-baseline justify-center">
+                <span id="letter-0" className="inline-block transition-all duration-300">S</span>
+                <span id="letter-1" className="inline-block transition-all duration-300">R</span>
+                <span id="letter-2" className="inline-block transition-all duration-300">I</span>
             </div>
+
+            {/* LANKA */}
+            <div className="flex items-baseline justify-center">
+                <span id="letter-3" className="hidden sm:inline-block">&nbsp;</span>
+                <span id="letter-4" className="inline-block transition-all duration-300">L</span>
+                <span id="letter-5" className="inline-block transition-all duration-300">A</span>
+                <span id="letter-6" className="inline-block transition-all duration-300">N</span>
+                <span id="letter-7" className="inline-block transition-all duration-300">K</span>
+                <span id="letter-8" className="inline-block transition-all duration-300">A</span>
+            </div>
+
+        </h1>
+    </motion.div>
+</div>
 
             {/* Bottom Row: Stats & CTA */}
             <div className="relative z-10 w-full max-w-[1400px] mx-auto mt-auto">
