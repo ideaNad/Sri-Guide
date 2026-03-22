@@ -124,7 +124,7 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
                     .Where(r => r.TargetType == "Tour" && r.TargetId == t.Id)
                     .ToListAsync(cancellationToken);
                 
-                var avgRating = reviews.Any() ? (decimal)Math.Round(reviews.Average(r => (double)r.Rating), 1) : 5.0m;
+                var avgRating = reviews.Any() ? (decimal)Math.Round(reviews.Average(r => (double)r.Rating), 1) : 0m;
                 var reviewCount = reviews.Count;
 
                 var firstImage = t.MainImageUrl ?? t.Images.OrderBy(i => i.CreatedAt).FirstOrDefault()?.ImageUrl;
@@ -189,12 +189,17 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
             foreach (var g in guidesRaw)
             {
                 var tripIds = g.Trips.Select(t => t.Id).ToList();
-                var reviews = await _context.Reviews
+                var tripReviews = await _context.Reviews
                     .Where(r => r.TargetType == "Trip" && tripIds.Contains(r.TargetId))
                     .ToListAsync(cancellationToken);
                 
-                var avgRating = reviews.Any() ? (decimal)Math.Round(reviews.Average(r => (double)r.Rating), 1) : 5.0m;
-                var reviewCount = reviews.Count;
+                var profileReviews = await _context.Reviews
+                    .Where(r => r.TargetType == "Guide" && r.TargetId == g.UserId)
+                    .ToListAsync(cancellationToken);
+
+                var allReviews = profileReviews.Concat(tripReviews).ToList();
+                var avgRating = allReviews.Any() ? (decimal)Math.Round(allReviews.Average(r => (double)r.Rating), 1) : 0m;
+                var reviewCount = allReviews.Count;
 
                 results.Add(new DiscoveryItemDto(
                     g.UserId,
@@ -225,13 +230,41 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
         var isAgencyType = string.IsNullOrEmpty(request.Type) || string.Equals(request.Type, "agency", StringComparison.OrdinalIgnoreCase);
         if (isAgencyType)
         {
-            var agencies = await _context.AgencyProfiles
+            var agenciesRaw = await _context.AgencyProfiles
                 .Include(a => a.User)
                 .Where(a => a.VerificationStatus == VerificationStatus.Approved)
                 .Where(a => string.IsNullOrEmpty(request.Query) || 
                             a.CompanyName.Contains(request.Query) || 
                             a.User.FullName.Contains(request.Query))
-                .Select(a => new DiscoveryItemDto(
+                .ToListAsync(cancellationToken);
+
+            foreach (var a in agenciesRaw)
+            {
+                var tourIds = await _context.Tours
+                    .Where(t => t.AgencyId == a.Id)
+                    .Select(t => t.Id)
+                    .ToListAsync(cancellationToken);
+                    
+                var tripIds = await _context.Trips
+                    .Where(t => t.AgencyId == a.Id)
+                    .Select(t => t.Id)
+                    .ToListAsync(cancellationToken);
+                
+                var allItemIds = tourIds.Concat(tripIds).ToList();
+
+                var itemReviews = await _context.Reviews
+                    .Where(r => (r.TargetType == "Tour" || r.TargetType == "Trip") && allItemIds.Contains(r.TargetId))
+                    .ToListAsync(cancellationToken);
+                    
+                var profileReviews = await _context.Reviews
+                    .Where(r => r.TargetType == "Agency" && r.TargetId == a.UserId)
+                    .ToListAsync(cancellationToken);
+                
+                var allReviews = profileReviews.Concat(itemReviews).ToList();
+                var avgRating = allReviews.Any() ? (decimal)Math.Round(allReviews.Average(r => (double)r.Rating), 1) : 0m;
+                var reviewCount = allReviews.Count;
+
+                results.Add(new DiscoveryItemDto(
                     a.Id,
                     a.CompanyName,
                     a.Slug,
@@ -240,8 +273,8 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
                         ? "/" + a.User.ProfileImageUrl 
                         : a.User.ProfileImageUrl ?? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(a.CompanyName)}&background=000&color=fff&bold=true",
                     "Sri Lanka",
-                    5.0m,
-                    0,
+                    avgRating,
+                    reviewCount,
                     "agency",
                     new string[] { "Certified", "Premium" },
                     a.Phone,
@@ -253,10 +286,8 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
                     null,
                     null,
                     null
-                ))
-                .ToListAsync(cancellationToken);
-            
-            results.AddRange(agencies);
+                ));
+            }
         }
 
         // Filter and Paginate the combined results

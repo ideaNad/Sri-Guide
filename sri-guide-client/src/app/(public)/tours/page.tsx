@@ -14,8 +14,6 @@ interface Tour {
     subtitle?: string;
     image: string;
     location?: string;
-    rating: number;
-    reviews: number;
     type: string;
     agencyName?: string;
     price?: number;
@@ -23,8 +21,9 @@ interface Tour {
     duration?: string;
     mapLink?: string;
     slug?: string;
+    reviews?: number;
+    rating?: number;
 }
-
 const ToursPage = () => {
     const [tours, setTours] = useState<Tour[]>([]);
     const [loading, setLoading] = useState(true);
@@ -209,13 +208,13 @@ const ToursPage = () => {
                                             title={tour.title}
                                             image={tour.image}
                                             location={tour.location}
-                                            rating={tour.rating}
-                                            reviews={tour.reviews}
                                             price={tour.price}
                                             duration={tour.duration || tour.date}
                                             mapLink={tour.mapLink}
                                             type="tour"
                                             subtitle={tour.agencyName}
+                                            rating={tour.rating}
+                                            reviews={tour.reviews}
                                         />
                                     </motion.div>
                                 ))

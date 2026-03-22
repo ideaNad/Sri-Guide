@@ -108,6 +108,7 @@ const AdminVerificationsPage = () => {
                                     <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Applicant</th>
                                     <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Account Type</th>
                                     <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Date Logged</th>
+                                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Registration Details</th>
                                     <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -143,6 +144,14 @@ const AdminVerificationsPage = () => {
                                             <p className="text-xs font-bold text-gray-600">
                                                 {new Date(req.createdAt).toLocaleDateString()}
                                             </p>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <p className="text-xs font-bold text-gray-900">{req.registrationNumber || 'N/A'}</p>
+                                            {req.licenseExpirationDate && (
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                                                    Exp: {new Date(req.licenseExpirationDate).toLocaleDateString()}
+                                                </p>
+                                            )}
                                         </td>
                                         <td className="px-8 py-6 text-right">
                                             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">

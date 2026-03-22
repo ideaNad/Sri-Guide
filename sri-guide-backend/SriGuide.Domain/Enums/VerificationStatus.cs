@@ -2,7 +2,8 @@ namespace SriGuide.Domain.Enums;
 
 public enum VerificationStatus
 {
-    Pending,
-    Approved,
-    Rejected
+    None = 0,
+    Pending = 1,
+    Approved = 2,
+    Rejected = 3
 }

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/providers/AuthContext";
 import { useRouter } from "next/navigation";
-import { User, Mail, ShieldCheck, MapPin, Calendar, Edit3, Loader2, Compass } from "lucide-react";
+import { User, Mail, ShieldCheck, MapPin, Calendar, Edit3, Loader2, Compass, Camera } from "lucide-react";
 import apiClient from "@/services/api-client";
 
 interface UserProfile {
@@ -13,10 +13,11 @@ interface UserProfile {
     role: string;
     isVerified: boolean;
     profileImageUrl: string | null;
+    createdAt: string;
 }
 
 export default function ProfilePage() {
-    const { user, loading } = useAuth();
+    const { user, loading, updateUser } = useAuth();
     const router = useRouter();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [profileLoading, setProfileLoading] = useState(true);
@@ -58,17 +59,27 @@ export default function ProfilePage() {
                     "Content-Type": "multipart/form-data",
                 },
             });
-            // Update local profile state
+            // Update local profile state and auth user image
             if (profile) {
                 setProfile({ ...profile, profileImageUrl: response.data });
             }
-            // Update auth user image if needed (though it comes from profile me)
-            window.location.reload(); // Quick way to refresh AuthContext
+            updateUser({ profileImageUrl: response.data });
         } catch (error) {
             console.error("Failed to upload photo", error);
         } finally {
             setUploading(false);
         }
+    };
+
+    const getImageUrl = (url: string | null) => {
+        if (!url) return null;
+        if (url.startsWith('http')) return url;
+        const baseUrl = apiClient.defaults.baseURL?.replace('/api', '') || '';
+        return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+    };
+
+    const getInitials = (name: string) => {
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
     };
 
     if (loading || !user) {
@@ -78,6 +89,8 @@ export default function ProfilePage() {
             </div>
         );
     }
+
+    const initials = getInitials(user.fullName);
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500 pb-12">
@@ -102,19 +115,23 @@ export default function ProfilePage() {
                             disabled={uploading}
                         />
                         <label htmlFor="profile-upload" className="cursor-pointer block">
-                            <div className="w-32 h-32 rounded-3xl overflow-hidden border-4 border-primary/5 shadow-inner mb-6 relative group-hover:border-primary/20 transition-all">
-                                <img 
-                                    src={profile?.profileImageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${profile.profileImageUrl}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.fullName}`} 
-                                    alt={user.fullName}
-                                    className="w-full h-full object-cover"
-                                />
+                            <div className="w-32 h-32 rounded-3xl overflow-hidden border-4 border-primary/5 shadow-inner mb-6 relative group-hover:border-primary/20 transition-all flex items-center justify-center bg-gray-50">
+                                {profile?.profileImageUrl ? (
+                                    <img 
+                                        src={getImageUrl(profile.profileImageUrl)!} 
+                                        alt={user.fullName}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <span className="text-4xl font-black text-primary/40 tracking-tighter">{initials}</span>
+                                )}
                                 {uploading && (
                                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                                         <Loader2 className="w-6 h-6 text-white animate-spin" />
                                     </div>
                                 )}
                                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                    <Edit3 size={20} className="text-white" />
+                                    <Camera size={20} className="text-white" />
                                 </div>
                             </div>
                         </label>
@@ -129,8 +146,8 @@ export default function ProfilePage() {
                     <p className="text-gray-400 font-bold text-xs uppercase tracking-[0.2em] mb-6">{user.role}</p>
                     
                     <div className="w-full space-y-3 pt-6 border-t border-gray-50">
-                        <div className="flex items-center gap-3 text-sm font-medium text-gray-600 bg-gray-50 px-4 py-3 rounded-2xl">
-                            <Mail size={16} className="text-primary/70" />
+                        <div className="flex items-center gap-3 text-sm font-medium text-gray-600 bg-gray-50 px-4 py-3 rounded-2xl overflow-hidden">
+                            <Mail size={16} className="text-primary/70 shrink-0" />
                             <span className="truncate">{user.email}</span>
                         </div>
                         <div className="flex items-center gap-3 text-sm font-medium text-gray-600 bg-gray-50 px-4 py-3 rounded-2xl">
@@ -170,27 +187,18 @@ export default function ProfilePage() {
                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Member Since</p>
                                 <p className="text-gray-900 font-bold flex items-center gap-2">
                                     <Calendar size={14} className="text-primary" />
-                                    March 2026
+                                    {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : "March 2026"}
                                 </p>
                             </div>
                             <div className="space-y-1.5">
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Default Language</p>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Current Role</p>
                                 <p className="text-gray-900 font-bold flex items-center gap-2">
-                                    English (US)
+                                    {user.role}
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-primary/5 border border-primary/10 rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden flex items-center justify-between">
-                        <div className="space-y-2">
-                            <h3 className="text-xl font-black text-gray-900">Experience Sri Lanka</h3>
-                            <p className="text-gray-600 font-medium text-sm">Update your preferences to get better recommendations.</p>
-                        </div>
-                        <button className="bg-white text-primary p-4 rounded-2xl shadow-sm hover:shadow-md transition-all">
-                            <Compass size={24} />
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>

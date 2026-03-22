@@ -13,7 +13,7 @@ import {
   VEHICLE_RENTALS
 } from "@/data/mock-data";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, Mail, Compass, ShieldCheck, Zap, Heart, MapPin, Loader2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Mail, Compass, ShieldCheck, Zap, Heart, MapPin, Loader2, Star } from "lucide-react";
 import Link from "next/link";
 import apiClient from "@/services/api-client";
 import { useAuth } from "@/providers/AuthContext";
@@ -59,6 +59,8 @@ interface RecentTrip {
   isAgencyTour?: boolean;
   price?: number;
   slug?: string;
+  rating?: number;
+  reviewsCount?: number;
 }
 
 interface PopularPlace {
@@ -147,6 +149,14 @@ export default function Home() {
     fetchPopularPlaces();
   }, []);
 
+  const getImageUrl = (url?: string) => {
+    if (!url || url.trim() === "") return "https://placehold.co/600x400?text=No+Image+Available";
+    if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url;
+    const baseUrl = apiClient.defaults.baseURL?.split('/api')[0];
+    const cleanPath = url.startsWith('/') ? url : `/${url}`;
+    return `${baseUrl}${cleanPath}`;
+  };
+
   const handleToggleLike = async (id: string, type: string) => {
     if (!user) {
       setIsAuthModalOpen(true);
@@ -228,8 +238,6 @@ export default function Home() {
                       title={tour.title}
                       image={tour.imageUrl || ""}
                       location={tour.location}
-                      rating={4.8}
-                      reviews={tour.likeCount}
                       type="tour"
                       price={tour.price}
                       badge="Agency"
@@ -237,6 +245,8 @@ export default function Home() {
                       isLiked={tour.isLiked}
                       duration={tour.duration}
                       mapLink={tour.mapLink}
+                      rating={tour.rating}
+                      reviews={tour.reviewsCount}
                       onToggleLike={handleToggleLike}
                     />
                   </motion.div>
@@ -337,8 +347,6 @@ export default function Home() {
                       title={trip.title}
                       image={trip.imageUrl || ""}
                       location={trip.location}
-                      rating={5.0}
-                      reviews={trip.likeCount}
                       type={trip.isAgencyTour ? "tour" : "adventure"}
                       price={trip.price}
                       badge={trip.isAgencyTour ? "Agency" : "Guide"}
@@ -347,6 +355,8 @@ export default function Home() {
                       isLiked={trip.isLiked}
                       duration={trip.duration}
                       mapLink={trip.mapLink}
+                      rating={trip.rating}
+                      reviews={trip.reviewsCount}
                       onToggleLike={handleToggleLike}
                     />
                   </motion.div>
@@ -376,58 +386,42 @@ export default function Home() {
             ) : guides.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {guides.map((guide) => (
-                  <motion.div
+                  <Link 
+                    href={`/profile/${guide.slug || guide.id}`} 
                     key={guide.id}
-                    whileHover={{ y: -10 }}
-                    className="bg-white p-8 rounded-3xl border border-gray-100 flex flex-col items-center text-center shadow-lg hover:shadow-xl transition-shadow"
                   >
-                    <div className="w-32 h-32 rounded-full overflow-hidden mb-6 border-4 border-white shadow-md">
-                      <img
-                        src={guide.image?.trim() ? (guide.image.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${guide.image}` : guide.image) : `https://ui-avatars.com/api/?name=${guide.title}&background=FFCC00&color=000&bold=true`}
-                        alt={guide.title}
-                        className="w-full h-full object-cover transition-all duration-700"
-                      />
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-1">{guide.title}</h3>
-                    <p className="text-primary font-medium text-sm mb-4">{guide.subtitle || "Local Guide"}</p>
-
-                    <div className="flex flex-wrap justify-center gap-2 mb-6">
-                      {guide.isLegit && (
-                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100 flex items-center gap-1">
-                          Verified <ShieldCheck size={10} />
-                        </span>
-                      )}
-                      {guide.agencyName && (
-                        <span className="text-[9px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-2 py-1 rounded-full border border-blue-100">
-                          {guide.agencyName}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex flex-wrap justify-center gap-2 mb-6">
-                      {guide.tags?.slice(0, 3).map((tag: string) => (
-                        <span key={tag} className="text-[10px] font-bold px-3 py-1 bg-gray-50 rounded-full text-secondary">{tag}</span>
-                      ))}
-                    </div>
-                    <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
-                      {guide.type === 'agency' && (
-                        <span className="text-xs font-semibold text-blue-600 flex items-center gap-1.5 bg-blue-50 px-2 py-1 rounded">
-                          <ShieldCheck className="w-4 h-4 text-blue-500" /> Travel Agency
-                        </span>
-                      )}
-                      {guide.isLegit && (
-                        <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1.5 bg-emerald-50 px-2 py-1 rounded">
-                          <ShieldCheck className="w-4 h-4 text-emerald-500" /> Licensed Guide
-                        </span>
-                      )}
-                    </div>
-                    <Link
-                      href={`/profile/${guide.slug || guide.id}`}
-                      className="w-full py-3.5 bg-primary/10 text-primary font-bold text-sm rounded-xl hover:bg-primary hover:text-white transition-colors text-center"
+                    <motion.div
+                      whileHover={{ y: -10 }}
+                      className="group bg-white p-8 rounded-3xl border border-gray-100 flex flex-col items-center text-center shadow-lg hover:shadow-xl transition-all duration-300 h-full"
                     >
-                      View Profile
-                    </Link>
-                  </motion.div>
+                      <div className="w-24 h-24 rounded-full overflow-hidden mb-6 border-4 border-gray-50 group-hover:border-primary/20 transition-all shadow-md">
+                        <img 
+                          src={getImageUrl(guide.image)} 
+                          alt={guide.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                      </div>
+                      <h4 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors mb-2">{guide.title}</h4>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-4 opacity-60 italic">{guide.subtitle || "Local Guide"}</p>
+                      
+                      {guide.rating > 0 && (
+                        <div className="flex items-center justify-center gap-1.5 mb-4 bg-yellow-400/10 text-yellow-600 px-3 py-1 rounded-full">
+                          <Star size={12} className="fill-highlight text-highlight" />
+                          <span className="text-xs font-black">{guide.rating.toFixed(1)}</span>
+                          <span className="text-[10px] font-bold opacity-60">({guide.reviews})</span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-2 text-gray-400 mb-6">
+                        <MapPin size={14} className="text-primary/40" />
+                        <span className="text-[11px] font-bold uppercase tracking-wider">{guide.location}</span>
+                      </div>
+
+                      <div className="mt-auto pt-6 border-t border-gray-50 w-full">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 group-hover:text-primary transition-colors">View Profile &rarr;</span>
+                      </div>
+                    </motion.div>
+                  </Link>
                 ))}
               </div>
             ) : (
@@ -455,34 +449,17 @@ export default function Home() {
             ) : agencies.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {agencies.map((agency) => (
-                  <motion.div
-                    key={agency.id}
-                    whileHover={{ y: -8 }}
-                    className="bg-gray-50 p-10 rounded-[3rem] border border-gray-100 flex flex-col items-center text-center shadow-sm hover:shadow-2xl transition-all duration-500"
-                  >
-                    <div className="w-24 h-24 rounded-3xl overflow-hidden mb-8 shadow-xl border-4 border-white rotate-3 group-hover:rotate-0 transition-transform">
-                      <img
-                        src={agency.image?.trim() ? (agency.image.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${agency.image}` : agency.image) : `https://ui-avatars.com/api/?name=${agency.title}&background=000&color=fff&bold=true`}
-                        alt={agency.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <h3 className="text-2xl font-black text-gray-900 mb-2 truncate max-w-full">{agency.title}</h3>
-                    <div className="flex items-center gap-2 mb-6">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-                        Official Agency
-                      </span>
-                    </div>
-                    <p className="text-gray-500 text-sm font-medium mb-8 line-clamp-2 leading-relaxed">
-                      Connecting you to authentic Sri Lankan adventures with professional excellence.
-                    </p>
-                    <Link
-                      href={`/profile/${agency.slug || agency.id}?type=agency`}
-                      className="w-full py-4 bg-gray-900 text-white font-bold text-xs uppercase tracking-widest rounded-2xl hover:bg-blue-600 transition-colors shadow-lg shadow-gray-200"
-                    >
-                      View Agency Profile
-                    </Link>
-                  </motion.div>
+                    <Card
+                      key={agency.id}
+                      id={agency.id}
+                      slug={agency.slug}
+                      title={agency.title}
+                      image={agency.image || ""}
+                      rating={agency.rating}
+                      reviews={agency.reviews}
+                      type="agency"
+                      subtitle="Official Travel Agency"
+                    />
                 ))}
               </div>
             ) : (

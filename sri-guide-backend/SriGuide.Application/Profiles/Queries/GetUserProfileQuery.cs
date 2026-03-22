@@ -36,6 +36,7 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
             user.Role,
             user.IsVerified,
             user.ProfileImageUrl,
+            user.CreatedAt,
             guideProfile != null ? new GuideProfileDto(
                 guideProfile.Bio,
                 guideProfile.Languages,
@@ -54,7 +55,9 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
                 guideProfile.FacebookLink,
                 guideProfile.InstagramLink,
                 guideProfile.TwitterLink,
-                guideProfile.LinkedinLink
+                guideProfile.LinkedinLink,
+                guideProfile.RegistrationNumber,
+                guideProfile.LicenseExpirationDate?.ToString("yyyy-MM-dd")
             ) : null,
             agencyProfile != null ? new AgencyProfileDto(
                 agencyProfile.Id,

@@ -57,12 +57,12 @@ export default function GuideLayout({ children }: { children: React.ReactNode })
 
 const SidebarContent = ({ pathname, setSidebarOpen, logout, user, photoUrl }: { pathname: string, setSidebarOpen: (open: boolean) => void, logout: () => void, user: any, photoUrl: string | null }) => (
     <div className="flex flex-col h-full bg-white border-r border-gray-100">
-        <div className="sticky top-0 bg-white z-10 px-8 py-8 border-b border-gray-50 flex items-center justify-between mb-4">
-            <Link href="/" className="relative flex items-center h-8 md:h-10 z-10 px-2" onClick={() => setSidebarOpen(false)}>
+        <div className="sticky top-0 bg-white z-10 px-8 py-10 border-b border-gray-50 flex items-center justify-between mb-4">
+            <Link href="/" className="relative flex items-center h-20 md:h-24 z-10 px-1" onClick={() => setSidebarOpen(false)}>
                 <img
                     src="/logo.svg"
                     alt="Sri Guide Logo"
-                    className="absolute left-0 h-40 md:h-40 w-auto transition-all duration-500 object-contain max-w-none"
+                    className="h-20 md:h-24 w-auto transition-all duration-500 object-contain"
                 />
             </Link>
             <button 

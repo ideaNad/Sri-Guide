@@ -9,6 +9,7 @@ public record UserProfileDto(
     UserRole Role,
     bool IsVerified,
     string? ProfileImageUrl,
+    DateTime CreatedAt,
     GuideProfileDto? GuideProfile,
     AgencyProfileDto? AgencyProfile
 );
@@ -31,7 +32,9 @@ public record GuideProfileDto(
     string? FacebookLink,
     string? InstagramLink,
     string? TwitterLink,
-    string? LinkedinLink
+    string? LinkedinLink,
+    string? RegistrationNumber = null,
+    string? LicenseExpirationDate = null
 );
 
 public record AgencyProfileDto(

@@ -3,15 +3,26 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import {
-    Star, MapPin, Heart, ArrowRight,
+    MapPin, Heart, ArrowRight,
     Calendar, ChevronRight, Clock, Tag, Building2,
-    X, ChevronLeft, ChevronRight as ChevronRightIcon, Images, ZoomIn, Map
+    X, ChevronLeft, ChevronRight as ChevronRightIcon, Images, ZoomIn, Map, Star
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/services/api-client";
 import { useAuth } from "@/providers/AuthContext";
 import Link from "next/link";
 import AuthModal from "@/features/auth/components/AuthModal";
+import { Loader2 } from "lucide-react";
+import ReviewModal from "@/features/reviews/components/ReviewModal";
+
+interface Review {
+    id: string;
+    reviewerName: string;
+    reviewerImageUrl?: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
+}
 
 interface ItineraryStep {
     time: string;
@@ -57,6 +68,8 @@ interface TripDetail {
     guideTotalReviews: number;
     likeCount: number;
     isLikedByCurrentUser: boolean;
+    rating: number;
+    reviewsCount: number;
     itinerary: ItineraryStep[];
     otherTrips: OtherTrip[];
     duration?: string;
@@ -203,11 +216,10 @@ const Lightbox = ({
                                 <button
                                     key={idx}
                                     onClick={() => setCurrent(idx)}
-                                    className={`w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
-                                        idx === current
+                                    className={`w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all duration-200 ${idx === current
                                             ? "border-white opacity-100 scale-105"
                                             : "border-transparent opacity-40 hover:opacity-70"
-                                    }`}
+                                        }`}
                                 >
                                     <img src={getImageUrl(img)} alt="" className="w-full h-full object-cover" />
                                 </button>
@@ -374,16 +386,18 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
             guideId: data.guideId || data.agencyId || data.AgencyId,
             guideName: data.guideName || data.agencyName || data.AgencyName || "Sri Lankan Agency",
             guideImageUrl: data.guideImageUrl || data.agencyImageUrl || data.AgencyImageUrl,
-            guideRating: data.guideRating ?? data.agencyRating ?? data.AgencyRating ?? 4.8,
+            guideRating: data.guideRating ?? data.agencyRating ?? data.AgencyRating ?? 0,
             guideTotalReviews: data.guideTotalReviews ?? data.agencyReviewsCount ?? data.AgencyReviewsCount ?? 0,
             isAgencyTour: isTour || !!data.agencyId || !!data.AgencyId,
-            guideSlug: data.guideSlug || data.AgencySlug || data.slug || data.Slug,
-            agencySlug: data.agencySlug || data.AgencySlug || data.slug || data.Slug,
+            guideSlug: data.guideSlug || data.GuideSlug || data.guideId || data.GuideId || null,
+            agencySlug: data.agencySlug || data.AgencySlug || data.agencyId || data.AgencyId || null,
             agencyId: data.agencyId || data.AgencyId,
             agencyName: data.agencyName || data.AgencyName,
             agencyImageUrl: data.agencyImageUrl || data.AgencyImageUrl,
             likeCount: data.likeCount || data.LikeCount || 0,
             isLikedByCurrentUser: data.isLikedByCurrentUser || data.IsLikedByCurrentUser || false,
+            rating: data.rating || data.Rating || 0,
+            reviewsCount: data.reviewsCount || data.ReviewsCount || 0,
             itinerary: (data.itinerary || data.Itinerary || []).map((s: any) => ({
                 time: s.time || s.Time,
                 title: s.title || s.Title,
@@ -412,6 +426,9 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
     const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [loadingReviews, setLoadingReviews] = useState(false);
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
     const toggleDay = (day: number) => {
         setExpandedDays(prev =>
@@ -430,8 +447,8 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
         setLightboxOpen(true);
     };
 
-    const fetchTour = async () => {
-        if (initialData) return;
+    const fetchTour = async (force = false) => {
+        if (initialData && !force && !tour) return;
         try {
             const isTour = type === "tour";
             let response;
@@ -464,13 +481,15 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
                 guideRating: data.guideRating ?? data.agencyRating ?? data.AgencyRating ?? 4.8,
                 guideTotalReviews: data.guideTotalReviews ?? data.agencyReviewsCount ?? data.AgencyReviewsCount ?? 0,
                 isAgencyTour: isTour || !!data.agencyId || !!data.AgencyId,
-                guideSlug: data.guideSlug || data.AgencySlug || data.slug || data.Slug,
-                agencySlug: data.agencySlug || data.AgencySlug || data.slug || data.Slug,
+                guideSlug: data.guideSlug || data.GuideSlug || data.guideId || data.GuideId || null,
+                agencySlug: data.agencySlug || data.AgencySlug || data.agencyId || data.AgencyId || null,
                 agencyId: data.agencyId || data.AgencyId,
                 agencyName: data.agencyName || data.AgencyName,
                 agencyImageUrl: data.agencyImageUrl || data.AgencyImageUrl,
                 likeCount: data.likeCount || data.LikeCount || 0,
                 isLikedByCurrentUser: data.isLikedByCurrentUser || data.IsLikedByCurrentUser || false,
+                rating: data.rating || data.Rating || 0,
+                reviewsCount: data.reviewsCount || data.ReviewsCount || 0,
                 itinerary: (data.itinerary || data.Itinerary || []).map((s: any) => ({
                     time: s.time || s.Time,
                     title: s.title || s.Title,
@@ -494,6 +513,9 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
             };
 
             setTour(mappedData);
+            if (mappedData.id) {
+                fetchReviews(mappedData.id);
+            }
         } catch (error) {
             console.error("Failed to fetch adventure detail", error);
         } finally {
@@ -501,9 +523,32 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
         }
     };
 
+    const fetchReviews = async (tripId: string) => {
+        setLoadingReviews(true);
+        try {
+            const targetType = type === "tour" ? "Tour" : "Trip";
+            const response = await apiClient.get<Review[]>(`/Review/${targetType}/${tripId}`);
+            setReviews(response.data);
+        } catch (error) {
+            console.error("Failed to fetch reviews", error);
+        } finally {
+            setLoadingReviews(false);
+        }
+    };
+
+    // 1. Initial Data load or Tour fetching
     React.useEffect(() => {
-        if (slug) fetchTour();
-    }, [slug, initialData, type]);
+        if (slug && !tour) {
+            fetchTour();
+        }
+    }, [slug, tour]);
+
+    // 2. Continuous review fetching when tour ID is available
+    React.useEffect(() => {
+        if (tour?.id) {
+            fetchReviews(tour.id);
+        }
+    }, [tour?.id, type]);
 
     const handleToggleLike = async () => {
         if (!user) { setIsAuthModalOpen(true); return; }
@@ -605,33 +650,36 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
                             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 leading-tight tracking-tighter flex-1">
                                 {tour.title}
                             </h1>
-                            {/* Like button */}
-                            <button
-                                onClick={handleToggleLike}
-                                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm border transition-all flex-shrink-0 ${tour.isLikedByCurrentUser
-                                    ? "bg-rose-50 text-rose-500 border-rose-200"
-                                    : "bg-white text-gray-500 border-gray-200 hover:border-rose-300 hover:text-rose-500"
-                                    }`}
-                            >
-                                <Heart size={16} className={tour.isLikedByCurrentUser ? "fill-rose-500 text-rose-500" : ""} />
-                                <span>{tour.likeCount}</span>
-                            </button>
+                            <div className="flex flex-col sm:flex-row gap-3 items-center">
+                                {tour.rating > 0 && (
+                                    <div className="flex bg-yellow-400 text-white px-3 py-1.5 rounded-2xl items-center gap-1.5 shadow-sm border border-yellow-300 transform -rotate-1">
+                                        <Star size={14} className="fill-white text-white" />
+                                        <span className="text-sm font-black">{tour.rating.toFixed(1)}</span>
+                                        <span className="text-[10px] opacity-75 font-bold">({tour.reviewsCount})</span>
+                                    </div>
+                                )}
+                                {/* {tour.guideRating > 0 && (
+                                    <div className="flex bg-white text-gray-900 px-3 py-1.5 rounded-2xl items-center gap-1.5 shadow-sm border border-gray-100 transform rotate-1">
+                                        <Star size={14} className="fill-yellow-400 text-yellow-400" />
+                                        <span className="text-sm font-black">{tour.guideRating.toFixed(1)}</span>
+                                        <span className="text-[10px] opacity-40 font-bold">({tour.guideTotalReviews})</span>
+                                    </div>
+                                )} */}
+                                {/* Like button moved here for proximity to rating */}
+                                <button
+                                    onClick={handleToggleLike}
+                                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm border transition-all flex-shrink-0 ${tour.isLikedByCurrentUser
+                                        ? "bg-rose-50 text-rose-500 border-rose-200"
+                                        : "bg-white text-gray-500 border-gray-200 hover:border-rose-300 hover:text-rose-500"
+                                        }`}
+                                >
+                                    <Heart size={16} className={tour.isLikedByCurrentUser ? "fill-rose-500 text-rose-500" : ""} />
+                                    {tour.likeCount > 0 && <span>{tour.likeCount}</span>}
+                                </button>
+                            </div>
                         </div>
 
-                        {/* Rating — right under title */}
-                        {tour.guideRating > 0 && (
-                            <div className="flex items-center gap-2 mt-3">
-                                <div className="flex items-center gap-1">
-                                    {[1, 2, 3, 4, 5].map(s => (
-                                        <Star key={s} size={15} className={s <= Math.round(tour.guideRating) ? "fill-amber-400 text-amber-400" : "text-gray-200 fill-gray-200"} />
-                                    ))}
-                                </div>
-                                <span className="text-sm font-bold text-amber-600">{tour.guideRating.toFixed(1)}</span>
-                                {tour.guideTotalReviews > 0 && (
-                                    <span className="text-sm text-gray-400">· {tour.guideTotalReviews} reviews</span>
-                                )}
-                            </div>
-                        )}
+
 
                         {/* Meta pills */}
                         <div className="flex flex-wrap items-center gap-3 mt-4">
@@ -833,6 +881,74 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
                                     </div>
                                 </div>
                             )}
+
+                            {/* ── Reviews Section ── */}
+                            <div className="mt-20">
+                                <div className="flex items-center justify-between mb-10">
+                                    <div>
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <div className="w-8 h-0.5 bg-primary" />
+                                            <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.25em]">Traveler Stories</h3>
+                                        </div>
+                                        <h4 className="text-3xl font-black text-gray-900 leading-tight tracking-tighter">Shared Experiences</h4>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            if (!user) { setIsAuthModalOpen(true); return; }
+                                            setIsReviewModalOpen(true);
+                                        }}
+                                        className="bg-gray-900 text-white px-8 py-3 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-primary transition-all rounded-xl"
+                                    >
+                                        Share My Story
+                                    </button>
+                                </div>
+
+                                <div className="space-y-8">
+                                    {loadingReviews ? (
+                                        <div className="flex justify-center py-20">
+                                            <Loader2 className="animate-spin text-primary" size={32} />
+                                        </div>
+                                    ) : reviews.length > 0 ? (
+                                        reviews.map((review) => (
+                                            <div key={review.id} className="bg-gray-50/50 p-8 rounded-[2rem] border border-gray-100 relative group transition-all hover:bg-white hover:shadow-xl">
+                                                <div className="flex items-start gap-6">
+                                                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-md flex-shrink-0">
+                                                        <img
+                                                            src={review.reviewerImageUrl ? getImageUrl(review.reviewerImageUrl) : `https://ui-avatars.com/api/?name=${review.reviewerName}&background=random&color=fff&bold=true`}
+                                                            alt={review.reviewerName}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center justify-between mb-3">
+                                                            <div>
+                                                                <h4 className="font-black text-gray-900 leading-tight">{review.reviewerName}</h4>
+                                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                                                                    {new Date(review.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                                                                </p>
+                                                            </div>
+                                                            <div className="flex gap-0.5">
+                                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                                    <Star
+                                                                        key={star}
+                                                                        size={10}
+                                                                        className={star <= review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200"}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        <p className="text-gray-600 font-medium leading-relaxed italic text-sm">&ldquo;{review.comment}&rdquo;</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-center py-20 bg-gray-50/50 rounded-[2.5rem] italic text-gray-400 font-bold tracking-widest border-2 border-dashed border-gray-100">
+                                            No travelers have shared their journey yet...
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
 
                         {/* ── Right Sidebar ── */}
@@ -859,9 +975,13 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
                                             <div>
                                                 <h4 className="font-black text-gray-900 leading-tight mb-1">{tour.guideName || tour.agencyName}</h4>
                                                 <div className="flex items-center gap-1">
-                                                    <Star size={12} className="fill-amber-400 text-amber-400" />
-                                                    <span className="text-xs font-bold text-gray-600">{tour.guideRating.toFixed(1)}</span>
-                                                    <span className="text-[10px] text-gray-400 font-bold uppercase ml-1">Verified</span>
+                                                    <span className="text-[10px] text-gray-400 font-bold uppercase">Verified</span>
+                                                    {tour.guideRating > 0 && (
+                                                        <div className="flex items-center gap-1 ml-2 text-yellow-500">
+                                                            <Star size={10} fill="currentColor" />
+                                                            <span className="text-[10px] font-black">{tour.guideRating.toFixed(1)}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -914,6 +1034,20 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
                     setIsAuthModalOpen(false);
                 }}
             />
+
+            {tour && (
+                <ReviewModal
+                    isOpen={isReviewModalOpen}
+                    onClose={() => setIsReviewModalOpen(false)}
+                    targetId={tour.id}
+                    targetType={type === "tour" ? "Tour" : "Trip"}
+                    targetName={tour.title}
+                    onSuccess={() => {
+                        fetchTour(true);
+                        if (tour?.id) fetchReviews(tour.id);
+                    }}
+                />
+            )}
         </>
     );
 }

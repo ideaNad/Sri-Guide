@@ -9,6 +9,7 @@ import apiClient from "@/services/api-client";
 interface DashboardStats {
     fullName: string;
     profileImageUrl: string | null;
+    isVerified: boolean;
     savedToursCount: number;
     upcomingTripsCount: number;
     recentActivities: Array<{
@@ -94,7 +95,7 @@ export default function DashboardPage() {
                         <ShieldCheck size={20} />
                     </div>
                     <div>
-                        <h3 className="font-bold text-gray-900 text-lg">Verified</h3>
+                        <h3 className="font-bold text-gray-900 text-lg">{statsLoading ? "..." : (stats?.isVerified ? "Verified" : "Unverified")}</h3>
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">Account Status</p>
                     </div>
                 </div>

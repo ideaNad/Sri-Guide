@@ -46,29 +46,50 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
     return (
-        <div className="flex flex-col h-full bg-white border-r border-gray-100 shadow-sm relative overflow-hidden">
+        <div className="flex flex-col h-full bg-white border-r border-gray-100 relative">
             {/* Background Accent */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50/50 blur-3xl rounded-full -mr-16 -mt-16 -z-10" />
             
-            <div className="sticky top-0 bg-white z-10 px-8 py-8 border-b border-gray-50 flex items-center justify-between mb-4">
-                <Link href="/" className="relative flex items-center h-8 md:h-10 z-10 px-1" onClick={() => setSidebarOpen(false)}>
-                    <img
-                        src="/logo.svg"
-                        alt="Sri Guide Logo"
-                        className="absolute left-0 h-40 md:h-44 w-auto transition-all duration-500 object-contain max-w-none"
-                    />
-                </Link>
-                <button 
-                    onClick={() => setSidebarOpen(false)}
-                    className="lg:hidden p-2 text-gray-400 hover:text-gray-900 transition-colors bg-gray-50 rounded-xl"
-                >
-                    <CloseIcon size={20} />
-                </button>
-            </div>
-            <span className="text-[9px] font-black text-teal-600 uppercase tracking-[0.3em] px-8 block mb-4">Travel Agency</span>
+                <div className="sticky top-0 bg-white z-10 px-8 py-10 border-b border-gray-50 flex items-center justify-between mb-4">
+                    <Link href="/" className="relative flex items-center h-20 md:h-24 z-10 px-1" onClick={() => setSidebarOpen(false)}>
+                        <img
+                            src="/logo.svg"
+                            alt="Sri Guide Logo"
+                            className="h-20 md:h-24 w-auto transition-all duration-500 object-contain"
+                        />
+                    </Link>
+                    <button 
+                        onClick={() => setSidebarOpen(false)}
+                        className="lg:hidden p-2 text-gray-400 hover:text-gray-900 transition-colors bg-gray-50 rounded-xl"
+                    >
+                        <CloseIcon size={20} />
+                    </button>
+                </div>
 
-            <nav className="flex-1 px-6 space-y-3">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-4 mb-4">Main Navigation</p>
+                {/* Profile Section */}
+                <div className="px-6 pb-6">
+                    <div className="flex items-center gap-3 p-3 bg-teal-50/50 rounded-2xl border border-teal-100/50 shadow-sm transition-all hover:bg-teal-50">
+                        <div className="w-10 h-10 rounded-full bg-teal-500/10 flex items-center justify-center text-teal-600 font-bold border border-teal-500/20 overflow-hidden shrink-0 shadow-inner">
+                            {user?.profileImageUrl ? (
+                                <img 
+                                    src={user.profileImageUrl.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${user.profileImageUrl}` : user.profileImageUrl} 
+                                    alt={user.fullName} 
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <span>{user?.fullName?.charAt(0) || "A"}</span>
+                            )}
+                        </div>
+                        <div className="overflow-hidden">
+                            <p className="text-sm font-black text-gray-900 truncate leading-tight uppercase tracking-tight">{user?.fullName || "Agency"}</p>
+                            <p className="text-[10px] font-black text-teal-600 uppercase tracking-widest leading-none mt-1">Travel Agency</p>
+                        </div>
+                    </div>
+                </div>
+                <span className="text-[10px] font-black text-teal-600 uppercase tracking-[0.3em] px-8 block mb-4">Travel Agency</span>
+
+                <nav className="flex-1 px-4 space-y-1">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-4 mb-4">Main Navigation</p>
                 {AGENCY_NAV.map((item) => {
                     const isActive = pathname === item.href;
                     return (
@@ -76,17 +97,17 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
                             key={item.href}
                             href={item.href}
                             onClick={() => setSidebarOpen(false)}
-                            className={`flex items-center justify-between px-6 py-4 rounded-[1.25rem] transition-all duration-300 group ${
+                            className={`flex items-center justify-between px-6 py-4 rounded-2xl transition-all duration-300 group ${
                                 isActive
                                     ? "bg-gray-900 text-white shadow-xl shadow-gray-900/20"
-                                    : "text-gray-500 hover:bg-teal-50 hover:text-teal-700"
+                                    : "text-gray-500 hover:bg-teal-50 hover:text-teal-700 font-bold"
                             }`}
                         >
                             <div className="flex items-center gap-4">
                                 <span className={isActive ? "text-teal-400" : "text-gray-400 group-hover:text-teal-600 transition-colors"}>
                                     {item.icon}
                                 </span>
-                                <span className="font-bold text-xs uppercase tracking-widest">{item.name}</span>
+                                <span className="text-sm">{item.name}</span>
                             </div>
                             {isActive && <motion.div layoutId="activeInd" className="w-1.5 h-1.5 rounded-full bg-teal-400" />}
                         </Link>
@@ -95,13 +116,13 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
 
                 <button
                     onClick={() => setIsFeedbackOpen(true)}
-                    className="w-full flex items-center justify-between px-6 py-4 rounded-[1.25rem] text-gray-500 hover:bg-teal-50 hover:text-teal-700 transition-all duration-300 group"
+                    className="w-full flex items-center justify-between px-6 py-4 rounded-2xl text-gray-500 hover:bg-teal-50 hover:text-teal-700 transition-all duration-300 group font-bold"
                 >
                     <div className="flex items-center gap-4">
                         <span className="text-gray-400 group-hover:text-teal-600 transition-colors">
                             <MessageSquare size={20} />
                         </span>
-                        <span className="font-bold text-xs uppercase tracking-widest">Feedback</span>
+                        <span className="text-sm">Feedback</span>
                     </div>
                 </button>
             </nav>
@@ -109,9 +130,11 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
             <div className="p-6 mt-auto border-t border-gray-50 bg-white">
                 <button
                     onClick={logout}
-                    className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-rose-500 hover:bg-rose-50 transition-all font-bold text-sm"
+                    className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-rose-500 hover:bg-rose-50 transition-all font-bold text-sm group"
                 >
-                    <LogOut size={18} />
+                    <div className="p-2 rounded-xl bg-rose-50 group-hover:bg-rose-100 transition-colors text-rose-500">
+                        <LogOut size={18} />
+                    </div>
                     <span>Logout</span>
                 </button>
             </div>

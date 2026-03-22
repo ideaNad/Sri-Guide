@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SriGuide.Application.Common.Interfaces;
+using SriGuide.Application.Common.Helpers;
 using SriGuide.Application.Profiles.DTOs;
 using SriGuide.Domain.Entities;
 using SriGuide.Domain.Enums;
@@ -55,21 +56,12 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
         if (isAgency && agencyProfile == null)
             throw new Exception("Agency profile not found");
 
-        var averageRating = 5.0;
+        var averageRating = 0.0;
         var totalReviews = 0;
         List<SriGuide.Application.Agencies.DTOs.AgencyGuideDto>? agencyGuides = null;
         var guideIdsForAgency = new List<Guid>();
 
-        if (!isAgency)
-        {
-            var guideReviews = await _context.Reviews
-                .Where(r => r.TargetId == user.Id && r.TargetType == "Guide")
-                .ToListAsync(cancellationToken);
-
-            averageRating = guideReviews.Any() ? Math.Round(guideReviews.Average(r => (double)r.Rating), 1) : 5.0;
-            totalReviews = guideReviews.Count;
-        }
-        else
+        if (isAgency)
         {
             // Fetch guides for the agency
             var guidesRaw = await _context.GuideProfiles
@@ -133,17 +125,19 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
             .Where(r => r.TargetType == "Trip" && tripIds.Contains(r.TargetId))
             .ToListAsync(cancellationToken);
 
-        if (isAgency)
-        {
-            // For agency, average rating from both tours and trips
-            var allReviews = tourReviews.Concat(tripReviews).ToList();
-            totalReviews = allReviews.Count;
-            averageRating = allReviews.Any() ? Math.Round(allReviews.Average(r => (double)r.Rating), 1) : 5.0;
-        }
+        // Fetch profile reviews (Guide or Agency)
+        var profileReviews = await _context.Reviews
+            .Where(r => r.TargetId == user.Id && (r.TargetType == (isAgency ? "Agency" : "Guide")))
+            .ToListAsync(cancellationToken);
+
+        // Aggregate All reviews
+        var allReviews = profileReviews.Concat(tourReviews).Concat(tripReviews).ToList();
+        totalReviews = allReviews.Count;
+        averageRating = allReviews.Any() ? Math.Round(allReviews.Average(r => (double)r.Rating), 1) : 0.0;
 
         var agencyTours = toursRaw.Select(t => {
             var reviewsForTour = tourReviews.Where(r => r.TargetId == t.Id).ToList();
-            var rating = reviewsForTour.Any() ? Math.Round(reviewsForTour.Average(r => (double)r.Rating), 1) : 5.0;
+            var rating = reviewsForTour.Any() ? Math.Round(reviewsForTour.Average(r => (double)r.Rating), 1) : 0.0;
             var reviewCount = reviewsForTour.Count;
 
             return new PublicTripDto(
@@ -156,14 +150,14 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
                 t.Location,
                 rating,
                 reviewCount,
-                t.Images.Select(i => i.ImageUrl).ToList(),
+                t.Images.Select(i => i.ImageUrl ?? "").ToList(),
                 userLikedTourIds.Contains(t.Id)
             );
         }).ToList();
 
         var recentTrips = tripsRaw.Select(t => {
             var reviewsForTrip = tripReviews.Where(r => r.TargetId == t.Id).ToList();
-            var rating = reviewsForTrip.Any() ? Math.Round(reviewsForTrip.Average(r => (double)r.Rating), 1) : 5.0;
+            var rating = reviewsForTrip.Any() ? Math.Round(reviewsForTrip.Average(r => (double)r.Rating), 1) : 0.0;
             var reviewCount = reviewsForTrip.Count;
 
             return new PublicTripDto(

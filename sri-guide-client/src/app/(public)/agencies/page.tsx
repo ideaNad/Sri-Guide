@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { Star, ShieldCheck, Compass, Search, Loader2, Filter, X, Building2 } from "lucide-react";
+import { ShieldCheck, Compass, Search, Loader2, Filter, X, Building2, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import apiClient from "@/services/api-client";
+import Card from "@/components/ui/Card";
 
 interface DiscoveryItem {
     id: string;
@@ -181,41 +182,17 @@ const AgenciesPage = () => {
                                     whileInView={{ opacity: 1, scale: 1 }}
                                     viewport={{ once: true }}
                                     transition={{ delay: idx * 0.05 }}
-                                    className="group bg-white border border-gray-100 p-8 shadow-lg hover:shadow-2xl transition-all duration-500 rounded-[3rem] text-center flex flex-col items-center"
                                 >
-                                    <div className="w-24 h-24 rounded-3xl overflow-hidden mb-8 shadow-xl border-4 border-white rotate-3 group-hover:rotate-0 transition-all duration-500 shrink-0">
-                                        <img
-                                            src={agency.image ? (agency.image.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${agency.image}` : agency.image) : `https://ui-avatars.com/api/?name=${agency.title}&background=000&color=fff&bold=true`}
-                                            alt={agency.title}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
-
-                                    <h3 className="text-2xl font-black text-gray-900 mb-2 truncate max-w-full">{agency.title}</h3>
-
-                                    <div className="flex items-center gap-2 mb-6">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-                                            Travel Agency
-                                        </span>
-                                        <div className="flex items-center bg-gray-900 px-2.5 py-1 rounded-full text-white text-[10px] font-bold">
-                                            <Star size={10} className="text-yellow-400 fill-yellow-400 mr-1" />
-                                            {agency.rating || 5.0}
-                                        </div>
-                                    </div>
-
-                                    <p className="text-gray-500 text-sm font-medium mb-8 line-clamp-2 leading-relaxed h-10">
-                                        {agency.subtitle || "Professional Sri Lankan travel management and tour operator."}
-                                    </p>
-
-                                    <div className="w-full pt-6 border-t border-gray-50">
-                                        <Link
-                                            href={`/profile/${agency.slug || agency.id}?type=agency`}
-                                            className="w-full flex items-center justify-center py-4 bg-gray-900 text-white font-bold text-xs uppercase tracking-widest rounded-2xl hover:bg-blue-600 transition-colors shadow-lg shadow-gray-200"
-                                        >
-                                            <Building2 className="w-4 h-4 mr-2" />
-                                            View Agency Profile
-                                        </Link>
-                                    </div>
+                                    <Card 
+                                        id={agency.id}
+                                        slug={agency.slug}
+                                        title={agency.title}
+                                        image={agency.image || ""}
+                                        location={agency.location}
+                                        rating={agency.rating}
+                                        reviews={agency.reviews}
+                                        type="agency"
+                                    />
                                 </motion.div>
                             ))}
                         </div>

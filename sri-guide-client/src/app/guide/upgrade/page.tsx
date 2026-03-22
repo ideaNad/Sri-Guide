@@ -5,7 +5,7 @@ import { useAuth } from "@/providers/AuthContext";
 import { useRouter } from "next/navigation";
 import { 
     Building2, Mail, FileText, Phone, 
-    MessageSquare, CheckCircle2, Loader2
+    MessageSquare, CheckCircle2, Loader2, Clock, AlertCircle
 } from "lucide-react";
 import { motion } from "framer-motion";
 import apiClient from "@/services/api-client";
@@ -15,6 +15,9 @@ const UpgradePage = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [status, setStatus] = useState<"None" | "Pending" | "Approved" | "Rejected">("None");
+    const [fetchingStatus, setFetchingStatus] = useState(true);
+
     const [formData, setFormData] = useState({
         companyName: "",
         companyEmail: "",
@@ -22,6 +25,22 @@ const UpgradePage = () => {
         phone: "",
         whatsApp: ""
     });
+
+    React.useEffect(() => {
+        const checkStatus = async () => {
+            try {
+                const res = await apiClient.get<any>("/profile/me");
+                if (res.data.agencyProfile) {
+                    setStatus(res.data.agencyProfile.verificationStatus);
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setFetchingStatus(false);
+            }
+        };
+        checkStatus();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -44,6 +63,55 @@ const UpgradePage = () => {
             setLoading(false);
         }
     };
+
+    if (fetchingStatus) {
+        return (
+            <div className="flex flex-col items-center justify-center py-32 space-y-4">
+                <Loader2 className="animate-spin text-primary" size={48} />
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest animate-pulse">Checking Eligibility...</p>
+            </div>
+        );
+    }
+
+    if (status === "Pending") {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-white p-12 rounded-[3rem] text-center max-w-lg mx-auto shadow-xl border border-gray-100"
+                >
+                    <div className="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Clock size={40} />
+                    </div>
+                    <h2 className="text-3xl font-black text-gray-900 mb-4 tracking-tighter">Application Pending</h2>
+                    <p className="text-gray-500 font-medium mb-8">
+                        You already submit the request, please wait for approval or confirmation from our admins.
+                    </p>
+                </motion.div>
+            </div>
+        );
+    }
+
+    if (status === "Rejected") {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-white p-12 rounded-[3rem] text-center max-w-lg mx-auto shadow-xl border border-gray-100"
+                >
+                    <div className="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <AlertCircle size={40} />
+                    </div>
+                    <h2 className="text-3xl font-black text-gray-900 mb-4 tracking-tighter">Application Rejected</h2>
+                    <p className="text-gray-500 font-medium mb-8">
+                        Your previous request to upgrade to a Travel Agency was rejected. Please contact support for more details.
+                    </p>
+                </motion.div>
+            </div>
+        );
+    }
 
     if (success) {
         return (

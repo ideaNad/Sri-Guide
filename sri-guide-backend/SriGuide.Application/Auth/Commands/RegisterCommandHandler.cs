@@ -28,6 +28,12 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
              throw new Exception("Email already exists");
         }
 
+        // Validate password length
+        if (request.Password.Length < 8)
+        {
+            throw new Exception("Password must be at least 8 characters long.");
+        }
+
         // Rule: Registration cannot result in travel_agency
         if (request.Role == UserRole.TravelAgency)
         {

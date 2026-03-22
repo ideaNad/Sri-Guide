@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { Star, Languages, ShieldCheck, MessageCircle, Calendar, Compass, Search, UserCircle, Loader2, Filter, X, Building2 } from "lucide-react";
+import { Star, Languages, ShieldCheck, Compass, Search, UserCircle, Loader2, Filter, X, Building2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import apiClient from "@/services/api-client";
@@ -88,6 +88,7 @@ const GuidesPage = () => {
         e.preventDefault();
         fetchGuides();
     };
+
     return (
         <div className="pt-24 pb-24 min-h-screen bg-white">
             {/* Header */}
@@ -243,17 +244,21 @@ const GuidesPage = () => {
                                     <div className="flex items-start justify-between mb-8 relative z-10">
                                         <div className="w-28 h-28 overflow-hidden shadow-lg rounded-full border-4 border-white transform transition-all group-hover:scale-105 group-hover:rotate-2">
                                             <img 
-                                                src={guide.image?.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${guide.image}` : guide.image} 
+                                                src={guide.image ? (guide.image.startsWith('http') ? guide.image : `${apiClient.defaults.baseURL?.replace('/api', '')}${guide.image.startsWith('/') ? '' : '/'}${guide.image}`) : `https://ui-avatars.com/api/?name=${guide.title}&background=F5F4F0&color=2563eb`} 
                                                 alt={guide.title} 
                                                 className="w-full h-full object-cover transition-all duration-500" 
                                             />
                                         </div>
                                         <div className="flex flex-col items-end">
-                                            <div className="flex items-center bg-primary px-3 py-1.5 rounded-full shadow-sm">
-                                                <Star className="w-3.5 h-3.5 text-highlight fill-highlight mr-1.5" />
-                                                <span className="text-xs font-bold text-white">{guide.rating || 5.0}</span>
-                                            </div>
-                                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-3">{guide.reviews || 0} REVIEWS</span>
+                                            {guide.rating > 0 && (
+                                                <>
+                                                    <div className="flex items-center bg-primary px-3 py-1.5 rounded-full shadow-sm">
+                                                        <Star className="w-3.5 h-3.5 text-highlight fill-highlight mr-1.5" />
+                                                        <span className="text-xs font-bold text-white">{guide.rating.toFixed(1)}</span>
+                                                    </div>
+                                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-3">{guide.reviews || 0} REVIEWS</span>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
 

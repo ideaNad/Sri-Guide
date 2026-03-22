@@ -22,7 +22,7 @@ public class GuideProfile : BaseEntity
     public DateTime? LicenseExpirationDate { get; set; }
     public bool IsLegit { get; set; }
 
-    public VerificationStatus VerificationStatus { get; set; } = VerificationStatus.Pending;
+    public VerificationStatus VerificationStatus { get; set; } = VerificationStatus.None;
     public bool IsVerified { get; set; }
 
     // Contact & Social Links

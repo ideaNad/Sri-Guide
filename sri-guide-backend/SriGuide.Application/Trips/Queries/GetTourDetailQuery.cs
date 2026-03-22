@@ -23,10 +23,13 @@ public record TourDetailDto(
     Guid AgencyId,
     string AgencyName,
     string? AgencyImageUrl,
+    string? AgencySlug,
     double AgencyRating,
     int AgencyReviewsCount,
     bool IsLiked,
     int LikeCount,
+    double Rating,
+    int ReviewsCount,
     List<string> Images,
     List<TourItineraryStepDto> Itinerary,
     List<TourDayDto> DayDescriptions,
@@ -64,13 +67,24 @@ public class GetTourDetailQueryHandler : IRequestHandler<GetTourDetailQuery, Tou
         
         var likeCount = await _context.TourLikes.CountAsync(tl => tl.TourId == tour.Id, cancellationToken);
 
-        // Fetch agency reviews for rating
+        // Fetch agency reviews for rating (Profile + Tours + Trips)
+        var agencyTourIds = await _context.Tours.Where(t => t.AgencyId == tour.AgencyId).Select(t => t.Id).ToListAsync(cancellationToken);
+        var agencyTripIds = await _context.Trips.Where(t => t.AgencyId == tour.AgencyId).Select(t => t.Id).ToListAsync(cancellationToken);
+        
         var agencyReviews = await _context.Reviews
-            .Where(r => r.TargetId == tour.AgencyId && r.TargetType == "Agency")
+            .Where(r => (r.TargetId == tour.AgencyId && r.TargetType == "Agency") ||
+                        (r.TargetType == "Tour" && agencyTourIds.Contains(r.TargetId)) ||
+                        (r.TargetType == "Trip" && agencyTripIds.Contains(r.TargetId)))
             .ToListAsync(cancellationToken);
+            
+        var agencyRating = agencyReviews.Any() ? Math.Round(agencyReviews.Average(r => (double)r.Rating), 1) : 0.0;
 
-        // Also include reviews for all tours of this agency if needed, but for now just Agency-level
-        var agencyRating = agencyReviews.Any() ? Math.Round(agencyReviews.Average(r => (double)r.Rating), 1) : 5.0;
+        // Fetch tour reviews
+        var tourReviews = await _context.Reviews
+            .Where(r => r.TargetId == tour.Id && r.TargetType == "Tour")
+            .ToListAsync(cancellationToken);
+        
+        var tourRating = tourReviews.Any() ? Math.Round(tourReviews.Average(r => (double)r.Rating), 1) : 0.0;
 
         return new TourDetailDto(
             tour.Id,
@@ -88,10 +102,13 @@ public class GetTourDetailQueryHandler : IRequestHandler<GetTourDetailQuery, Tou
             tour.Agency?.User?.ProfileImageUrl != null && !tour.Agency.User.ProfileImageUrl.StartsWith("/") && !tour.Agency.User.ProfileImageUrl.StartsWith("http") 
                 ? "/" + tour.Agency.User.ProfileImageUrl 
                 : tour.Agency?.User?.ProfileImageUrl,
+            tour.Agency?.Slug,
             agencyRating,
             agencyReviews.Count,
             isLiked,
             likeCount,
+            tourRating,
+            tourReviews.Count,
             tour.Images.Select(i => i.ImageUrl).ToList(),
             tour.Itinerary.OrderBy(s => s.DayNumber).ThenBy(s => s.Order)
                 .Select(s => new TourItineraryStepDto(s.Time, s.Title, s.Description, s.ImageUrl, s.DayNumber, s.Order)).ToList(),

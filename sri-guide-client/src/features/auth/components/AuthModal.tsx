@@ -25,6 +25,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess, defau
         fullName: "",
         email: "",
         password: "",
+        confirmPassword: "",
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -52,6 +53,20 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess, defau
         setError("");
 
         try {
+            const password = formData.password.trim();
+            if (!isLogin) {
+                if (password.length < 8) {
+                    setError("Password must be at least 8 characters long.");
+                    setLoading(false);
+                    return;
+                }
+                if (password !== formData.confirmPassword) {
+                    setError("Passwords do not match.");
+                    setLoading(false);
+                    return;
+                }
+            }
+
             const endpoint = isLogin ? "/auth/login" : "/auth/register";
             const payload = isLogin
                 ? { email: formData.email, password: formData.password }
@@ -222,32 +237,60 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess, defau
 
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 flex items-center gap-2">
-                                        <Lock size={10} /> Password
+                                        <Lock size={10} /> {isLogin ? "Password" : "Create Password"}
                                     </label>
                                     <input
                                         type="password"
                                         name="password"
-                                        placeholder="Min. 8 characters"
+                                        placeholder={isLogin ? "••••••••" : "Min. 8 characters"}
                                         required
                                         value={formData.password}
                                         onChange={handleInputChange}
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
+                                        className={`w-full bg-gray-50 border ${!isLogin && formData.password && formData.password.length < 8 ? 'border-rose-300 ring-rose-300' : 'border-gray-100'} rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700`}
                                     />
-                                    {isLogin && (
-                                        <div className="flex justify-end pr-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    onClose();
-                                                    window.location.href = "/forgot-password";
-                                                }}
-                                                className="text-[11px] font-bold text-gray-400 hover:text-primary uppercase tracking-widest transition-colors"
-                                            >
-                                                Forgot Password?
-                                            </button>
-                                        </div>
+                                    {!isLogin && (
+                                        <p className={`text-[10px] ml-4 font-medium ${formData.password && formData.password.length < 8 ? 'text-rose-500' : 'text-gray-400'}`}>
+                                            Password must be at least 8 characters long.
+                                        </p>
                                     )}
                                 </div>
+
+                                {!isLogin && (
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 flex items-center gap-2">
+                                            <Lock size={10} /> Confirm Password
+                                        </label>
+                                        <input
+                                            type="password"
+                                            name="confirmPassword"
+                                            placeholder="Retype password"
+                                            required={!isLogin}
+                                            value={formData.confirmPassword}
+                                            onChange={handleInputChange}
+                                            className={`w-full bg-gray-50 border ${formData.confirmPassword && formData.confirmPassword !== formData.password ? 'border-rose-300 ring-rose-300' : 'border-gray-100'} rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700`}
+                                        />
+                                        {formData.confirmPassword && formData.confirmPassword !== formData.password && (
+                                            <p className="text-[10px] ml-4 font-medium text-rose-500">
+                                                Passwords do not match.
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+
+                                {isLogin && (
+                                    <div className="flex justify-end pr-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                onClose();
+                                                window.location.href = "/forgot-password";
+                                            }}
+                                            className="text-[11px] font-bold text-gray-400 hover:text-primary uppercase tracking-widest transition-colors"
+                                        >
+                                            Forgot Password?
+                                        </button>
+                                    </div>
+                                )}
 
                                 {error && (
                                     <motion.div

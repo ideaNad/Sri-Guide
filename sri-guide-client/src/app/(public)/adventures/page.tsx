@@ -196,8 +196,6 @@ export default function AdventuresPage() {
                                     title={trip.title}
                                     image={trip.imageUrl || ""}
                                     location={trip.location}
-                                    rating={4.9}
-                                    reviews={trip.likeCount}
                                     type={trip.isAgencyTour ? "tour" : "adventure"}
                                     badge={trip.isAgencyTour ? "Agency" : "Guide"}
                                     subtitle={trip.guideName}

@@ -62,9 +62,9 @@ public class BrevoEmailService : IEmailService
             templateId = templateId,
             @params = new
             {
-                ResetLink = resetLink,
-                Name = name,
-                ExpiryTime = expiryTime.ToString("yyyy-MM-dd HH:mm:ss")
+                resetlink = resetLink,
+                name = name,
+                expirytime = expiryTime.ToString("yyyy-MM-dd HH:mm:ss")
             }
         };
 

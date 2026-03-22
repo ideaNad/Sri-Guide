@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Sources\\SriGuide\\Sri-Guide\\sri-guide-backend\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{55533170-65C8-4969-B9D1-D1F49A94E9DF}|SriGuide.Infrastructure\\SriGuide.Infrastructure.csproj|c:\\sources\\sriguide\\sri-guide\\sri-guide-backend\\sriguide.infrastructure\\services\\brevoemailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{55533170-65C8-4969-B9D1-D1F49A94E9DF}|SriGuide.Infrastructure\\SriGuide.Infrastructure.csproj|solutionrelative:sriguide.infrastructure\\services\\brevoemailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{BAA7672D-117A-46C4-803A-BAAB258226F6}|SriGuide.Application\\SriGuide.Application.csproj|c:\\sources\\sriguide\\sri-guide\\sri-guide-backend\\sriguide.application\\trips\\commands\\updatetourcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{BAA7672D-117A-46C4-803A-BAAB258226F6}|SriGuide.Application\\SriGuide.Application.csproj|solutionrelative:sriguide.application\\trips\\commands\\updatetourcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -31,19 +35,32 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "BrevoEmailService.cs",
+              "DocumentMoniker": "C:\\Sources\\SriGuide\\Sri-Guide\\sri-guide-backend\\SriGuide.Infrastructure\\Services\\BrevoEmailService.cs",
+              "RelativeDocumentMoniker": "SriGuide.Infrastructure\\Services\\BrevoEmailService.cs",
+              "ToolTip": "C:\\Sources\\SriGuide\\Sri-Guide\\sri-guide-backend\\SriGuide.Infrastructure\\Services\\BrevoEmailService.cs",
+              "RelativeToolTip": "SriGuide.Infrastructure\\Services\\BrevoEmailService.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAQwCMAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-22T18:49:16.058Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "UpdateTourCommandHandler.cs",
               "DocumentMoniker": "C:\\Sources\\SriGuide\\Sri-Guide\\sri-guide-backend\\SriGuide.Application\\Trips\\Commands\\UpdateTourCommandHandler.cs",
               "RelativeDocumentMoniker": "SriGuide.Application\\Trips\\Commands\\UpdateTourCommandHandler.cs",
               "ToolTip": "C:\\Sources\\SriGuide\\Sri-Guide\\sri-guide-backend\\SriGuide.Application\\Trips\\Commands\\UpdateTourCommandHandler.cs",
               "RelativeToolTip": "SriGuide.Application\\Trips\\Commands\\UpdateTourCommandHandler.cs",
-              "ViewState": "AgIAAAoAAAAAAAAAAIAwwCAAAABDAAAAAAAAAA==",
+              "ViewState": "AgIAADMAAAAAAAAAAAAowFkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-21T13:26:58.537Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "UpdateTourCommand.cs",
               "DocumentMoniker": "C:\\Sources\\SriGuide\\Sri-Guide\\sri-guide-backend\\SriGuide.Application\\Trips\\Commands\\UpdateTourCommand.cs",
               "RelativeDocumentMoniker": "SriGuide.Application\\Trips\\Commands\\UpdateTourCommand.cs",
@@ -51,12 +68,11 @@
               "RelativeToolTip": "SriGuide.Application\\Trips\\Commands\\UpdateTourCommand.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-21T13:26:29.704Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-21T13:26:29.704Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "ToursController.cs",
               "DocumentMoniker": "C:\\Sources\\SriGuide\\Sri-Guide\\sri-guide-backend\\SriGuide.API\\Controllers\\ToursController.cs",
               "RelativeDocumentMoniker": "SriGuide.API\\Controllers\\ToursController.cs",
@@ -64,12 +80,11 @@
               "RelativeToolTip": "SriGuide.API\\Controllers\\ToursController.cs",
               "ViewState": "AgIAACEAAAAAAAAAAAAhwDAAAAAgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-21T13:26:11.827Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-21T13:26:11.827Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "AgencyController.cs",
               "DocumentMoniker": "C:\\Sources\\SriGuide\\Sri-Guide\\sri-guide-backend\\SriGuide.API\\Controllers\\AgencyController.cs",
               "RelativeDocumentMoniker": "SriGuide.API\\Controllers\\AgencyController.cs",
@@ -77,8 +92,7 @@
               "RelativeToolTip": "SriGuide.API\\Controllers\\AgencyController.cs",
               "ViewState": "AgIAAC0AAAAAAAAAAIAwwD4AAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-21T13:26:02.627Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-21T13:26:02.627Z"
             }
           ]
         }

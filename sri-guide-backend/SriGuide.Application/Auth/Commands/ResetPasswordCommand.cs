@@ -26,6 +26,12 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand>
             throw new Exception("Invalid or expired password reset token.");
         }
 
+        // Validate password length
+        if (request.NewPassword.Length < 8)
+        {
+            throw new Exception("New password must be at least 8 characters long.");
+        }
+
         user.PasswordHash = BC.HashPassword(request.NewPassword);
         user.PasswordResetToken = null;
         user.ResetTokenExpires = null;

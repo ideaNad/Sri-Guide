@@ -37,26 +37,35 @@ public class GetPopularToursQueryHandler : IRequestHandler<GetPopularToursQuery,
                 .ToListAsync(cancellationToken)
             : new List<Guid>();
 
-        return popularTours.Select(t => new RecentTripDto(
-            t.Id,
-            t.Title,
-            t.Slug,
-            t.Description,
-            t.Location,
-            null, // Date
-            t.MainImageUrl != null && !t.MainImageUrl.StartsWith("/") && !t.MainImageUrl.StartsWith("http")
-                ? "/" + t.MainImageUrl
-                : t.MainImageUrl,
-            t.Agency?.CompanyName ?? "Sri Lankan Agency",
-            t.Agency?.User?.ProfileImageUrl, // Simplified
-            t.AgencyId,
-            _context.TourLikes.Count(tl => tl.TourId == t.Id),
-            userLikedTourIds.Contains(t.Id),
-            t.Price,
-            t.Duration,
-            t.MapLink,
-            t.Category,
-            true // IsAgencyTour
-        )).ToList();
+        return popularTours.Select(t => {
+            var targetId = t.Id;
+            var targetType = "Tour";
+            var reviews = _context.Reviews.Where(r => r.TargetId == targetId && r.TargetType == targetType).ToList();
+            var rating = reviews.Any() ? Math.Round(reviews.Average(r => (double)r.Rating), 1) : 0;
+
+            return new RecentTripDto(
+                t.Id,
+                t.Title,
+                t.Slug,
+                t.Description,
+                t.Location,
+                null, // Date
+                t.MainImageUrl != null && !t.MainImageUrl.StartsWith("/") && !t.MainImageUrl.StartsWith("http")
+                    ? "/" + t.MainImageUrl
+                    : t.MainImageUrl,
+                t.Agency?.CompanyName ?? "Sri Lankan Agency",
+                t.Agency?.User?.ProfileImageUrl, // Simplified
+                t.AgencyId,
+                _context.TourLikes.Count(tl => tl.TourId == t.Id),
+                userLikedTourIds.Contains(t.Id),
+                t.Price,
+                t.Duration,
+                t.MapLink,
+                t.Category,
+                true, // IsAgencyTour
+                rating,
+                reviews.Count
+            );
+        }).ToList();
     }
 }

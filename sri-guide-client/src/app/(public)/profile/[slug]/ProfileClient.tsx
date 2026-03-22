@@ -18,6 +18,7 @@ import Card from "@/components/ui/Card";
 interface Review {
     id: string;
     reviewerName: string;
+    reviewerImageUrl: string | null;
     rating: number;
     comment: string;
     createdAt: string;
@@ -127,9 +128,10 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
     };
 
     const fetchReviews = async () => {
+        if (!profile?.id) return;
         try {
             // Using Slug/ID here
-            const response = await apiClient.get<Review[]>(`/review/guide/${profile?.id || slug}`);
+            const response = await apiClient.get<Review[]>(`/review/guide/${profile.id}`);
             setReviews(response.data || []);
         } catch (error) {
             console.error("Failed to fetch public reviews", error);
@@ -229,19 +231,21 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
                                     {profile.fullName}
                                 </h1>
 
-                                <div className="flex items-center justify-center lg:justify-start gap-4">
-                                    <div className="flex bg-primary px-4 py-1.5 rounded-full shadow-md shadow-primary/20">
-                                        <div className="flex items-center">
-                                            <Star size={16} className="fill-highlight text-highlight mr-2" />
-                                            <span className="font-bold text-white text-sm">
-                                                {profile.averageRating.toFixed(1)}
-                                            </span>
+                                {profile.totalReviews > 0 && (
+                                    <div className="flex items-center justify-center lg:justify-start gap-4">
+                                        <div className="flex bg-primary px-4 py-1.5 rounded-full shadow-md shadow-primary/20">
+                                            <div className="flex items-center">
+                                                <Star size={16} className="fill-highlight text-highlight mr-2" />
+                                                <span className="font-bold text-white text-sm">
+                                                    {profile.averageRating.toFixed(1)}
+                                                </span>
+                                            </div>
                                         </div>
+                                        <span className="text-xs text-gray-500 font-bold tracking-wide">
+                                            {profile.totalReviews} {isAgencyPath ? 'TOTAL' : 'TRAVELER'} REVIEWS
+                                        </span>
                                     </div>
-                                    <span className="text-xs text-gray-500 font-bold tracking-wide">
-                                        {profile.totalReviews} {isAgencyPath ? 'TOTAL' : 'TRAVELER'} REVIEWS
-                                    </span>
-                                </div>
+                                )}
                             </div>
 
                             <div className="max-w-xl mx-auto lg:mx-0 mb-8 text-left bg-white/60 backdrop-blur-sm p-6 rounded-2xl border border-gray-100 shadow-sm">
@@ -482,8 +486,6 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
                                             title={trip.title}
                                             image={trip.primaryImageUrl || ""}
                                             location={trip.location}
-                                            rating={trip.rating || 5.0}
-                                            reviews={trip.reviewCount || 0}
                                             type="tour"
                                             likeCount={trip.reviewCount || 0}
                                             isLiked={trip.isLiked}
@@ -522,8 +524,6 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
                                         title={trip.title}
                                         image={trip.primaryImageUrl || ""}
                                         location={trip.location}
-                                        rating={trip.rating || 5.0}
-                                        reviews={trip.reviewCount || 0}
                                         type="adventure"
                                         likeCount={trip.reviewCount || 0}
                                         isLiked={trip.isLiked}
@@ -561,10 +561,12 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
                                         />
                                     </div>
                                     <h4 className="font-bold text-gray-900 group-hover:text-primary transition-colors">{guide.name}</h4>
-                                    <div className="flex items-center justify-center gap-1.5 mt-2">
-                                        <Star size={12} className="fill-highlight text-highlight" />
-                                        <span className="text-xs font-bold text-gray-700">{guide.rating}</span>
-                                    </div>
+                                    {guide.rating > 0 && (
+                                        <div className="flex items-center justify-center gap-1.5 mt-2">
+                                            <Star size={12} className="fill-highlight text-highlight" />
+                                            <span className="text-xs font-bold text-gray-700">{guide.rating}</span>
+                                        </div>
+                                    )}
                                     <div className="flex items-center gap-1 mt-3 text-gray-500">
                                         <MapPin size={12} />
                                         <span className="text-[10px] font-bold uppercase tracking-wider">{guide.location}</span>
@@ -581,23 +583,25 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 relative z-10">
                         {/* Rating Summary */}
-                        <div className="lg:col-span-1">
-                            <h3 className="text-xs font-bold tracking-widest text-primary uppercase mb-3">Social Proof</h3>
-                            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-8 leading-tight">Traveler<br />Feedback</h2>
+                        {profile?.totalReviews > 0 && (
+                            <div className="lg:col-span-1">
+                                <h3 className="text-xs font-bold tracking-widest text-primary uppercase mb-3">Social Proof</h3>
+                                <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-8 leading-tight">Traveler<br />Feedback</h2>
 
-                            <div className="flex items-baseline gap-3 mb-4">
-                                <span className="font-black text-gray-900 text-6xl md:text-7xl leading-none tracking-tighter">{profile.averageRating.toFixed(1)}</span>
-                                <span className="text-gray-400 font-bold text-xl md:text-2xl">/5</span>
+                                <div className="flex items-baseline gap-3 mb-4">
+                                    <span className="font-black text-gray-900 text-6xl md:text-7xl leading-none tracking-tighter">{(profile?.averageRating || 0).toFixed(1)}</span>
+                                    <span className="text-gray-400 font-bold text-xl md:text-2xl">/5</span>
+                                </div>
+                                <div className="flex text-highlight gap-1.5 mb-6">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star key={star} size={28} className={star <= Math.round(profile?.averageRating || 0) ? "fill-current" : "opacity-30"} />
+                                    ))}
+                                </div>
+                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest max-w-[200px]">
+                                    Based on {profile?.totalReviews || 0} verified reviews
+                                </p>
                             </div>
-                            <div className="flex text-highlight gap-1.5 mb-6">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <Star key={star} size={28} className={star <= Math.round(profile.averageRating) ? "fill-current" : "opacity-30"} />
-                                ))}
-                            </div>
-                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest max-w-[200px]">
-                                Based on {profile.totalReviews} verified reviews
-                            </p>
-                        </div>
+                        )}
 
                         {/* Testimonials */}
                         <div className="lg:col-span-2">
@@ -619,7 +623,7 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
                                         }
                                         setReviewFormOpen(!reviewFormOpen);
                                     }}
-                                    className={`mt-4 sm:mt-0 px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all shadow-sm ${user?.role !== 'Tourist' && user ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-secondary text-white hover:bg-primary"}`}
+                                    className="mt-4 sm:mt-0 px-6 py-2.5 bg-secondary text-white rounded-full text-xs font-bold uppercase tracking-wider hover:bg-primary transition-all shadow-sm"
                                 >
                                     Write a Review
                                 </button>
@@ -657,8 +661,8 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
                                                 setSubmittingReview(true);
                                                 try {
                                                     await apiClient.post('/review', {
-                                                        targetId: profile?.id || slug,
-                                                        targetType: 'Guide',
+                                                        targetId: profile?.id,
+                                                        targetType: isAgencyPath ? 'Agency' : 'Guide',
                                                         rating: reviewRating,
                                                         comment: reviewComment
                                                     });
@@ -699,7 +703,15 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
                                                 </p>
                                                 <div className="flex items-center gap-4 mt-auto pt-6 border-t border-gray-50 uppercase tracking-tighter">
                                                     <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden border-2 border-primary/10 shadow-sm bg-primary/5 flex items-center justify-center text-primary font-black text-xs">
-                                                        {review.reviewerName.charAt(0)}
+                                                        {review.reviewerImageUrl ? (
+                                                            <img 
+                                                                src={review.reviewerImageUrl.startsWith('http') ? review.reviewerImageUrl : `${apiClient.defaults.baseURL?.replace('/api', '')}${review.reviewerImageUrl}`} 
+                                                                alt={review.reviewerName}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <span>{review.reviewerName.charAt(0).toUpperCase()}</span>
+                                                        )}
                                                     </div>
                                                     <div>
                                                         <div className="flex items-center gap-2">

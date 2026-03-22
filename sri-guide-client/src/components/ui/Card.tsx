@@ -27,6 +27,7 @@ interface CardProps {
     likeCount?: number;
     isLiked?: boolean;
     mapLink?: string;
+    agencyName?: string;
     onToggleLike?: (id: string, type: string) => void;
 }
 
@@ -53,6 +54,7 @@ const Card: React.FC<CardProps> = ({
     likeCount,
     isLiked,
     mapLink,
+    agencyName,
     onToggleLike
 }) => {
     const isProfile = type === "guide" || type === "agency";
@@ -127,12 +129,7 @@ const Card: React.FC<CardProps> = ({
                         ${price} <span className="text-xs font-medium opacity-90">/p.p</span>
                     </div>
                 )}
-                {type === "guide" && (
-                    <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-gray-900 flex items-center shadow-sm">
-                        <Star className="w-3 h-3 text-highlight mr-1.5 fill-highlight" />
-                        {rating}
-                    </div>
-                )}
+
                 {onToggleLike && id && (
                     <button
                         onClick={(e) => {
@@ -181,14 +178,16 @@ const Card: React.FC<CardProps> = ({
                             </div>
                         )}
 
-                        {rating && rating > 0 && type !== "guide" && (
-                            <div className="flex items-center text-sm font-bold text-gray-900">
-                                <Star className="w-4 h-4 text-highlight mr-1.5 fill-highlight" />
-                                {rating.toFixed(1)} <span className="font-medium text-gray-400 ml-1">({reviews})</span>
+                        {rating !== undefined && rating > 0 && (type === "guide" || type === "agency" || type === "tour" || type === "adventure") && (
+                            <div className="flex items-center gap-1.5 bg-yellow-400/90 text-white px-3 py-1 rounded-full text-[10px] font-black shadow-sm group-hover:bg-yellow-400 transition-colors">
+                                <Star size={10} fill="currentColor" className="mr-0.5" />
+                                {rating.toFixed(1)} {reviews !== undefined && reviews > 0 && `(${reviews})`}
                             </div>
                         )}
 
-                         {likeCount !== undefined && (
+
+
+                         {likeCount !== undefined && likeCount > 0 && (
                             <div className="flex items-center gap-1.5 text-[10px] font-bold text-rose-500 bg-rose-50 px-2.5 py-1 rounded-full whitespace-nowrap">
                                 <Heart size={10} fill="currentColor" />
                                 {likeCount}
@@ -212,8 +211,14 @@ const Card: React.FC<CardProps> = ({
                     )}
                 </div>
 
-                {(type === "guide" || type === "agency") && (phone || email) && (
+                {(type === "guide" || type === "agency") && (phone || email || agencyName) && (
                     <div className="mt-5 pt-5 border-t border-gray-50 space-y-2.5 relative z-20">
+                        {agencyName && (
+                            <div className="flex items-center text-[10px] font-black uppercase tracking-widest text-blue-600 mb-1">
+                                <ShieldCheck size={12} className="mr-1.5" />
+                                {agencyName}
+                            </div>
+                        )}
                         {phone && <ProtectedContact type="phone" value={phone} />}
                         {email && <ProtectedContact type="email" value={email} />}
                     </div>

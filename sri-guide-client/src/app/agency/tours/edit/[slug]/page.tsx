@@ -199,7 +199,8 @@ const EditTourPage = () => {
                 location: formData.location.join(", "),
                 category: formData.category.join(", "),
                 date: formData.date && formData.date.trim() !== "" ? new Date(formData.date).toISOString() : null,
-                price: Number(formData.price),
+                price: Math.max(0, Number(formData.price)),
+                additionalImages: formData.additionalImages,
                 itinerary: formData.itinerary.map(s => ({
                     ...s,
                     imageUrl: s.imageUrl || null
@@ -324,6 +325,7 @@ const EditTourPage = () => {
                                                 <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-teal-600" size={18} />
                                                 <input 
                                                     type="number"
+                                                    min="0"
                                                     value={formData.price}
                                                     onChange={e => setFormData({ ...formData, price: Number(e.target.value) })}
                                                     className={`w-full bg-gray-50 border-transparent rounded-2xl pl-14 pr-6 py-5 text-sm font-bold focus:bg-white focus:border-teal-200 transition-all outline-none ${errors.price ? 'border-rose-300 bg-rose-50/20' : ''}`}

@@ -37,12 +37,32 @@ export interface GuideProfile {
     instagramLink?: string;
     twitterLink?: string;
     linkedinLink?: string;
+    verificationStatus?: "None" | "Pending" | "Approved" | "Rejected";
     registrationNumber?: string;
     licenseExpirationDate?: string;
 }
 
+export interface AgencyProfile {
+    id: string;
+    companyName: string;
+    bio?: string;
+    companyEmail?: string;
+    registrationNumber?: string;
+    phone?: string;
+    whatsApp?: string;
+    youTubeLink?: string;
+    tikTokLink?: string;
+    facebookLink?: string;
+    instagramLink?: string;
+    twitterLink?: string;
+    linkedinLink?: string;
+    isVerified: boolean;
+    verificationStatus: "None" | "Pending" | "Approved" | "Rejected";
+}
+
 export interface Profile extends User {
     guideProfile?: GuideProfile;
+    agencyProfile?: AgencyProfile;
     rating: number;
     reviewCount: number;
 }

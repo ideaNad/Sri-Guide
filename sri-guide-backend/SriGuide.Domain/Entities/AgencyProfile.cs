@@ -24,7 +24,7 @@ public class AgencyProfile : BaseEntity
     public string? TwitterLink { get; set; }
     public string? LinkedinLink { get; set; }
     
-    public VerificationStatus VerificationStatus { get; set; } = VerificationStatus.Pending;
+    public VerificationStatus VerificationStatus { get; set; } = VerificationStatus.None;
     public bool IsVerified { get; set; }
 
     public ICollection<GuideProfile> Guides { get; set; } = new List<GuideProfile>();

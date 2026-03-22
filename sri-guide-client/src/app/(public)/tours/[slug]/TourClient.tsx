@@ -2,9 +2,9 @@
 
 import React, { useState } from "react";
 import {
-    Star, MapPin, Clock, Users, ShieldCheck,
+    MapPin, Clock, Users, ShieldCheck,
     Calendar, Info, ChevronRight, Check, Plus,
-    Share2, Heart, MessageCircle, Loader2
+    Share2, Heart, MessageCircle, Loader2, Star
 } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionHeader from "@/components/ui/SectionHeader";
@@ -13,6 +13,17 @@ import apiClient from "@/services/api-client";
 import { useAuth } from "@/providers/AuthContext";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import ReviewModal from "@/features/reviews/components/ReviewModal";
+import AuthModal from "@/features/auth/components/AuthModal";
+
+interface Review {
+    id: string;
+    reviewerName: string;
+    reviewerImageUrl?: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
+}
 
 interface ItineraryStep {
     time: string;
@@ -38,12 +49,14 @@ interface TripDetail {
     guideRating: number;
     guideTotalReviews: number;
     likeCount: number;
+    rating: number;
+    reviewsCount: number;
     isLikedByCurrentUser: boolean;
     itinerary?: ItineraryStep[];
 }
 
 export default function TourClient({ slug, initialData }: { slug: string, initialData?: TripDetail }) {
-    const { user } = useAuth();
+    const { user, login } = useAuth();
     const [tour, setTour] = useState<TripDetail | null>(() => {
         if (!initialData) return null;
         const data: any = initialData;
@@ -54,20 +67,24 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
             guideName: data.guideName || data.agencyName || "Sri Lankan Agency",
             guideImageUrl: data.guideImageUrl || data.agencyImageUrl,
             guideSlug: data.guideSlug || data.agencySlug || data.slug || data.Slug,
-            guideRating: data.guideRating || 4.8,
-            guideTotalReviews: data.guideTotalReviews || 12,
+            guideRating: data.guideRating || 0,
+            guideTotalReviews: data.guideTotalReviews || 0,
             itinerary: data.itinerary || []
         } as TripDetail;
     });
     const [loading, setLoading] = useState(!initialData);
     const [activeTab, setActiveTab] = useState("overview");
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [loadingReviews, setLoadingReviews] = useState(false);
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [bookingDate, setBookingDate] = useState("");
     const [guests, setGuests] = useState(1);
     const [isBooking, setIsBooking] = useState(false);
     const [bookingSuccess, setBookingSuccess] = useState(false);
 
     const fetchTour = async () => {
-        if (initialData) return;
+        if (loading && !initialData) return;
         try {
             const response = await apiClient.get<any>(`/Tours/${slug}`);
             const data = response.data;
@@ -78,15 +95,34 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                 guideName: data.guideName || data.agencyName || "Sri Lankan Agency",
                 guideImageUrl: data.guideImageUrl || data.agencyImageUrl,
                 guideSlug: data.guideSlug || data.agencySlug || data.slug || data.Slug,
-                guideRating: data.guideRating || 4.8,
-                guideTotalReviews: data.guideTotalReviews || 12,
+                guideRating: data.guideRating || 0,
+                guideTotalReviews: data.guideTotalReviews || 0,
+                rating: data.rating || 0,
+                reviewsCount: data.reviewsCount || 0,
                 itinerary: data.itinerary || []
             };
             setTour(mappedData);
+            
+            // Fetch reviews
+            if (mappedData.id) {
+                fetchReviews(mappedData.id);
+            }
         } catch (error) {
             console.error("Failed to fetch tour", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchReviews = async (tourId: string) => {
+        setLoadingReviews(true);
+        try {
+            const response = await apiClient.get<Review[]>(`/Review/Tour/${tourId}`);
+            setReviews(response.data);
+        } catch (error) {
+            console.error("Failed to fetch reviews", error);
+        } finally {
+            setLoadingReviews(false);
         }
     };
 
@@ -155,15 +191,20 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                                 <MapPin className="w-5 h-5 mr-2 text-primary" />
                                 <span className="font-medium">{tour.location}</span>
                             </div>
-                            <div className="flex items-center">
-                                <Clock className="w-5 h-5 mr-2 text-primary" />
-                                <span className="font-medium">Selected Duration</span>
-                            </div>
-                            <div className="flex items-center">
-                                <Star className="w-5 h-5 mr-2 text-yellow-400 fill-yellow-400" />
-                                <span className="font-bold text-white">{tour.guideRating.toFixed(1)}</span>
-                                <span className="ml-1 text-sm">({tour.guideTotalReviews} Reviews)</span>
-                            </div>
+                            {tour.rating > 0 && (
+                                <div className="flex bg-yellow-400 px-3 py-1 rounded-full items-center gap-1.5 border border-yellow-300 shadow-lg scale-110 ml-2">
+                                    <Star size={12} className="fill-white text-white" />
+                                    <span className="text-xs font-black text-white">{tour.rating.toFixed(1)}</span>
+                                    <span className="text-[10px] text-white/80 font-bold">({tour.reviewsCount})</span>
+                                </div>
+                            )}
+                            {tour.guideRating > 0 && (
+                                <div className="flex bg-white/10 backdrop-blur-md px-3 py-1 rounded-full items-center gap-1.5 border border-white/20">
+                                    <Star size={12} className="fill-highlight text-highlight" />
+                                    <span className="text-xs font-bold">{tour.guideRating.toFixed(1)}</span>
+                                    <span className="text-[10px] text-white/70">({tour.guideTotalReviews})</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -304,13 +345,65 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                                 <div className="space-y-12">
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-2xl font-black text-gray-900">Traveler Reviews</h3>
-                                        <button className="bg-gray-900 text-white px-8 py-3 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-primary transition-all">
+                                        <button 
+                                            onClick={() => {
+                                                if (!user) { setIsAuthModalOpen(true); return; }
+                                                if (user.role !== 'Tourist') {
+                                                    alert("Only Tourists can write reviews.");
+                                                    return;
+                                                }
+                                                setIsReviewModalOpen(true);
+                                            }}
+                                            className="bg-gray-900 text-white px-8 py-3 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-primary transition-all"
+                                        >
                                             Write a Review
                                         </button>
                                     </div>
 
-                                    <div className="grid grid-cols-1 gap-8">
-                                        <p className="text-gray-500 italic">No reviews yet for this tour.</p>
+                                    <div className="grid grid-cols-1 gap-10">
+                                        {loadingReviews ? (
+                                            <div className="flex justify-center py-20">
+                                                <Loader2 className="animate-spin text-primary" size={32} />
+                                            </div>
+                                        ) : reviews.length > 0 ? (
+                                            reviews.map((review) => (
+                                                <div key={review.id} className="bg-gray-50/50 p-8 rounded-[2.5rem] border border-gray-100 relative group transition-all hover:bg-white hover:shadow-xl">
+                                                    <div className="flex items-start gap-6">
+                                                        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-md flex-shrink-0">
+                                                            <img 
+                                                                src={review.reviewerImageUrl || `https://ui-avatars.com/api/?name=${review.reviewerName}&background=random&color=fff&bold=true`} 
+                                                                alt={review.reviewerName}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center justify-between mb-4">
+                                                                <div>
+                                                                    <h4 className="font-black text-gray-900 leading-tight">{review.reviewerName}</h4>
+                                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                                                                        {new Date(review.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric", day: "numeric" })}
+                                                                    </p>
+                                                                </div>
+                                                                <div className="flex gap-0.5">
+                                                                    {[1, 2, 3, 4, 5].map((star) => (
+                                                                        <Star 
+                                                                            key={star} 
+                                                                            size={12} 
+                                                                            className={star <= review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200"} 
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                            <p className="text-gray-600 font-medium leading-relaxed italic">&ldquo;{review.comment}&rdquo;</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-center py-24 bg-gray-50 rounded-[3rem] italic text-gray-400 font-bold tracking-widest border-2 border-dashed border-gray-100">
+                                                Be the first to share your legendary journey...
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -353,16 +446,38 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                                 <div>
                                     <p className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] mb-1">Proposed Guide</p>
                                     <h4 className="text-xl font-black text-gray-900 group-hover:text-primary transition-colors tracking-tighter">{tour.guideName}</h4>
-                                    <div className="flex items-center text-xs font-bold text-gray-400 mt-2">
-                                        <Star className="w-3 h-3 text-yellow-400 fill-yellow-400 mr-1" />
-                                        {tour.guideRating.toFixed(1)} ({tour.guideTotalReviews} reviews)
-                                    </div>
+                                    {tour.guideRating > 0 && (
+                                        <div className="flex items-center gap-1 mt-1 text-highlight">
+                                            <Star size={12} fill="currentColor" />
+                                            <span className="text-xs font-bold text-gray-700">{tour.guideRating.toFixed(1)}</span>
+                                            <span className="text-[10px] text-gray-400 font-medium lowercase">({tour.guideTotalReviews} reviews)</span>
+                                        </div>
+                                    )}
                                 </div>
                             </Link>
                         </div>
                     </aside>
                 </div>
             </div>
+            
+            {tour && (
+                <ReviewModal
+                    isOpen={isReviewModalOpen}
+                    onClose={() => setIsReviewModalOpen(false)}
+                    targetId={tour.id}
+                    targetType="Tour"
+                    targetName={tour.title}
+                    onSuccess={() => {
+                        fetchTour(); // Refresh tour data to get new rating
+                        if (tour.id) fetchReviews(tour.id);
+                    }}
+                />
+            )}
+            <AuthModal 
+                isOpen={isAuthModalOpen}
+                onClose={() => setIsAuthModalOpen(false)}
+                onSuccess={(userData) => { login(userData); setIsAuthModalOpen(false); }}
+            />
         </div>
     );
 }

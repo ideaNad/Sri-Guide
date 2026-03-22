@@ -34,6 +34,23 @@ public class GetTouristDashboardQueryHandler : IRequestHandler<GetTouristDashboa
         // Recent Activities (Liked trips, Bookings, Reviews)
         var activities = new List<DashboardActivityDto>();
 
+        var recentReviews = await _context.Reviews
+            .Include(r => r.User)
+            .Where(r => r.UserId == request.UserId)
+            .OrderByDescending(r => r.CreatedAt)
+            .Take(3)
+            .ToListAsync(cancellationToken);
+
+        foreach (var review in recentReviews)
+        {
+            activities.Add(new DashboardActivityDto(
+                "Review",
+                $"You reviewed a {(review.TargetType == "Guide" ? "Guide" : "Trip")}",
+                GetTimeAgo(review.CreatedAt),
+                review.TargetType
+            ));
+        }
+
         var recentLikes = await _context.TripLikes
             .Include(l => l.Trip)
             .Where(l => l.UserId == request.UserId)
@@ -64,7 +81,7 @@ public class GetTouristDashboardQueryHandler : IRequestHandler<GetTouristDashboa
         {
             activities.Add(new DashboardActivityDto(
                 "Booking",
-                $"Booking for {booking.Tour?.Title ?? "Experience"} on {booking.BookingDate:MMM dd, yyyy}",
+                $"Booking for {booking.Tour?.Title ?? "Experience"}",
                 GetTimeAgo(booking.CreatedAt),
                 booking.Tour?.Agency?.CompanyName ?? booking.Guide?.FullName ?? "Travel Agency"
             ));
@@ -73,6 +90,7 @@ public class GetTouristDashboardQueryHandler : IRequestHandler<GetTouristDashboa
         return new TouristDashboardDto(
             user.FullName,
             user.ProfileImageUrl,
+            user.IsVerified,
             savedToursCount,
             upcomingTripsCount,
             activities.OrderByDescending(a => a.TimeAgo).ToList()

@@ -28,12 +28,19 @@ public record TripDetailDto(
     DateTime? Date,
     List<string> Images,
     Guid? GuideId,
+    string? GuideSlug,
     string GuideName,
     string? GuideImageUrl,
+    Guid? AgencyId,
+    string? AgencySlug,
+    string? AgencyName,
+    string? AgencyImageUrl,
     double GuideRating,
     int GuideTotalReviews,
     int LikeCount,
     bool IsLikedByCurrentUser,
+    double Rating,
+    int ReviewsCount,
     List<OtherTripDto> OtherTrips,
     bool IsActive = true,
     int ViewCount = 0
@@ -65,6 +72,7 @@ public class GetTripDetailQueryHandler : IRequestHandler<GetTripDetailQuery, Tri
         var trip = await _context.Trips
             .Include(t => t.Guide)
             .Include(t => t.Agency)
+                .ThenInclude(a => a.User)
             .Include(t => t.Images)
             .FirstOrDefaultAsync(t => isGuid ? t.Id == tripId : t.Slug == request.IdOrSlug, cancellationToken);
 
@@ -87,6 +95,13 @@ public class GetTripDetailQueryHandler : IRequestHandler<GetTripDetailQuery, Tri
             guideTotalReviews = guideReviews.Count;
         }
 
+        // Fetch trip reviews
+        var tripReviews = await _context.Reviews
+            .Where(r => r.TargetId == trip.Id && r.TargetType == "Trip")
+            .ToListAsync(cancellationToken);
+        
+        var tripRatingValue = tripReviews.Any() ? Math.Round(tripReviews.Average(r => (double)r.Rating), 1) : 0.0;
+
         var likeCount = await _context.TripLikes.CountAsync(tl => tl.TripId == trip.Id, cancellationToken);
         var isLiked = request.CurrentUserId.HasValue && await _context.TripLikes.AnyAsync(tl => tl.TripId == trip.Id && tl.UserId == request.CurrentUserId, cancellationToken);
 
@@ -99,14 +114,23 @@ public class GetTripDetailQueryHandler : IRequestHandler<GetTripDetailQuery, Tri
             trip.Date,
             trip.Images.Select(i => i.ImageUrl != null && !i.ImageUrl.StartsWith("/") && !i.ImageUrl.StartsWith("http") ? "/" + i.ImageUrl : i.ImageUrl).Where(url => url != null).Cast<string>().ToList(),
             trip.GuideId,
+            trip.Guide?.Slug,
             trip.Guide?.FullName ?? (trip.Agency?.CompanyName ?? "Unknown"),
             trip.Guide != null && trip.Guide.ProfileImageUrl != null && !trip.Guide.ProfileImageUrl.StartsWith("/") && !trip.Guide.ProfileImageUrl.StartsWith("http") 
                 ? "/" + trip.Guide.ProfileImageUrl 
-                : (trip.Guide != null ? trip.Guide.ProfileImageUrl : (trip.Agency != null ? "https://ui-avatars.com/api/?name=" + trip.Agency.CompanyName : null)),
+                : (trip.Guide != null ? trip.Guide.ProfileImageUrl : (trip.Agency?.User != null && trip.Agency.User.ProfileImageUrl != null && !trip.Agency.User.ProfileImageUrl.StartsWith("/") && !trip.Agency.User.ProfileImageUrl.StartsWith("http") ? "/" + trip.Agency.User.ProfileImageUrl : trip.Agency?.User?.ProfileImageUrl)),
+            trip.AgencyId,
+            trip.Agency?.Slug,
+            trip.Agency?.CompanyName,
+            trip.Agency?.User?.ProfileImageUrl != null && !trip.Agency.User.ProfileImageUrl.StartsWith("/") && !trip.Agency.User.ProfileImageUrl.StartsWith("http") 
+                ? "/" + trip.Agency.User.ProfileImageUrl 
+                : trip.Agency?.User?.ProfileImageUrl,
             guideRating,
             guideTotalReviews,
             likeCount,
             isLiked,
+            tripRatingValue,
+            tripReviews.Count,
             await _context.Trips
                 .Include(t => t.Images)
                 .Where(t => (trip.GuideId != null && t.GuideId == trip.GuideId) || (trip.AgencyId != null && t.AgencyId == trip.AgencyId))

@@ -11,6 +11,12 @@ import { motion } from "framer-motion";
 import apiClient from "@/services/api-client";
 import { useAuth } from "@/providers/AuthContext";
 
+const XIcon = ({ size }: { size?: number }) => (
+    <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+    </svg>
+);
+
 interface AgencyProfile {
     id: string;
     companyName: string;
@@ -312,14 +318,14 @@ export default function AgencyProfilePage() {
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-gray-900 uppercase tracking-[0.2em] ml-2 flex items-center gap-2">
-                                <Twitter size={12} />
-                                Twitter / X
+                                <XIcon size={12} />
+                                X
                             </label>
                             <input 
                                 type="url"
                                 value={profile.twitterLink || ""}
                                 onChange={e => setProfile({ ...profile, twitterLink: e.target.value })}
-                                placeholder="https://twitter.com/your-agency"
+                                placeholder="https://x.com/your-agency"
                                 className={inputClasses + " bg-white shadow-sm"}
                             />
                         </div>

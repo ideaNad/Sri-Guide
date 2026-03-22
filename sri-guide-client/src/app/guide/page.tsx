@@ -37,7 +37,7 @@ export default function GuideDashboardPage() {
         totalReviews: 0,
         profileCompleteness: 0,
         isLegit: false,
-        verificationStatus: "Pending",
+        verificationStatus: "None",
         fullName: "",
         profileImageUrl: "",
         recentActivities: [],
@@ -73,7 +73,7 @@ export default function GuideDashboardPage() {
 
     const statCards = [
         { label: "Avg. Rating", value: stats.averageRating.toFixed(1), icon: <Star className="text-yellow-500 fill-yellow-500" />, trend: `${stats.totalReviews} reviews` },
-        { label: "License Status", value: stats.isLegit ? "Verified" : "Unverified", icon: <ShieldCheck className={stats.isLegit ? "text-emerald-500" : "text-gray-400"} />, trend: stats.verificationStatus },
+        { label: "License Status", value: stats.isLegit ? "Verified" : "Unverified", icon: <ShieldCheck className={stats.isLegit ? "text-emerald-500" : "text-gray-400"} />, trend: stats.verificationStatus === "None" ? "Not submitted" : stats.verificationStatus === "Pending" ? "Pending approval" : stats.verificationStatus === "Approved" ? "Approved" : stats.verificationStatus === "Rejected" ? "Rejected" : stats.verificationStatus },
         { label: "Profile", value: `${stats.profileCompleteness}%`, icon: <Users className="text-primary" />, trend: "Completeness" },
     ];
 
@@ -264,7 +264,7 @@ export default function GuideDashboardPage() {
                                     onClick={() => router.push("/guide/profile#verification")}
                                     className="px-8 py-4 bg-white text-emerald-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:shadow-2xl transition-all active:scale-95"
                                 >
-                                    {stats.verificationStatus === "Pending" ? "Check Status" : "Verify Identity"}
+                                    {stats.verificationStatus === "Pending" ? "Check Status" : stats.verificationStatus === "Approved" ? "Renew Verification" : "Verify Identity"}
                                 </button>
                             </div>
                         </div>
