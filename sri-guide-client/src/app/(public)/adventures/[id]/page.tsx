@@ -566,24 +566,9 @@ const AdventureSimplePage = () => {
                         {tour.guideRating > 0 && (
                             <div className="flex items-center gap-2 mt-3">
                                 <div className="flex items-center gap-1">
-                                    {[1,2,3,4,5].map(s => (
+                                    {[1, 2, 3, 4, 5].map(s => (
                                         <Star key={s} size={15} className={s <= Math.round(tour.guideRating) ? "fill-amber-400 text-amber-400" : "text-gray-200 fill-gray-200"} />
                                     ))}
-                                    <div className="flex flex-col">
-                                        <div className="flex items-center text-gray-900 font-black italic uppercase text-lg">
-                                            <MapPin size={18} className="mr-3 text-primary" />
-                                            {tour.location}
-                                        </div>
-                                        {tour.mapLink && (
-                                            <a 
-                                                href={tour.mapLink} 
-                                                target="_blank" 
-                                                rel="noopener noreferrer"
-                                                className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-primary hover:text-secondary transition-colors underline underline-offset-4"
-                                            >
-                                                View on Digital Map
-                                            </a>
-                                        )}
                                 </div>
                                 <span className="text-sm font-bold text-amber-600">{tour.guideRating.toFixed(1)}</span>
                                 {tour.guideTotalReviews > 0 && (
@@ -832,7 +817,7 @@ const AdventureSimplePage = () => {
                                             </div>
                                         </div>
                                         <Link
-                                            href={tour.isAgencyTour ? `/profile/agency/${tour.agencyId}` : `/profile/${tour.guideId}`}
+                                            href={tour.isAgencyTour ? `/profile/${tour.agencyId}?type=agency` : `/profile/${tour.guideId}`}
                                             className="w-full bg-gray-900 text-white flex items-center justify-center py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-primary transition-all gap-2"
                                         >
                                             View Full Profile <ChevronRight size={14} />

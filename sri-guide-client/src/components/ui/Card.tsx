@@ -56,7 +56,7 @@ const Card: React.FC<CardProps> = ({
     const isProfile = type === "guide" || type === "agency";
     const profileLink = (type === "tour" || type === "adventure") 
         ? `/adventures/${id}?type=${type}` 
-        : (id ? `/profile/${id}` : "#");
+        : (id ? `/profile/${id}${type === 'agency' ? '?type=agency' : ''}` : "#");
 
     const displayImage = React.useMemo(() => {
         if (!image || image.trim() === "") {

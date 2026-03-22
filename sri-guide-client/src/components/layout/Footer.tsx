@@ -21,13 +21,20 @@ const Footer = () => {
                             From pristine beaches to misty mountains, we guide you through it all.
                         </p>
                         <div className="flex space-x-4">
-                            {[Facebook, Instagram, Twitter, Youtube].map((Icon, idx) => (
+                            {[
+                                { Icon: Facebook, href: "https://www.facebook.com/share/1L2EokQwo5/" },
+                                { Icon: Instagram, href: "https://instagram.com/SriGuide" },
+                                { Icon: Twitter, href: "https://twitter.com/SriGuide" },
+                                { Icon: Youtube, href: "https://www.youtube.com/@SriGuide" }
+                            ].map((social, idx) => (
                                 <a
                                     key={idx}
-                                    href="#"
+                                    href={social.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors text-white"
                                 >
-                                    <Icon className="w-5 h-5" />
+                                    <social.Icon className="w-5 h-5" />
                                 </a>
                             ))}
                         </div>
@@ -83,12 +90,6 @@ const Footer = () => {
 
                 <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-xs text-gray-400 font-medium">
                     <p>© 2026 SriGuide Travel (Pvt) Ltd. All Rights Reserved.</p>
-
-                    <p className="text-sm">
-                        Powered by:{' '}
-                        <span style={{ fontFamily: 'var(--font-comfortaa), sans-serif' }} className="text-gray-500 font-black">Idea</span>
-                        <span style={{ fontFamily: 'var(--font-comfortaa), sans-serif' }} className="text-teal-500 font-black">Nad</span>
-                    </p>
 
                     <div className="flex space-x-6 uppercase tracking-widest text-[10px]">
                         <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>

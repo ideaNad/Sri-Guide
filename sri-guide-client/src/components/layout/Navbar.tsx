@@ -109,7 +109,7 @@ const NavItems = ({ mobile = false, textColor, navLinks, setIsMobileMenuOpen }: 
                 {/* Auth & CTA */}
                 <div className="hidden lg:flex items-center gap-4">
                     {user ? (
-                        <div className="flex items-center gap-4">
+                        <div className={`flex items-center gap-6 ${!isScrolled && isHomePage ? 'bg-white/10 backdrop-blur-md px-5 py-1 rounded-full border border-white/20 shadow-sm' : ''}`}>
                             <Link
                                 href={getDashboardHref()}
                                 className={`flex items-center gap-2 text-[13px] font-bold ${textColor} hover:text-primary transition-colors`}
