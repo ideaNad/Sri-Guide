@@ -15,6 +15,13 @@ public class User : BaseEntity
     public string? PasswordResetToken { get; set; }
     public DateTime? ResetTokenExpires { get; set; }
     public string? Slug { get; set; }
+    
+    // Onboarding Data
+    public bool OnboardingCompleted { get; set; }
+    public string? Interests { get; set; } // Comma separated or JSON
+    public string? Budget { get; set; }
+    public string? TravelDuration { get; set; }
+    public string? PreferredLocation { get; set; }
 
     public GuideProfile? GuideProfile { get; set; }
     public AgencyProfile? AgencyProfile { get; set; }

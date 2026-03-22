@@ -9,6 +9,11 @@ export interface User {
     isVerified: boolean;
     token?: string;
     createdAt?: string;
+    onboardingCompleted?: boolean;
+    interests?: string[];
+    budget?: string;
+    travelDuration?: string;
+    preferredLocation?: string;
 }
 
 export interface GuideProfile {

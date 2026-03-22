@@ -1,0 +1,328 @@
+'use client';
+
+import * as React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useOnboardingStore, UserRole } from '@/store/useOnboardingStore';
+import { OnboardingStepper } from '@/components/onboarding/OnboardingStepper';
+import { RoleSelector } from '@/components/onboarding/RoleSelector';
+import { InterestsForm } from '@/components/onboarding/tourist/InterestsForm';
+import { BudgetForm } from '@/components/onboarding/tourist/BudgetForm';
+import { DurationForm } from '@/components/onboarding/tourist/DurationForm';
+import { LocationForm } from '@/components/onboarding/tourist/LocationForm';
+import { TranslateBanner } from '@/components/translate/TranslateBanner';
+import { HelpDrawer } from '@/components/help/HelpDrawer';
+import { HelpCircle, ChevronRight, Star } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import Joyride, { Step as JoyrideStep } from 'react-joyride';
+import { GuideFlow } from '@/components/onboarding/guide/GuideFlow';
+import { AgencyFlow } from '@/components/onboarding/agency/AgencyFlow';
+import { useAuth } from '@/providers/AuthContext';
+import apiClient from '@/services/api-client';
+
+export default function OnboardingPage() {
+  const router = useRouter();
+  const { user, login } = useAuth();
+  const { 
+    userRole, 
+    setUserRole, 
+    onboardingStep, 
+    setStep,
+    completeOnboarding,
+    onboardingCompleted 
+  } = useOnboardingStore();
+
+  // Local state for form data
+  const [touristData, setTouristData] = React.useState({
+    interests: [] as string[],
+    budget: '',
+    duration: '',
+    location: '',
+  });
+
+  const [guideData, setGuideData] = React.useState({
+    profileName: '',
+    about: '',
+    tripTitle: '',
+    pricing: '',
+  });
+
+  const [agencyData, setAgencyData] = React.useState({
+    businessName: '',
+    regNumber: '',
+    pricing: '',
+  });
+
+  // Guided Tour Steps
+  const tourSteps: JoyrideStep[] = [
+    {
+      target: '.role-selection-title',
+      content: 'Welcome! First, let us know how you will use the platform.',
+      placement: 'bottom',
+    },
+    {
+      target: '.role-card-tourist',
+      content: 'If you are looking for tours, select Tourist.',
+    },
+    {
+      target: '.help-center-button',
+      content: 'Stuck? Access our help center anytime from here.',
+    }
+  ];
+
+  // Handle completion
+  const handleComplete = async () => {
+    if (user && userRole === 'tourist') {
+      try {
+        await apiClient.post('/profile/update-user', {
+          userId: user.id,
+          onboardingCompleted: true,
+          interests: touristData.interests.join(','),
+          budget: touristData.budget,
+          travelDuration: touristData.duration,
+          preferredLocation: touristData.location
+        });
+        
+        // Update local auth user in context
+        login({
+          ...user,
+          onboardingCompleted: true,
+          interests: touristData.interests,
+          budget: touristData.budget,
+          travelDuration: touristData.duration,
+          preferredLocation: touristData.location
+        });
+      } catch (error) {
+        console.error("Failed to save onboarding data", error);
+      }
+    }
+
+    completeOnboarding();
+    router.push('/dashboard');
+  };
+
+  // Tourist Steps
+  const touristSteps = [
+    {
+      id: 0,
+      title: "What do you love?",
+      description: "Pick your interests so we can personalize your Sri Lankan adventure.",
+      component: (
+        <InterestsForm 
+          selectedInterests={touristData.interests} 
+          onChange={(interests) => setTouristData({ ...touristData, interests })}
+        />
+      ),
+    },
+    {
+      id: 1,
+      title: "What's your budget?",
+      description: "Don't worry, we have something for everyone.",
+      component: (
+        <BudgetForm 
+          selectedBudget={touristData.budget}
+          onChange={(budget) => setTouristData({ ...touristData, budget })}
+        />
+      ),
+    },
+    {
+      id: 2,
+      title: "How long is the trip?",
+      description: "Tell us your duration to find the perfect itinerary.",
+      component: (
+        <DurationForm 
+          selectedDuration={touristData.duration}
+          onChange={(duration) => setTouristData({ ...touristData, duration })}
+        />
+      ),
+    },
+    {
+      id: 3,
+      title: "Where to start?",
+      description: "Pick a region that catches your eye.",
+      component: (
+        <LocationForm 
+          selectedLocation={touristData.location}
+          onChange={(location) => setTouristData({ ...touristData, location })}
+        />
+      ),
+    },
+  ];
+
+  // Guide Steps
+  const guideSteps = [
+    {
+      id: 0,
+      title: "Your Profile",
+      description: "Tell travelers who you are and why they should book with you.",
+      component: <GuideFlow data={guideData} setData={setGuideData} step={0} />,
+    },
+    {
+      id: 1,
+      title: "Add a Trip",
+      description: "Create your first experience to share with the world.",
+      component: <GuideFlow data={guideData} setData={setGuideData} step={1} />,
+    },
+    {
+      id: 2,
+      title: "Set Pricing",
+      description: "Choose a fair price for your amazing expertise.",
+      component: <GuideFlow data={guideData} setData={setGuideData} step={2} />,
+    },
+  ];
+
+  // Agency Steps
+  const agencySteps = [
+    {
+      id: 0,
+      title: "Business Details",
+      description: "Let's get your agency registered and ready.",
+      component: <AgencyFlow data={agencyData} setData={setAgencyData} step={0} />,
+    },
+    {
+      id: 1,
+      title: "Listing Status",
+      description: "Ready to showcase your tour packages?",
+      component: <AgencyFlow data={agencyData} setData={setAgencyData} step={1} />,
+    },
+    {
+      id: 2,
+      title: "Choose Plan",
+      description: "Pick the best way to grow your business.",
+      component: <AgencyFlow data={agencyData} setData={setAgencyData} step={2} />,
+    },
+  ];
+
+  // Logic to determine if current step is valid
+  const isStepValid = () => {
+    if (userRole === 'tourist') {
+      if (onboardingStep === 0) return touristData.interests.length > 0;
+      if (onboardingStep === 1) return touristData.budget !== '';
+      if (onboardingStep === 2) return touristData.duration !== '';
+      if (onboardingStep === 3) return touristData.location !== '';
+    }
+    // For guide/agency assume valid for demo purposes
+    return true;
+  };
+
+  const getSteps = () => {
+    if (userRole === 'tourist') return touristSteps;
+    if (userRole === 'guide') return guideSteps;
+    if (userRole === 'agency') return agencySteps;
+    return [];
+  };
+
+  return (
+    <main className="min-h-screen bg-slate-50 pt-20 pb-12 sm:pt-32">
+      <TranslateBanner />
+      
+      <Joyride
+        steps={tourSteps}
+        continuous
+        showProgress
+        showSkipButton
+        styles={{
+          options: {
+            primaryColor: '#0ea5e9',
+          },
+        }}
+      />
+      
+      <div className="container mx-auto px-4 max-w-4xl">
+        <AnimatePresence mode="wait">
+          {!userRole ? (
+            <motion.div
+              key="role-selection"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="text-center"
+            >
+              <div className="mb-12 role-selection-title">
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-sky-100 text-sky-700 text-xs font-black uppercase tracking-widest mb-4">
+                  Welcome to SriGuide
+                </span>
+                <h1 className="text-4xl sm:text-6xl font-black text-slate-900 mb-6 tracking-tight">
+                  How will you use <br />
+                  <span className="text-sky-600">SriGuide?</span>
+                </h1>
+                <p className="text-slate-500 text-lg max-w-2xl mx-auto font-medium">
+                  We'll customize your experience based on your role. <br className="hidden sm:block" />
+                  You can always change this later in your settings.
+                </p>
+              </div>
+
+              <RoleSelector 
+                selectedRole={userRole} 
+                onSelect={(role) => {
+                  setUserRole(role);
+                  setStep(0);
+                }} 
+              />
+
+              <div className="mt-12 flex items-center justify-center gap-8 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
+                <div className="flex items-center gap-2">
+                  <Star className="w-5 h-5 fill-current" />
+                  <span className="font-bold">4.9/5 Rating</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold">10k+ Travelers</span>
+                </div>
+              </div>
+            </motion.div>
+          ) : userRole === 'tourist' ? (
+            <motion.div
+              key="tourist-onboarding"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <OnboardingStepper 
+                steps={getSteps()} 
+                onComplete={handleComplete}
+                isStepValid={isStepValid()}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="other-roles-placeholder"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-20"
+            >
+              <h2 className="text-3xl font-black mb-4">Coming Soon</h2>
+              <p className="text-slate-500 mb-8">
+                The {userRole} onboarding flow is under construction. <br />
+                Try the Tourist role for a demo of the system.
+              </p>
+              <button 
+                onClick={() => setUserRole(null)}
+                className="px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all"
+              >
+                Go Back
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Floating Help Button */}
+      <div className="fixed bottom-6 right-6 z-40 hidden sm:block">
+        <HelpDrawer 
+          title="Onboarding Help"
+          description="Stuck? We're here to help you get started with SriGuide."
+          items={[
+            { title: "Choosing a Role", description: "Learn about the differences between Tourist, Guide, and Agency." },
+            { title: "Personalization", description: "How we use your interests to show you the best content." },
+            { title: "Privacy", description: "Your data is safe with us. Read our privacy policy." },
+          ]}
+          trigger={
+            <button className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 text-slate-900 font-bold rounded-full shadow-lg hover:bg-slate-50 transition-all group help-center-button">
+              <HelpCircle className="w-5 h-5 text-sky-600 group-hover:scale-110 transition-transform" />
+              <span>Help Center</span>
+            </button>
+          }
+        />
+      </div>
+    </main>
+  );
+}
