@@ -7,6 +7,7 @@ namespace SriGuide.Application.Trips.Queries;
 public record RecentTripDto(
     Guid Id,
     string Title,
+    string? Slug,
     string Description,
     string Location,
     DateTime? Date,
@@ -55,6 +56,7 @@ public class GetRecentTripsQueryHandler : IRequestHandler<GetRecentTripsQuery, L
         return recentTrips.Select(t => new RecentTripDto(
             t.Id,
             t.Title,
+            t.Slug,
             t.Description,
             t.Location,
             t.Date,

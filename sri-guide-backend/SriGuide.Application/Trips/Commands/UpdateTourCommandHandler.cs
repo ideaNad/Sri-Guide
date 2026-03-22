@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using SriGuide.Application.Common.Helpers;
 using SriGuide.Application.Common.Interfaces;
 using SriGuide.Domain.Entities;
 using System;
@@ -29,7 +30,11 @@ public class UpdateTourCommandHandler : IRequestHandler<UpdateTourCommand, bool>
 
         if (tour == null) return false;
 
-        tour.Title = request.Title ?? tour.Title;
+        if (request.Title != null)
+        {
+            tour.Title = request.Title;
+            tour.Slug = SlugHelper.GenerateSlug(request.Title);
+        }
         tour.Description = request.Description ?? tour.Description;
         tour.Location = request.Location ?? tour.Location;
         tour.Category = request.Category ?? tour.Category;

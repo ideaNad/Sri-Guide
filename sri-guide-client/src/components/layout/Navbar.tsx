@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import AuthModal from "@/features/auth/components/AuthModal";
 import { useAuth } from "@/providers/AuthContext";
+import apiClient from "@/services/api-client";
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -133,8 +134,16 @@ const NavItems = ({ mobile = false, textColor, navLinks, setIsMobileMenuOpen }: 
                                 <LogOut size={18} />
                                 <span>Logout</span>
                             </button>
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20">
-                                {user.fullName.charAt(0)}
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20 overflow-hidden">
+                                {user.profileImageUrl ? (
+                                    <img 
+                                        src={user.profileImageUrl.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${user.profileImageUrl}` : user.profileImageUrl} 
+                                        alt={user.fullName} 
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    user.fullName.charAt(0)
+                                )}
                             </div>
                         </div>
                     ) : (
@@ -186,6 +195,23 @@ const NavItems = ({ mobile = false, textColor, navLinks, setIsMobileMenuOpen }: 
                         <div className="w-full max-w-xs space-y-4">
                             {user ? (
                                 <>
+                                    <div className="flex flex-col items-center gap-4 mb-6">
+                                        <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold border-4 border-primary/20 overflow-hidden text-3xl shadow-xl">
+                                            {user.profileImageUrl ? (
+                                                <img 
+                                                    src={user.profileImageUrl.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${user.profileImageUrl}` : user.profileImageUrl} 
+                                                    alt={user.fullName} 
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                user.fullName.charAt(0)
+                                            )}
+                                        </div>
+                                        <div className="text-center">
+                                            <h3 className="text-2xl font-black text-black uppercase tracking-tight">{user.fullName}</h3>
+                                            <p className="text-sm font-bold text-gray-400">{user.email}</p>
+                                        </div>
+                                    </div>
                                     <Link
                                         href={getDashboardHref()}
                                         className="w-full block text-center py-5 bg-gray-100 text-black rounded-full text-lg font-black uppercase tracking-widest"

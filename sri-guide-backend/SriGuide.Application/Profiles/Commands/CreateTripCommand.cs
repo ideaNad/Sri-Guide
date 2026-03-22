@@ -1,4 +1,5 @@
 using MediatR;
+using SriGuide.Application.Common.Helpers;
 using SriGuide.Application.Common.Interfaces;
 using SriGuide.Domain.Entities;
 
@@ -22,6 +23,7 @@ public class CreateTripCommandHandler : IRequestHandler<CreateTripCommand, Guid>
             GuideId = request.GuideId,
             AgencyId = request.AgencyId,
             Title = request.Title,
+            Slug = SlugHelper.GenerateSlug(request.Title),
             Description = request.Description,
             Location = request.Location,
             Date = request.Date.HasValue ? DateTime.SpecifyKind(request.Date.Value, DateTimeKind.Utc) : null

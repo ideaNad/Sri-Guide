@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using SriGuide.Application.Common.Helpers;
 using SriGuide.Application.Common.Interfaces;
 
 namespace SriGuide.Application.Profiles.Commands;
@@ -24,7 +25,11 @@ public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfile
         var user = await _context.Users.FindAsync(new object[] { request.UserId }, cancellationToken);
         if (user == null) return false;
 
-        user.FullName = request.FullName ?? user.FullName;
+        if (request.FullName != null)
+        {
+            user.FullName = request.FullName;
+            user.Slug = SlugHelper.GenerateSlug(request.FullName);
+        }
         user.ProfileImageUrl = request.ProfileImageUrl ?? user.ProfileImageUrl;
 
         await _context.SaveChangesAsync(cancellationToken);

@@ -9,6 +9,7 @@ namespace SriGuide.Application.Discovery.Queries;
 public record DiscoveryItemDto(
     Guid Id,
     string Title,
+    string? Slug,
     string? Subtitle,
     string Image,
     string? Location,
@@ -131,6 +132,7 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
                 results.Add(new DiscoveryItemDto(
                     t.Id,
                     t.Title,
+                    t.Slug,
                     t.Agency?.CompanyName ?? "Official Tour",
                     firstImage != null && !firstImage.StartsWith("/") && !firstImage.StartsWith("http") 
                         ? "/" + firstImage 
@@ -197,6 +199,7 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
                 results.Add(new DiscoveryItemDto(
                     g.UserId,
                     g.User.FullName,
+                    g.User.Slug,
                     g.Specialties != null && g.Specialties.Any() ? string.Join(", ", g.Specialties) : (g.Bio != null && g.Bio.Length > 60 ? g.Bio.Substring(0, 57) + "..." : g.Bio) ?? "Professional Local Guide",
                     g.User.ProfileImageUrl != null && !g.User.ProfileImageUrl.StartsWith("/") && !g.User.ProfileImageUrl.StartsWith("http") 
                         ? "/" + g.User.ProfileImageUrl 
@@ -231,6 +234,7 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
                 .Select(a => new DiscoveryItemDto(
                     a.Id,
                     a.CompanyName,
+                    a.Slug,
                     "Official Travel Agency",
                     a.User.ProfileImageUrl != null && !a.User.ProfileImageUrl.StartsWith("/") && !a.User.ProfileImageUrl.StartsWith("http") 
                         ? "/" + a.User.ProfileImageUrl 

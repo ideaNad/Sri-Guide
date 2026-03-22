@@ -20,6 +20,7 @@ public interface IApplicationDbContext
     DbSet<TourLike> TourLikes { get; }
     DbSet<Feedback> Feedbacks { get; }
     DbSet<Inquiry> Inquiries { get; }
+    DbSet<PopularPlace> PopularPlaces { get; }
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

@@ -41,6 +41,7 @@ public class GetAgencyTripsQueryHandler : IRequestHandler<GetAgencyTripsQuery, L
         {
             Id = t.Id,
             Title = t.Title,
+            Slug = t.Slug,
             Location = t.Location,
             Price = null,
             Status = t.IsActive ? "Active" : "Hidden",

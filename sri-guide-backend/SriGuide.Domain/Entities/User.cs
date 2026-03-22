@@ -14,6 +14,7 @@ public class User : BaseEntity
     public bool IsVerified { get; set; }
     public string? PasswordResetToken { get; set; }
     public DateTime? ResetTokenExpires { get; set; }
+    public string? Slug { get; set; }
 
     public GuideProfile? GuideProfile { get; set; }
     public AgencyProfile? AgencyProfile { get; set; }

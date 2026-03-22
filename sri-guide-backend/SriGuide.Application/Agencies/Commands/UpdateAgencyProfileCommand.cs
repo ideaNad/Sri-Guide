@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using SriGuide.Application.Common.Helpers;
 using SriGuide.Application.Common.Interfaces;
 
 namespace SriGuide.Application.Agencies.Commands;
@@ -35,6 +36,7 @@ public class UpdateAgencyProfileCommandHandler : IRequestHandler<UpdateAgencyPro
         if (agency == null) throw new Exception("Agency profile not found");
 
         agency.CompanyName = request.CompanyName;
+        agency.Slug = SlugHelper.GenerateSlug(request.CompanyName);
         agency.Bio = request.Bio;
         agency.Phone = request.Phone;
         agency.WhatsApp = request.WhatsApp;

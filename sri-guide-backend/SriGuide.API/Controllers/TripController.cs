@@ -23,7 +23,7 @@ public class TripController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<TripDetailDto>> GetTripById(Guid id)
+    public async Task<ActionResult<TripDetailDto>> GetTripById(string id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         Guid? currentUserId = userId != null ? Guid.Parse(userId) : null;

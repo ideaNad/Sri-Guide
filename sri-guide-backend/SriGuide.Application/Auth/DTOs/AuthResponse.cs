@@ -7,5 +7,6 @@ public record AuthResponse(
     Guid Id,
     string FullName,
     string Email,
-    UserRole Role
+    UserRole Role,
+    string? ProfileImageUrl
 );

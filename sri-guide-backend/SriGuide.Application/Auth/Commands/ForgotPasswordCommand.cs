@@ -36,6 +36,11 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
         await _context.SaveChangesAsync(cancellationToken);
 
         // Send the email
-        await _emailService.SendPasswordResetEmailAsync(user.Email, token);
+        await _emailService.SendPasswordResetEmailAsync(
+            user.Email, 
+            user.FullName, 
+            token, 
+            user.ResetTokenExpires.Value
+        );
     }
 }

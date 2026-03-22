@@ -1,5 +1,10 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using SriGuide.Application.Common.Helpers;
+using SriGuide.Application.Common.Interfaces;
+using SriGuide.Domain.Entities;
 using SriGuide.Application.Discovery.Queries;
 using SriGuide.Application.Trips.Queries;
 
@@ -10,10 +15,42 @@ namespace SriGuide.API.Controllers;
 public class DiscoveryController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IApplicationDbContext _context;
 
-    public DiscoveryController(IMediator mediator)
+    public DiscoveryController(IMediator mediator, IApplicationDbContext context)
     {
         _mediator = mediator;
+        _context = context;
+    }
+
+    [HttpPost("update-slugs")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateSlugs()
+    {
+        var users = await _context.Users.Where(u => u.Slug == null).ToListAsync();
+        foreach (var u in users) u.Slug = SlugHelper.GenerateSlug(u.FullName);
+
+        var tours = await _context.Tours.Where(t => t.Slug == null).ToListAsync();
+        foreach (var t in tours) t.Slug = SlugHelper.GenerateSlug(t.Title);
+
+        var trips = await _context.Trips.Where(t => t.Slug == null).ToListAsync();
+        foreach (var t in trips) t.Slug = SlugHelper.GenerateSlug(t.Title);
+
+        var places = await _context.PopularPlaces.Where(p => p.Slug == null).ToListAsync();
+        foreach (var p in places) p.Slug = SlugHelper.GenerateSlug(p.Title);
+
+        var agencies = await _context.AgencyProfiles.Where(a => a.Slug == null).ToListAsync();
+        foreach (var a in agencies) a.Slug = SlugHelper.GenerateSlug(a.CompanyName);
+
+        await _context.SaveChangesAsync(CancellationToken.None);
+        return Ok("Slugs updated");
+    }
+
+    [HttpGet("all-slugs")]
+    public async Task<ActionResult<AllSlugsDto>> GetAllSlugs()
+    {
+        var result = await _mediator.Send(new GetAllSlugsQuery());
+        return Ok(result);
     }
 
     [HttpGet]

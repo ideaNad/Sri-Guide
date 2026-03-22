@@ -40,6 +40,7 @@ public class GetPopularToursQueryHandler : IRequestHandler<GetPopularToursQuery,
         return popularTours.Select(t => new RecentTripDto(
             t.Id,
             t.Title,
+            t.Slug,
             t.Description,
             t.Location,
             null, // Date

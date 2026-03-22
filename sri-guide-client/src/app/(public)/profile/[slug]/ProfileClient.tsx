@@ -9,13 +9,11 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import apiClient from "@/services/api-client";
-import { useRouter, useParams, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/providers/AuthContext";
 import Link from "next/link";
 import AuthModal from "@/features/auth/components/AuthModal";
 import Card from "@/components/ui/Card";
-
-export const dynamic = "force-dynamic";
 
 interface Review {
     id: string;
@@ -27,9 +25,10 @@ interface Review {
     tripTitle?: string;
 }
 
-interface PublicProfile {
+export interface PublicProfile {
     id: string;
     fullName: string;
+    slug?: string;
     bio: string;
     specialties: string[];
     operatingAreas: string[];
@@ -54,6 +53,7 @@ interface PublicProfile {
     agencyTours: {
         id: string;
         title: string;
+        slug?: string;
         primaryImageUrl: string;
         date?: string;
         description?: string;
@@ -66,6 +66,7 @@ interface PublicProfile {
     recentTrips: {
         id: string;
         title: string;
+        slug?: string;
         primaryImageUrl: string;
         date?: string;
         description?: string;
@@ -78,7 +79,9 @@ interface PublicProfile {
     guides?: {
         id: string;
         name: string;
+        slug?: string;
         role: string;
+        profileImageUrl?: string;
         rating: number;
         location: string;
         status: string;
@@ -86,16 +89,15 @@ interface PublicProfile {
     }[];
 }
 
-export default function PublicProfilePage() {
-    const { id } = useParams();
+export default function ProfileClient({ slug, initialData }: { slug: string, initialData?: PublicProfile }) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { user, login } = useAuth();
-    const [profile, setProfile] = useState<PublicProfile | null>(null);
+    const [profile, setProfile] = useState<PublicProfile | null>(initialData || null);
 
     const isAgencyPath = searchParams.get('type') === 'agency';
     const [reviews, setReviews] = useState<Review[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!initialData);
     const [reviewFormOpen, setReviewFormOpen] = useState(false);
     const [reviewRating, setReviewRating] = useState(5);
     const [reviewComment, setReviewComment] = useState("");
@@ -126,7 +128,8 @@ export default function PublicProfilePage() {
 
     const fetchReviews = async () => {
         try {
-            const response = await apiClient.get<Review[]>(`/review/guide/${id}`);
+            // Using Slug/ID here
+            const response = await apiClient.get<Review[]>(`/review/guide/${profile?.id || slug}`);
             setReviews(response.data || []);
         } catch (error) {
             console.error("Failed to fetch public reviews", error);
@@ -136,8 +139,9 @@ export default function PublicProfilePage() {
 
     useEffect(() => {
         const fetchProfile = async () => {
+            if (initialData) return;
             try {
-                const response = await apiClient.get(`/profile/public/${id}`);
+                const response = await apiClient.get(`/profile/public/${slug}`);
                 setProfile(response.data as PublicProfile);
             } catch (error) {
                 console.error("Failed to fetch public profile", error);
@@ -146,11 +150,16 @@ export default function PublicProfilePage() {
             }
         };
 
-        if (id) {
+        if (slug && !initialData) {
             fetchProfile();
+        }
+    }, [slug, initialData]);
+
+    useEffect(() => {
+        if (profile?.id) {
             fetchReviews();
         }
-    }, [id]);
+    }, [profile?.id]);
 
     const getImageUrl = (url?: string) => {
         if (!url) return null;
@@ -185,7 +194,7 @@ export default function PublicProfilePage() {
     }
 
     return (
-        <div className="bg-white min-h-screen font-sans text-secondary pb-32 overflow-x-hidden">
+        <div className="bg-white min-h-screen font-sans text-secondary pb-32 overflow-x-hidden pt-12">
 
             {/* HERO SECTION */}
             <div className="bg-primary/5 pt-32 pb-24 relative overflow-hidden border-b border-gray-100">
@@ -424,22 +433,7 @@ export default function PublicProfilePage() {
                             </div>
 
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-4 mx-auto lg:mx-0">
-                                {/* Contact buttons hidden for now
-                                {user ? (
-                                    <button 
-                                        onClick={() => document.getElementById('contact-section')?.scrollIntoView({ behavior: 'smooth' })}
-                                        className="flex-1 sm:flex-none flex items-center justify-center bg-primary text-white text-center px-8 py-4 font-bold text-sm rounded-xl shadow-lg shadow-primary/20 hover:bg-secondary hover:-translate-y-0.5 transition-all"
-                                    >
-                                        <MessageCircle className="w-5 h-5 mr-2" />
-                                        Contact Guide
-                                    </button>
-                                ) : (
-                                    <button onClick={() => setIsAuthModalOpen(true)} className="flex-1 sm:flex-none flex items-center justify-center bg-gray-900 text-white text-center px-8 py-4 font-bold text-sm rounded-xl shadow-lg shadow-gray-900/20 hover:bg-secondary hover:-translate-y-0.5 transition-all">
-                                        <MessageCircle className="w-5 h-5 mr-2" />
-                                        Log In to Contact
-                                    </button>
-                                )}
-                                */}
+                                {/* Contact buttons hidden for now */}
                             </div>
                         </motion.div>
 
@@ -484,6 +478,7 @@ export default function PublicProfilePage() {
                                     <motion.div key={trip.id} whileHover={{ y: -5 }}>
                                         <Card 
                                             id={trip.id}
+                                            slug={trip.slug}
                                             title={trip.title}
                                             image={trip.primaryImageUrl || ""}
                                             location={trip.location}
@@ -523,6 +518,7 @@ export default function PublicProfilePage() {
                                 <motion.div key={trip.id} whileHover={{ y: -5 }}>
                                     <Card 
                                         id={trip.id}
+                                        slug={trip.slug}
                                         title={trip.title}
                                         image={trip.primaryImageUrl || ""}
                                         location={trip.location}
@@ -556,10 +552,10 @@ export default function PublicProfilePage() {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                             {profile.guides.map(guide => (
-                                <Link href={`/profile/${guide.id}`} key={guide.id} className="group bg-white border border-gray-100 rounded-3xl p-6 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center">
+                                <Link href={`/profile/${guide.slug || guide.id}`} key={guide.id} className="group bg-white border border-gray-100 rounded-3xl p-6 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center">
                                     <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-4 border-gray-50 group-hover:border-primary/20 transition-colors">
                                         <img 
-                                            src={`https://ui-avatars.com/api/?name=${guide.name}&background=F5F4F0&color=2563eb`} 
+                                            src={guide.profileImageUrl ? getImageUrl(guide.profileImageUrl) || '' : `https://ui-avatars.com/api/?name=${guide.name}&background=F5F4F0&color=2563eb`} 
                                             alt={guide.name}
                                             className="w-full h-full object-cover"
                                         />
@@ -661,7 +657,7 @@ export default function PublicProfilePage() {
                                                 setSubmittingReview(true);
                                                 try {
                                                     await apiClient.post('/review', {
-                                                        targetId: id as string,
+                                                        targetId: profile?.id || slug,
                                                         targetType: 'Guide',
                                                         rating: reviewRating,
                                                         comment: reviewComment
@@ -749,4 +745,3 @@ export default function PublicProfilePage() {
         </div>
     );
 }
-

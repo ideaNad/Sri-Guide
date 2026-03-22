@@ -68,7 +68,7 @@ public class ProfileController : ControllerBase
 
     [HttpGet("public/{id}")]
     [AllowAnonymous]
-    public async Task<ActionResult<PublicProfileDto>> GetDetailedPublicProfile(Guid id)
+    public async Task<ActionResult<PublicProfileDto>> GetDetailedPublicProfile(string id)
     {
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         Guid? userIdObj = !string.IsNullOrEmpty(currentUserId) ? Guid.Parse(currentUserId) : null;

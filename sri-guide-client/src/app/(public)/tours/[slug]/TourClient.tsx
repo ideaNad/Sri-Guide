@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { useParams } from "next/navigation";
-import { POPULAR_TOURS, REVIEWS } from "@/data/mock-data";
 import {
     Star, MapPin, Clock, Users, ShieldCheck,
     Calendar, Info, ChevronRight, Check, Plus,
@@ -14,6 +12,7 @@ import Card from "@/components/ui/Card";
 import apiClient from "@/services/api-client";
 import { useAuth } from "@/providers/AuthContext";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 interface ItineraryStep {
     time: string;
@@ -26,6 +25,7 @@ interface ItineraryStep {
  
 interface TripDetail {
     id: string;
+    slug?: string;
     title: string;
     description: string;
     location: string;
@@ -34,6 +34,7 @@ interface TripDetail {
     guideId: string;
     guideName: string;
     guideImageUrl?: string;
+    guideSlug?: string;
     guideRating: number;
     guideTotalReviews: number;
     likeCount: number;
@@ -41,11 +42,24 @@ interface TripDetail {
     itinerary?: ItineraryStep[];
 }
 
-const TourDetailPage = () => {
-    const { id } = useParams();
+export default function TourClient({ slug, initialData }: { slug: string, initialData?: TripDetail }) {
     const { user } = useAuth();
-    const [tour, setTour] = useState<TripDetail | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [tour, setTour] = useState<TripDetail | null>(() => {
+        if (!initialData) return null;
+        const data: any = initialData;
+        return {
+            ...data,
+            images: data.images || [],
+            guideId: data.guideId || data.agencyId || "",
+            guideName: data.guideName || data.agencyName || "Sri Lankan Agency",
+            guideImageUrl: data.guideImageUrl || data.agencyImageUrl,
+            guideSlug: data.guideSlug || data.agencySlug || data.slug || data.Slug,
+            guideRating: data.guideRating || 4.8,
+            guideTotalReviews: data.guideTotalReviews || 12,
+            itinerary: data.itinerary || []
+        } as TripDetail;
+    });
+    const [loading, setLoading] = useState(!initialData);
     const [activeTab, setActiveTab] = useState("overview");
     const [bookingDate, setBookingDate] = useState("");
     const [guests, setGuests] = useState(1);
@@ -53,8 +67,9 @@ const TourDetailPage = () => {
     const [bookingSuccess, setBookingSuccess] = useState(false);
 
     const fetchTour = async () => {
+        if (initialData) return;
         try {
-            const response = await apiClient.get<any>(`/Tours/${id}`);
+            const response = await apiClient.get<any>(`/Tours/${slug}`);
             const data = response.data;
             const mappedData: TripDetail = {
                 ...data,
@@ -62,6 +77,7 @@ const TourDetailPage = () => {
                 guideId: data.guideId || data.agencyId,
                 guideName: data.guideName || data.agencyName || "Sri Lankan Agency",
                 guideImageUrl: data.guideImageUrl || data.agencyImageUrl,
+                guideSlug: data.guideSlug || data.agencySlug || data.slug || data.Slug,
                 guideRating: data.guideRating || 4.8,
                 guideTotalReviews: data.guideTotalReviews || 12,
                 itinerary: data.itinerary || []
@@ -75,13 +91,13 @@ const TourDetailPage = () => {
     };
 
     React.useEffect(() => {
-        if (id) fetchTour();
-    }, [id]);
+        if (slug) fetchTour();
+    }, [slug, initialData]);
 
     const handleToggleLike = async () => {
-        if (!user) return; // Should ideally show login modal
+        if (!user) return;
         try {
-            const response = await apiClient.post<{ liked: boolean }>(`/trip/${id}/toggle-like`);
+            const response = await apiClient.post<{ liked: boolean }>(`/trip/${tour?.id || slug}/toggle-like`);
             if (tour) {
                 setTour({
                     ...tour,
@@ -91,35 +107,6 @@ const TourDetailPage = () => {
             }
         } catch (error) {
             console.error("Failed to toggle like", error);
-        }
-    };
-
-    const handleBooking = async () => {
-        if (!user) {
-            alert("Please log in to book a tour.");
-            return;
-        }
-
-        if (!bookingDate) {
-            alert("Please select a date for your tour.");
-            return;
-        }
-
-        setIsBooking(true);
-        try {
-            await apiClient.post("/bookings", {
-                tourId: id,
-                bookingDate: bookingDate,
-                guests: guests,
-                notes: ""
-            });
-            setBookingSuccess(true);
-            alert("Booking request sent successfully! The agency will contact you soon.");
-        } catch (error) {
-            console.error("Failed to create booking", error);
-            alert("Failed to create booking. Please try again.");
-        } finally {
-            setIsBooking(false);
         }
     };
 
@@ -139,7 +126,7 @@ const TourDetailPage = () => {
     );
 
     return (
-        <div className="pb-24 bg-white">
+        <div className="pb-32 bg-white pt-12">
             {/* Hero Section */}
             <section className="relative h-[70vh] w-full overflow-hidden">
                 <img
@@ -323,29 +310,7 @@ const TourDetailPage = () => {
                                     </div>
 
                                     <div className="grid grid-cols-1 gap-8">
-                                        {REVIEWS.map(review => (
-                                            <div key={review.id} className="p-10 bg-white border border-gray-100 flex gap-8 shadow-sm hover:shadow-2xl transition-all">
-                                                <div className="w-20 h-20 bg-gray-200 flex-shrink-0 overflow-hidden border border-gray-100">
-                                                    <img src={`https://i.pravatar.cc/150?u=${review.user}`} alt={review.user} className="grayscale hover:grayscale-0 transition-all" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="flex justify-between items-start mb-4">
-                                                        <div>
-                                                            <h4 className="font-bold text-gray-900">{review.user}</h4>
-                                                            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">{review.country} ΓÇó {review.date}</p>
-                                                        </div>
-                                                        <div className="flex text-yellow-400">
-                                                            {[...Array(review.rating)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
-                                                        </div>
-                                                    </div>
-                                                    <p className="text-gray-600 leading-relaxed italic">&quot;{review.text}&quot;</p>
-                                                    <div className="mt-4 flex items-center text-primary text-xs font-bold cursor-pointer hover:underline">
-                                                        <MessageCircle className="w-4 h-4 mr-2" />
-                                                        Reply
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
+                                        <p className="text-gray-500 italic">No reviews yet for this tour.</p>
                                     </div>
                                 </div>
                             )}
@@ -363,7 +328,7 @@ const TourDetailPage = () => {
                                         <span className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] block mb-2">Total Likes</span>
                                         <div className="text-4xl font-black">{tour.likeCount} <span className="text-lg text-white/40 font-normal">Likes</span></div>
                                     </div>
-                                {/* Booking feature disabled for MVP */}
+                                </div>
                                 <div className="space-y-4 pt-10 border-t border-white/10">
                                     <div className="flex items-center text-xs text-white/60">
                                         <ShieldCheck className="w-4 h-4 mr-3 text-secondary" />
@@ -375,9 +340,9 @@ const TourDetailPage = () => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                            {/* Guide Profile Promo */}                            <Link href={`/profile/${tour.guideId}`} className="bg-white p-8 border border-gray-100 shadow-sm flex items-center gap-6 group hover:shadow-2xl transition-all cursor-pointer">
+                            {/* Guide Profile Promo */}
+                            <Link href={`/profile/${tour.guideSlug || tour.guideId}`} className="bg-white p-8 border border-gray-100 shadow-sm flex items-center gap-6 group hover:shadow-2xl transition-all cursor-pointer">
                                 <div className="w-24 h-24 overflow-hidden shadow-xl border-4 border-white">
                                     <img 
                                         src={tour.guideImageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${tour.guideImageUrl}` : `https://ui-avatars.com/api/?name=${tour.guideName}&background=FFCC00&color=000&bold=true`} 
@@ -398,23 +363,6 @@ const TourDetailPage = () => {
                     </aside>
                 </div>
             </div>
-
-            {/* Similar Tours */}
-            <section className="mt-32 pt-24 bg-gray-50/50">
-                <div className="container mx-auto px-4">
-                    <SectionHeader
-                        title="Others also explored"
-                        subtitle="Complete your Sri Lankan bucket list with these experiences."
-                    />
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                        {POPULAR_TOURS.slice(0, 4).map(t => (
-                            <Card key={t.id} {...t} type="tour" />
-                        ))}
-                    </div>
-                </div>
-            </section>
         </div>
     );
-};
-
-export default TourDetailPage;
+}

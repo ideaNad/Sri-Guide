@@ -26,6 +26,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<TourLike> TourLikes => Set<TourLike>();
     public DbSet<Feedback> Feedbacks => Set<Feedback>();
     public DbSet<Inquiry> Inquiries => Set<Inquiry>();
+    public DbSet<PopularPlace> PopularPlaces => Set<PopularPlace>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -145,6 +146,15 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .WithMany()
             .HasForeignKey(tl => tl.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PopularPlace>()
+            .Property(p => p.Title)
+            .IsRequired()
+            .HasMaxLength(200);
+
+        modelBuilder.Entity<PopularPlace>()
+            .Property(p => p.Description)
+            .IsRequired();
 
         base.OnModelCreating(modelBuilder);
     }

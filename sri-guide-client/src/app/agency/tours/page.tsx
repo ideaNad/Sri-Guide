@@ -24,6 +24,7 @@ interface Tour {
     date?: string;
     rating?: number;
     reviews?: number;
+    slug?: string;
 }
 
 export default function AgencyToursPage() {
@@ -183,7 +184,7 @@ export default function AgencyToursPage() {
                                         {/* Quick Actions (Hover) */}
                                         <div className="absolute top-6 right-6 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button 
-                                                onClick={() => router.push(`/agency/tours/edit/${tour.id}`)}
+                                                onClick={() => router.push(`/agency/tours/edit/${tour.slug || tour.id}`)}
                                                 className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-gray-700 hover:bg-[#3061E3] hover:text-white transition-all shadow-lg"
                                             >
                                                 <Edit3 size={16} />

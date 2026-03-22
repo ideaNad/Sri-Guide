@@ -1,5 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using SriGuide.Domain.Enums;
+using SriGuide.Application.Common.Helpers;
 using SriGuide.Application.Common.Interfaces;
 
 namespace SriGuide.Application.Trips.Commands;
@@ -26,13 +28,14 @@ public class UpdateTripCommandHandler : IRequestHandler<UpdateTripCommand, bool>
     public async Task<bool> Handle(UpdateTripCommand request, CancellationToken cancellationToken)
     {
         var trip = await _context.Trips
-            .FirstOrDefaultAsync(t => t.Id == request.TripId && 
-                (request.GuideId != null ? t.GuideId == request.GuideId : t.AgencyId == request.AgencyId), 
+            .FirstOrDefaultAsync(t => t.Id == request.TripId &&
+                (request.GuideId != null ? t.GuideId == request.GuideId : t.AgencyId == request.AgencyId),
                 cancellationToken);
 
         if (trip == null) return false;
 
         trip.Title = request.Title;
+        trip.Slug = SlugHelper.GenerateSlug(request.Title);
         trip.Location = request.Location;
         trip.Description = request.Description;
         trip.Date = request.Date.HasValue ? DateTime.SpecifyKind(request.Date.Value, DateTimeKind.Utc) : null;

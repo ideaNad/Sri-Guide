@@ -31,6 +31,7 @@ interface DiscoveryItem {
   isLegit?: boolean;
   tags: string[];
   agencyName?: string;
+  slug?: string;
 }
 
 interface PaginatedResult<T> {
@@ -57,6 +58,16 @@ interface RecentTrip {
   mapLink?: string;
   isAgencyTour?: boolean;
   price?: number;
+  slug?: string;
+}
+
+interface PopularPlace {
+    id: string;
+    title: string;
+    description: string;
+    imageUrl: string;
+    viewCount: number;
+    slug?: string;
 }
 
 export default function Home() {
@@ -69,6 +80,8 @@ export default function Home() {
   const [loadingAgencies, setLoadingAgencies] = useState(true);
   const [loadingTrips, setLoadingTrips] = useState(true);
   const [loadingPopular, setLoadingPopular] = useState(true);
+  const [popularPlaces, setPopularPlaces] = useState<PopularPlace[]>([]);
+  const [loadingPlaces, setLoadingPlaces] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => {
@@ -116,10 +129,22 @@ export default function Home() {
       }
     };
 
+    const fetchPopularPlaces = async () => {
+      try {
+        const response = await apiClient.get<PopularPlace[]>("/places");
+        setPopularPlaces(response.data);
+      } catch (error) {
+        console.error("Failed to fetch popular places", error);
+      } finally {
+        setLoadingPlaces(false);
+      }
+    };
+
     fetchTopGuides();
     fetchTopAgencies();
     fetchRecentTrips();
     fetchPopularTours();
+    fetchPopularPlaces();
   }, []);
 
   const handleToggleLike = async (id: string, type: string) => {
@@ -199,6 +224,7 @@ export default function Home() {
                   >
                     <Card
                       id={tour.id}
+                      slug={tour.slug}
                       title={tour.title}
                       image={tour.imageUrl || ""}
                       location={tour.location}
@@ -237,27 +263,42 @@ export default function Home() {
             />
 
             <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-6 h-[800px] md:h-[600px]">
-              {POPULAR_PLACES.map((place, idx) => (
-                <motion.div
-                  key={place.id}
-                  whileHover={{ scale: 0.99 }}
-                  className={`relative overflow-hidden rounded-3xl group shadow-lg ${idx === 0 ? "md:col-span-2 md:row-span-2" :
-                    idx === 1 ? "md:col-span-2 md:row-span-1" :
-                      "md:col-span-1 md:row-span-1"
-                    }`}
-                >
-                  <img
-                    src={place.image || "https://placehold.co/600x400?text=Destination"}
-                    alt={place.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="absolute bottom-6 left-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform">
-                    <p className="text-xs font-bold uppercase tracking-widest text-primary mb-1">{place.region}</p>
-                    <h3 className="text-2xl font-bold">{place.name}</h3>
-                  </div>
-                </motion.div>
-              ))}
+              {loadingPlaces ? (
+                Array(4).fill(0).map((_, i) => (
+                  <div key={i} className="h-full bg-gray-100 animate-pulse rounded-3xl" />
+                ))
+              ) : popularPlaces.length > 0 ? (
+                popularPlaces.slice(0, 4).map((place, idx) => (
+                  <Link
+                    href={`/places/${place.slug || place.id}`}
+                    key={place.id}
+                    className={`relative overflow-hidden rounded-3xl group shadow-lg ${idx === 0 ? "md:col-span-2 md:row-span-2" :
+                      idx === 1 ? "md:col-span-2 md:row-span-1" :
+                        "md:col-span-1 md:row-span-1"
+                      }`}
+                  >
+                    <motion.div
+                      whileHover={{ scale: 0.99 }}
+                      className="w-full h-full"
+                    >
+                      <img
+                        src={place.imageUrl.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${place.imageUrl}` : place.imageUrl}
+                        alt={place.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute bottom-6 left-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-2 italic">Destination</p>
+                        <h3 className="text-2xl font-black italic uppercase tracking-tighter">{place.title}</h3>
+                      </div>
+                    </motion.div>
+                  </Link>
+                ))
+              ) : (
+                <div className="col-span-4 text-center py-20 border-2 border-dashed border-gray-100 rounded-[3rem]">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">No featured places yet</p>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -292,6 +333,7 @@ export default function Home() {
                   >
                     <Card
                       id={trip.id}
+                      slug={trip.slug}
                       title={trip.title}
                       image={trip.imageUrl || ""}
                       location={trip.location}
@@ -380,7 +422,7 @@ export default function Home() {
                       )}
                     </div>
                     <Link
-                      href={`/profile/${guide.id}`}
+                      href={`/profile/${guide.slug || guide.id}`}
                       className="w-full py-3.5 bg-primary/10 text-primary font-bold text-sm rounded-xl hover:bg-primary hover:text-white transition-colors text-center"
                     >
                       View Profile
@@ -435,7 +477,7 @@ export default function Home() {
                       Connecting you to authentic Sri Lankan adventures with professional excellence.
                     </p>
                     <Link
-                      href={`/profile/${agency.id}?type=agency`}
+                      href={`/profile/${agency.slug || agency.id}?type=agency`}
                       className="w-full py-4 bg-gray-900 text-white font-bold text-xs uppercase tracking-widest rounded-2xl hover:bg-blue-600 transition-colors shadow-lg shadow-gray-200"
                     >
                       View Agency Profile

@@ -11,6 +11,7 @@ public class Trip : BaseEntity
     public AgencyProfile? Agency { get; set; }
 
     public string Title { get; set; } = string.Empty;
+    public string? Slug { get; set; }
     public string Description { get; set; } = string.Empty;
     public string Location { get; set; } = string.Empty;
     public DateTime? Date { get; set; }

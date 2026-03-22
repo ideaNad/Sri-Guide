@@ -7,7 +7,7 @@ using SriGuide.Domain.Enums;
 
 namespace SriGuide.Application.Profiles.Queries;
 
-public record GetPublicProfileQuery(Guid UserId, Guid? CurrentUserId = null) : IRequest<PublicProfileDto>;
+public record GetPublicProfileQuery(string IdOrSlug, Guid? CurrentUserId = null) : IRequest<PublicProfileDto>;
 
 public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuery, PublicProfileDto>
 {
@@ -20,10 +20,12 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
 
     public async Task<PublicProfileDto> Handle(GetPublicProfileQuery request, CancellationToken cancellationToken)
     {
+        var isGuid = Guid.TryParse(request.IdOrSlug, out var userId);
+
         var user = await _context.Users
             .Include(u => u.GuideProfile)
             .Include(u => u.AgencyProfile)
-            .FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken);
+            .FirstOrDefaultAsync(u => isGuid ? u.Id == userId : u.Slug == request.IdOrSlug, cancellationToken);
 
         AgencyProfile? agencyProfile = user?.AgencyProfile;
         GuideProfile? guideProfile = user?.GuideProfile;
@@ -35,7 +37,7 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
             agencyProfile = await _context.AgencyProfiles
                 .Include(a => a.User)
                     .ThenInclude(u => u!.GuideProfile)
-                .FirstOrDefaultAsync(a => a.Id == request.UserId, cancellationToken);
+                .FirstOrDefaultAsync(a => isGuid ? a.Id == userId : a.Slug == request.IdOrSlug, cancellationToken);
 
             if (agencyProfile != null)
             {
@@ -72,7 +74,7 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
             // Fetch guides for the agency
             var guidesRaw = await _context.GuideProfiles
                 .Include(g => g.User)
-                .Where(g => g.AgencyId == agencyProfile!.Id)
+                .Where(g => g.AgencyId == agencyProfile!.Id && g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted)
                 .ToListAsync(cancellationToken);
 
             guideIdsForAgency = guidesRaw.Select(g => g.UserId).ToList();
@@ -85,7 +87,10 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
                 Rating = 4.8, // Fallback
                 Location = g.OperatingAreas?.FirstOrDefault() ?? "Sri Lanka",
                 Status = "Active",
-                TripCount = 0 // Needs real count if possible
+                TripCount = 0, // Needs real count if possible
+                ProfileImageUrl = g.User!.ProfileImageUrl != null && !g.User.ProfileImageUrl.StartsWith("/") && !g.User.ProfileImageUrl.StartsWith("http") 
+                    ? "/" + g.User.ProfileImageUrl 
+                    : g.User.ProfileImageUrl
             }).ToList();
         }
 
@@ -144,6 +149,7 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
             return new PublicTripDto(
                 t.Id,
                 t.Title,
+                t.Slug,
                 t.MainImageUrl ?? t.Images.OrderBy(i => i.CreatedAt).Select(i => i.ImageUrl).FirstOrDefault() ?? "",
                 null,
                 t.Description,
@@ -163,6 +169,7 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
             return new PublicTripDto(
                 t.Id,
                 t.Title,
+                t.Slug,
                 t.Images.OrderBy(i => i.CreatedAt).Select(i => i.ImageUrl != null && !i.ImageUrl.StartsWith("/") && !i.ImageUrl.Contains("://") ? "/" + i.ImageUrl : i.ImageUrl).FirstOrDefault() ?? "",
                 t.Date,
                 t.Description,
@@ -177,6 +184,7 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
         return new PublicProfileDto(
             user.Id,
             isAgency ? agencyProfile!.CompanyName : user.FullName,
+            isAgency ? agencyProfile!.Slug : user.Slug,
             user.ProfileImageUrl != null && !user.ProfileImageUrl.StartsWith("/") && !user.ProfileImageUrl.StartsWith("http") 
                 ? "/" + user.ProfileImageUrl 
                 : user.ProfileImageUrl,

@@ -1,0 +1,6 @@
+C:\Sources\SriGuide\Sri-Guide\sri-guide-client\src\app\(public)\adventures\[slug]
+C:\Sources\SriGuide\Sri-Guide\sri-guide-client\src\app\(public)\places\[slug]
+C:\Sources\SriGuide\Sri-Guide\sri-guide-client\src\app\(public)\profile\[slug]
+C:\Sources\SriGuide\Sri-Guide\sri-guide-client\src\app\(public)\tours\[slug]
+C:\Sources\SriGuide\Sri-Guide\sri-guide-client\src\app\agency\tours\[slug]
+C:\Sources\SriGuide\Sri-Guide\sri-guide-client\src\app\agency\tours\edit\[slug]

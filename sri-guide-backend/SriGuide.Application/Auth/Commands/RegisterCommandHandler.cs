@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SriGuide.Application.Auth.DTOs;
+using SriGuide.Application.Common.Helpers;
 using SriGuide.Application.Common.Interfaces;
 using SriGuide.Domain.Entities;
 using SriGuide.Domain.Enums;
@@ -39,7 +40,8 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
             Email = request.Email,
             PasswordHash = BC.HashPassword(request.Password),
             Role = request.Role,
-            IsVerified = false
+            IsVerified = false,
+            Slug = SlugHelper.GenerateSlug(request.FullName)
         };
 
         _context.Users.Add(user);
@@ -56,6 +58,6 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
 
         var token = _jwtService.GenerateToken(user);
 
-        return new AuthResponse(token, user.Id, user.FullName, user.Email, user.Role);
+        return new AuthResponse(token, user.Id, user.FullName, user.Email, user.Role, user.ProfileImageUrl);
     }
 }

@@ -1,8 +1,9 @@
 namespace SriGuide.Application.Profiles.DTOs;
 
 public record PublicProfileDto(
-    Guid Id,
+    Guid UserId,
     string FullName,
+    string? Slug,
     string? ProfileImageUrl,
     string? Bio,
     List<string> Specialties,
@@ -35,6 +36,7 @@ public record PublicProfileDto(
 public record PublicTripDto(
     Guid Id,
     string Title,
+    string? Slug,
     string PrimaryImageUrl,
     DateTime? Date,
     string Description,

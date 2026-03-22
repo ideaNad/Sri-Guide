@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using SriGuide.Application.Common.Helpers;
 using SriGuide.Application.Common.Interfaces;
 using SriGuide.Domain.Entities;
 using SriGuide.Domain.Enums;
@@ -41,6 +42,7 @@ public class UpgradeToAgencyCommandHandler : IRequestHandler<UpgradeToAgencyComm
         {
             UserId = user.Id,
             CompanyName = request.CompanyName,
+            Slug = SlugHelper.GenerateSlug(request.CompanyName),
             CompanyEmail = request.CompanyEmail,
             RegistrationNumber = request.RegNumber,
             Phone = request.Phone,

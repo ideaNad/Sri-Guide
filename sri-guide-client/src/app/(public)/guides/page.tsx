@@ -19,6 +19,7 @@ interface DiscoveryItem {
     isLegit?: boolean;
     tags: string[];
     agencyName?: string;
+    slug?: string;
 }
 
 interface PaginatedResult<T> {
@@ -287,7 +288,7 @@ const GuidesPage = () => {
 
                                     <div className="pt-4 border-t border-gray-50 relative z-10">
                                         <Link 
-                                            href={`/profile/${guide.id}`}
+                                            href={`/profile/${guide.slug || guide.id}`}
                                             className="w-full flex items-center justify-center py-4 rounded-2xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all font-black text-xs uppercase tracking-[0.2em] shadow-sm hover:shadow-xl hover:shadow-primary/20"
                                         >
                                             <UserCircle className="w-4 h-4 mr-2" />

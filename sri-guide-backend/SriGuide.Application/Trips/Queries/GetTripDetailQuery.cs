@@ -22,6 +22,7 @@ public record TripDayDto(
 public record TripDetailDto(
     Guid Id,
     string Title,
+    string? Slug,
     string Description,
     string Location,
     DateTime? Date,
@@ -41,11 +42,12 @@ public record TripDetailDto(
 public record OtherTripDto(
     Guid Id,
     string Title,
+    string? Slug,
     string? ImageUrl,
     string Location
 );
 
-public record GetTripDetailQuery(Guid TripId, Guid? CurrentUserId) : IRequest<TripDetailDto>;
+public record GetTripDetailQuery(string IdOrSlug, Guid? CurrentUserId) : IRequest<TripDetailDto>;
 
 public class GetTripDetailQueryHandler : IRequestHandler<GetTripDetailQuery, TripDetailDto>
 {
@@ -58,11 +60,13 @@ public class GetTripDetailQueryHandler : IRequestHandler<GetTripDetailQuery, Tri
 
     public async Task<TripDetailDto> Handle(GetTripDetailQuery request, CancellationToken cancellationToken)
     {
+        var isGuid = Guid.TryParse(request.IdOrSlug, out var tripId);
+
         var trip = await _context.Trips
             .Include(t => t.Guide)
             .Include(t => t.Agency)
             .Include(t => t.Images)
-            .FirstOrDefaultAsync(t => t.Id == request.TripId, cancellationToken);
+            .FirstOrDefaultAsync(t => isGuid ? t.Id == tripId : t.Slug == request.IdOrSlug, cancellationToken);
 
         if (trip == null) throw new Exception("Trip not found");
 
@@ -89,6 +93,7 @@ public class GetTripDetailQueryHandler : IRequestHandler<GetTripDetailQuery, Tri
         return new TripDetailDto(
             trip.Id,
             trip.Title,
+            trip.Slug,
             trip.Description,
             trip.Location,
             trip.Date,
@@ -111,6 +116,7 @@ public class GetTripDetailQueryHandler : IRequestHandler<GetTripDetailQuery, Tri
                 .Select(t => new OtherTripDto(
                     t.Id,
                     t.Title,
+                    t.Slug,
                     t.Images.OrderBy(i => i.CreatedAt).Select(i => i.ImageUrl != null && !i.ImageUrl.StartsWith("/") && !i.ImageUrl.StartsWith("http") ? "/" + i.ImageUrl : i.ImageUrl).FirstOrDefault(),
                     t.Location
                 ))

@@ -9,6 +9,7 @@ public class AgencyProfile : BaseEntity
     public User? User { get; set; }
 
     public string CompanyName { get; set; } = string.Empty;
+    public string? Slug { get; set; }
     public string? Bio { get; set; }
     public string? CompanyEmail { get; set; }
     public string? RegistrationNumber { get; set; }

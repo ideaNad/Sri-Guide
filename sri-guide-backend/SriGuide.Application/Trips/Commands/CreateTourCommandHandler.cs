@@ -1,4 +1,5 @@
 using MediatR;
+using SriGuide.Application.Common.Helpers;
 using SriGuide.Application.Common.Interfaces;
 using SriGuide.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,7 @@ public class CreateTourCommandHandler : IRequestHandler<CreateTourCommand, Guid>
         var tour = new Tour
         {
             Title = request.Title,
+            Slug = SlugHelper.GenerateSlug(request.Title),
             Description = request.Description,
             Location = request.Location,
             Category = request.Category,

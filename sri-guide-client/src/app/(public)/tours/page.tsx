@@ -22,6 +22,7 @@ interface Tour {
     date?: string;
     duration?: string;
     mapLink?: string;
+    slug?: string;
 }
 
 const ToursPage = () => {
@@ -30,7 +31,7 @@ const ToursPage = () => {
     const [activeCategory, setActiveCategory] = useState("All");
     const [searchQuery, setSearchQuery] = useState("");
     const [priceRange, setPriceRange] = useState(500);
-    const [selectedDurations, setSelectedDurations] = useState<string[]>([]);
+
     const [sortBy, setSortBy] = useState("Most Popular");
     const [pageNumber, setPageNumber] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -49,11 +50,7 @@ const ToursPage = () => {
                 sortBy: sortBy,
             });
             
-            if (selectedDurations.length > 0) {
-                // If multiple are selected, we join them or handle accordingly. 
-                // Currently our backend handles a single string for duration filter.
-                params.append("duration", selectedDurations[selectedDurations.length - 1]);
-            }
+
 
             const response = await apiClient.get<{ items: Tour[], totalCount: number, totalPages: number }>("/discovery", { params });
             setTours(response.data.items || []);
@@ -71,7 +68,7 @@ const ToursPage = () => {
             fetchTours();
         }, 300); // Debounce search
         return () => clearTimeout(timer);
-    }, [pageNumber, activeCategory, priceRange, selectedDurations, sortBy]);
+    }, [pageNumber, activeCategory, priceRange, sortBy]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -156,25 +153,7 @@ const ToursPage = () => {
                                     </div>
                                 </div>
 
-                                <div>
-                                    <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Duration</h4>
-                                    <div className="space-y-3">
-                                        {["1-3 Hours", "Full Day", "Multi-day"].map((item) => (
-                                            <label key={item} className="flex items-center space-x-3 cursor-pointer group">
-                                                <input 
-                                                    type="checkbox" 
-                                                    checked={selectedDurations.includes(item)}
-                                                    onChange={(e) => {
-                                                        if (e.target.checked) setSelectedDurations(prev => [...prev, item]);
-                                                        else setSelectedDurations(prev => prev.filter(d => d !== item));
-                                                    }}
-                                                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0" 
-                                                />
-                                                <span className="text-sm text-gray-600 font-medium group-hover:text-primary transition-colors">{item}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
+
                             </div>
                         </div>
 
@@ -226,6 +205,7 @@ const ToursPage = () => {
                                     >
                                         <Card 
                                             id={tour.id}
+                                            slug={tour.slug}
                                             title={tour.title}
                                             image={tour.image}
                                             location={tour.location}

@@ -45,13 +45,13 @@ interface TourDetail {
 
 const EditTourPage = () => {
     const router = useRouter();
-    const { id } = useParams();
+    const { slug } = useParams();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     
     const [formData, setFormData] = useState({
-        tourId: id as string,
+        tourId: slug as string,
         title: "",
         description: "",
         location: [] as string[],
@@ -75,12 +75,12 @@ const EditTourPage = () => {
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
-        if (id) fetchTour();
-    }, [id]);
+        if (slug) fetchTour();
+    }, [slug]);
 
     const fetchTour = async () => {
         try {
-            const response = await apiClient.get<TourDetail>(`/Tours/${id}`);
+            const response = await apiClient.get<TourDetail>(`/Tours/${slug}`);
             const tour = response.data;
             setFormData({
                 tourId: tour.id,
@@ -206,7 +206,7 @@ const EditTourPage = () => {
                 })),
                 dayDescriptions: formData.dayDescriptions
             };
-            await apiClient.put(`/Agency/tours/${id}`, payload);
+            await apiClient.put(`/Agency/tours/${slug}`, payload);
             router.push("/agency/tours");
         } catch (error: any) {
             console.error("Failed to update tour", error);

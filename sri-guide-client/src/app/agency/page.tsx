@@ -162,7 +162,7 @@ export default function AgencyDashboardPage() {
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: i * 0.1 }}
-                            onClick={() => router.push(`/agency/tours/edit/${tour.id}`)}
+                            onClick={() => router.push(`/agency/tours/edit/${tour.slug || tour.id}`)}
                             className="bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all group cursor-pointer relative"
                         >
                             <div className="h-48 relative overflow-hidden">

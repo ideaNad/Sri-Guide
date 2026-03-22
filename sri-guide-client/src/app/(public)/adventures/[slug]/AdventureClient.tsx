@@ -24,6 +24,7 @@ interface ItineraryStep {
 
 interface OtherTrip {
     id: string;
+    slug?: string;
     title: string;
     imageUrl?: string;
     location: string;
@@ -37,6 +38,7 @@ interface TripDay {
 
 interface TripDetail {
     id: string;
+    slug?: string;
     title: string;
     description: string;
     location: string;
@@ -49,6 +51,8 @@ interface TripDetail {
     agencyId?: string;
     agencyName?: string;
     agencyImageUrl?: string;
+    guideSlug?: string;
+    agencySlug?: string;
     guideRating: number;
     guideTotalReviews: number;
     likeCount: number;
@@ -349,13 +353,60 @@ const ImageGrid = ({
 };
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
-const AdventureSimplePage = () => {
-    const { id } = useParams();
-    const searchParams = useSearchParams();
-    const type = searchParams.get("type");
+export default function AdventureClient({ slug, initialData, type }: { slug: string, initialData?: TripDetail, type?: string | null }) {
     const { user, login } = useAuth();
-    const [tour, setTour] = useState<TripDetail | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [tour, setTour] = useState<TripDetail | null>(() => {
+        if (!initialData) return null;
+        const data: any = initialData;
+        const isTour = type === "tour";
+        return {
+            ...data,
+            id: data.id || data.Id,
+            slug: data.slug || data.Slug,
+            title: data.title || data.Title,
+            description: data.description || data.Description,
+            location: data.location || data.Location,
+            category: data.category || data.Category,
+            price: data.price || data.Price,
+            duration: data.duration || data.Duration,
+            mapLink: data.mapLink || data.MapLink,
+            images: data.images || data.Images || [],
+            guideId: data.guideId || data.agencyId || data.AgencyId,
+            guideName: data.guideName || data.agencyName || data.AgencyName || "Sri Lankan Agency",
+            guideImageUrl: data.guideImageUrl || data.agencyImageUrl || data.AgencyImageUrl,
+            guideRating: data.guideRating ?? data.agencyRating ?? data.AgencyRating ?? 4.8,
+            guideTotalReviews: data.guideTotalReviews ?? data.agencyReviewsCount ?? data.AgencyReviewsCount ?? 0,
+            isAgencyTour: isTour || !!data.agencyId || !!data.AgencyId,
+            guideSlug: data.guideSlug || data.AgencySlug || data.slug || data.Slug,
+            agencySlug: data.agencySlug || data.AgencySlug || data.slug || data.Slug,
+            agencyId: data.agencyId || data.AgencyId,
+            agencyName: data.agencyName || data.AgencyName,
+            agencyImageUrl: data.agencyImageUrl || data.AgencyImageUrl,
+            likeCount: data.likeCount || data.LikeCount || 0,
+            isLikedByCurrentUser: data.isLikedByCurrentUser || data.IsLikedByCurrentUser || false,
+            itinerary: (data.itinerary || data.Itinerary || []).map((s: any) => ({
+                time: s.time || s.Time,
+                title: s.title || s.Title,
+                description: s.description || s.Description,
+                imageUrl: s.imageUrl || s.ImageUrl,
+                dayNumber: s.dayNumber || s.DayNumber,
+                order: s.order || s.Order,
+            })),
+            otherTrips: (data.otherTrips || data.OtherTrips || []).map((t: any) => ({
+                id: t.id || t.Id,
+                slug: t.slug || t.Slug,
+                title: t.title || t.Title,
+                imageUrl: t.imageUrl || t.ImageUrl,
+                location: t.location || t.Location,
+            })),
+            dayDescriptions: (data.dayDescriptions || data.DayDescriptions || []).map((d: any) => ({
+                dayNumber: d.dayNumber || d.DayNumber,
+                description: d.description || d.Description,
+                imageUrl: d.imageUrl || d.ImageUrl,
+            })),
+        } as TripDetail;
+    });
+    const [loading, setLoading] = useState(!initialData);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [expandedDays, setExpandedDays] = useState<number[]>([1]);
     const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
@@ -380,16 +431,17 @@ const AdventureSimplePage = () => {
     };
 
     const fetchTour = async () => {
+        if (initialData) return;
         try {
             const isTour = type === "tour";
             let response;
             if (isTour) {
-                response = await apiClient.get<any>(`/Tours/${id}`);
+                response = await apiClient.get<any>(`/Tours/${slug}`);
             } else {
                 try {
-                    response = await apiClient.get<any>(`/trip/${id}`);
+                    response = await apiClient.get<any>(`/trip/${slug}`);
                 } catch {
-                    response = await apiClient.get<any>(`/Tours/${id}`);
+                    response = await apiClient.get<any>(`/Tours/${slug}`);
                 }
             }
 
@@ -397,6 +449,7 @@ const AdventureSimplePage = () => {
             const mappedData: TripDetail = {
                 ...data,
                 id: data.id || data.Id,
+                slug: data.slug || data.Slug,
                 title: data.title || data.Title,
                 description: data.description || data.Description,
                 location: data.location || data.Location,
@@ -411,6 +464,8 @@ const AdventureSimplePage = () => {
                 guideRating: data.guideRating ?? data.agencyRating ?? data.AgencyRating ?? 4.8,
                 guideTotalReviews: data.guideTotalReviews ?? data.agencyReviewsCount ?? data.AgencyReviewsCount ?? 0,
                 isAgencyTour: isTour || !!data.agencyId || !!data.AgencyId,
+                guideSlug: data.guideSlug || data.AgencySlug || data.slug || data.Slug,
+                agencySlug: data.agencySlug || data.AgencySlug || data.slug || data.Slug,
                 agencyId: data.agencyId || data.AgencyId,
                 agencyName: data.agencyName || data.AgencyName,
                 agencyImageUrl: data.agencyImageUrl || data.AgencyImageUrl,
@@ -426,6 +481,7 @@ const AdventureSimplePage = () => {
                 })),
                 otherTrips: (data.otherTrips || data.OtherTrips || []).map((t: any) => ({
                     id: t.id || t.Id,
+                    slug: t.slug || t.Slug,
                     title: t.title || t.Title,
                     imageUrl: t.imageUrl || t.ImageUrl,
                     location: t.location || t.Location,
@@ -446,13 +502,13 @@ const AdventureSimplePage = () => {
     };
 
     React.useEffect(() => {
-        if (id) fetchTour();
-    }, [id]);
+        if (slug) fetchTour();
+    }, [slug, initialData, type]);
 
     const handleToggleLike = async () => {
         if (!user) { setIsAuthModalOpen(true); return; }
         try {
-            const response = await apiClient.post<{ liked: boolean }>(`/trip/${id}/toggle-like`);
+            const response = await apiClient.post<{ liked: boolean }>(`/trip/${tour?.id || slug}/toggle-like`);
             if (tour) {
                 setTour({
                     ...tour,
@@ -505,7 +561,7 @@ const AdventureSimplePage = () => {
                 )}
             </AnimatePresence>
 
-            <div className="pb-24 bg-white overflow-x-hidden">
+            <div className="pb-32 bg-white overflow-x-hidden pt-12">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
                     {/* ── Section 1: Image Grid ── */}
@@ -801,58 +857,43 @@ const AdventureSimplePage = () => {
                                                 )}
                                             </div>
                                             <div>
-                                                <h4 className="text-lg font-black text-gray-900 leading-tight">
-                                                    {tour.guideName || tour.agencyName}
-                                                </h4>
-                                                <div className="flex items-center text-xs font-medium text-gray-400 mt-1">
-                                                    {tour.guideTotalReviews > 0 ? (
-                                                        <>
-                                                            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400 mr-1" />
-                                                            {tour.guideRating?.toFixed(1)} · {tour.guideTotalReviews} reviews
-                                                        </>
-                                                    ) : (
-                                                        "New Professional Guide"
-                                                    )}
+                                                <h4 className="font-black text-gray-900 leading-tight mb-1">{tour.guideName || tour.agencyName}</h4>
+                                                <div className="flex items-center gap-1">
+                                                    <Star size={12} className="fill-amber-400 text-amber-400" />
+                                                    <span className="text-xs font-bold text-gray-600">{tour.guideRating.toFixed(1)}</span>
+                                                    <span className="text-[10px] text-gray-400 font-bold uppercase ml-1">Verified</span>
                                                 </div>
                                             </div>
                                         </div>
                                         <Link
-                                            href={tour.isAgencyTour ? `/profile/${tour.agencyId}?type=agency` : `/profile/${tour.guideId}`}
-                                            className="w-full bg-gray-900 text-white flex items-center justify-center py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-primary transition-all gap-2"
+                                            href={`/profile/${tour.guideSlug || tour.agencySlug || tour.guideId || tour.agencyId}${tour.isAgencyTour ? "?type=agency" : ""}`}
+                                            className="w-full block text-center py-3 bg-gray-900 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-primary transition-all shadow-md active:scale-[0.98]"
                                         >
-                                            View Full Profile <ChevronRight size={14} />
+                                            View Full Profile
                                         </Link>
                                     </div>
                                 </div>
                             )}
 
-                            {/* More from this Guide */}
+                            {/* Suggestions / Other Trips */}
                             {tour.otherTrips && tour.otherTrips.length > 0 && (
-                                <div className="border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-                                    <div className="px-5 py-4 border-b border-gray-50">
-                                        <h3 className="text-xs font-black uppercase tracking-[0.25em] text-gray-400">More Adventures</h3>
-                                    </div>
-                                    <div className="divide-y divide-gray-50">
-                                        {tour.otherTrips.map(trip => (
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-1">You might also like</h4>
+                                    <div className="space-y-3">
+                                        {tour.otherTrips.map(ot => (
                                             <Link
-                                                key={trip.id}
-                                                href={`/adventures/${trip.id}`}
-                                                className="flex gap-3 p-4 hover:bg-gray-50 transition-all group"
+                                                key={ot.id}
+                                                href={`/adventures/${ot.slug || ot.id}`}
+                                                className="group flex gap-3 p-2 bg-gray-50/50 hover:bg-white border border-transparent hover:border-gray-100 rounded-2xl transition-all"
                                             >
-                                                <div className="w-16 h-16 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100">
-                                                    <img
-                                                        src={getImageUrl(trip.imageUrl)}
-                                                        alt={trip.title}
-                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                    />
+                                                <div className="w-20 h-16 rounded-xl overflow-hidden flex-shrink-0 shadow-sm">
+                                                    <img src={getImageUrl(ot.imageUrl)} alt={ot.title} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
                                                 </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-[9px] font-black text-primary uppercase tracking-wider mb-1">{trip.location}</p>
-                                                    <h4 className="text-sm font-bold text-gray-800 line-clamp-2 leading-tight group-hover:text-primary transition-colors">
-                                                        {trip.title}
-                                                    </h4>
-                                                    <div className="mt-1.5 flex items-center text-[10px] font-bold text-gray-400 group-hover:text-primary transition-colors">
-                                                        View <ArrowRight size={10} className="ml-1" />
+                                                <div className="flex flex-col justify-center min-w-0">
+                                                    <h5 className="text-xs font-bold text-gray-900 truncate mb-1">{ot.title}</h5>
+                                                    <div className="flex items-center gap-1 text-[9px] font-bold text-gray-400 uppercase">
+                                                        <MapPin size={10} />
+                                                        {ot.location}
                                                     </div>
                                                 </div>
                                             </Link>
@@ -868,10 +909,11 @@ const AdventureSimplePage = () => {
             <AuthModal
                 isOpen={isAuthModalOpen}
                 onClose={() => setIsAuthModalOpen(false)}
-                onSuccess={(userData) => { login(userData); setIsAuthModalOpen(false); }}
+                onSuccess={(userData) => {
+                    login(userData);
+                    setIsAuthModalOpen(false);
+                }}
             />
         </>
     );
-};
-
-export default AdventureSimplePage;
+}

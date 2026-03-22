@@ -9,7 +9,7 @@ namespace SriGuide.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "TravelAgency")]
+[Authorize]
 public class ToursController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -21,7 +21,7 @@ public class ToursController : ControllerBase
 
     [HttpGet("{id}")]
     [AllowAnonymous]
-    public async Task<ActionResult<TourDetailDto>> GetTourById(Guid id)
+    public async Task<ActionResult<TourDetailDto>> GetTourById(string id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         Guid? currentUserId = userId != null ? Guid.Parse(userId) : null;
@@ -31,6 +31,7 @@ public class ToursController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "TravelAgency")]
     public async Task<IActionResult> CreateTour([FromBody] CreateTourCommand command)
     {
         var agencyIdString = User.FindFirstValue("AgencyProfileId"); // Assuming AgencyProfileId is in claims
@@ -41,6 +42,7 @@ public class ToursController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "TravelAgency")]
     public async Task<IActionResult> UpdateTour(Guid id, [FromBody] UpdateTourCommand command)
     {
         var agencyIdString = User.FindFirstValue("AgencyProfileId");
@@ -55,6 +57,7 @@ public class ToursController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "TravelAgency")]
     public async Task<IActionResult> DeleteTour(Guid id)
     {
         var agencyIdString = User.FindFirstValue("AgencyProfileId");
@@ -67,6 +70,7 @@ public class ToursController : ControllerBase
     }
 
     [HttpPost("{tourId}/upload-photo")]
+    [Authorize(Roles = "TravelAgency")]
     public async Task<IActionResult> UploadTourPhoto(Guid tourId, IFormFile file)
     {
         var agencyIdString = User.FindFirstValue("AgencyProfileId");
@@ -77,7 +81,6 @@ public class ToursController : ControllerBase
     }
 
     [HttpPost("{tourId}/toggle-like")]
-    [Authorize]
     public async Task<IActionResult> ToggleLike(Guid tourId)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

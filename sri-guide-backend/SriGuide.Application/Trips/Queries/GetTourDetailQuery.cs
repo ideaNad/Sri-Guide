@@ -7,11 +7,12 @@ using System.Linq;
 
 namespace SriGuide.Application.Trips.Queries;
 
-public record GetTourDetailQuery(Guid Id, Guid? CurrentUserId = null) : IRequest<TourDetailDto>;
+public record GetTourDetailQuery(string IdOrSlug, Guid? CurrentUserId = null) : IRequest<TourDetailDto>;
 
 public record TourDetailDto(
     Guid Id,
     string Title,
+    string? Slug,
     string Description,
     string Location,
     string Category,
@@ -46,13 +47,15 @@ public class GetTourDetailQueryHandler : IRequestHandler<GetTourDetailQuery, Tou
 
     public async Task<TourDetailDto> Handle(GetTourDetailQuery request, CancellationToken cancellationToken)
     {
+        var isGuid = Guid.TryParse(request.IdOrSlug, out var tourId);
+        
         var tour = await _context.Tours
             .Include(t => t.Agency)
-                .ThenInclude(a => a!.User)
+                .ThenInclude(a => a.User)
             .Include(t => t.Images)
             .Include(t => t.Itinerary)
             .Include(t => t.DayDescriptions)
-            .FirstOrDefaultAsync(t => t.Id == request.Id, cancellationToken);
+            .FirstOrDefaultAsync(t => isGuid ? t.Id == tourId : t.Slug == request.IdOrSlug, cancellationToken);
 
         if (tour == null) throw new Exception("Tour not found");
 
@@ -72,6 +75,7 @@ public class GetTourDetailQueryHandler : IRequestHandler<GetTourDetailQuery, Tou
         return new TourDetailDto(
             tour.Id,
             tour.Title,
+            tour.Slug,
             tour.Description,
             tour.Location,
             tour.Category,

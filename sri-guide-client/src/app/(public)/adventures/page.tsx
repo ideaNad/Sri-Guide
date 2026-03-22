@@ -26,6 +26,7 @@ interface Trip {
     likeCount: number;
     isLiked?: boolean;
     isAgencyTour?: boolean;
+    slug?: string;
 }
 
 const COMMON_LOCATIONS = [
@@ -191,6 +192,7 @@ export default function AdventuresPage() {
                             >
                                 <Card 
                                     id={trip.id}
+                                    slug={trip.slug}
                                     title={trip.title}
                                     image={trip.imageUrl || ""}
                                     location={trip.location}

@@ -21,6 +21,7 @@ interface CardProps {
     email?: string;
     whatsapp?: string;
     id?: string | number;
+    slug?: string;
     isLegit?: boolean;
     badge?: string;
     likeCount?: number;
@@ -46,6 +47,7 @@ const Card: React.FC<CardProps> = ({
     email,
     whatsapp,
     id,
+    slug,
     isLegit,
     badge,
     likeCount,
@@ -54,9 +56,25 @@ const Card: React.FC<CardProps> = ({
     onToggleLike
 }) => {
     const isProfile = type === "guide" || type === "agency";
-    const profileLink = (type === "tour" || type === "adventure") 
-        ? `/adventures/${id}?type=${type}` 
-        : (id ? `/profile/${id}${type === 'agency' ? '?type=agency' : ''}` : "#");
+    const getProfileLink = () => {
+        if (!slug && !id) return "#";
+        const identifier = (slug || id)?.toString();
+        
+        switch (type) {
+            case "tour":
+                return `/tours/${identifier}`;
+            case "adventure":
+                return `/adventures/${identifier}`;
+            case "place":
+                return `/places/${identifier}`;
+            case "agency":
+                return `/profile/${identifier}?type=agency`;
+            case "guide":
+            default:
+                return `/profile/${identifier}`;
+        }
+    };
+    const profileLink = getProfileLink();
 
     const displayImage = React.useMemo(() => {
         if (!image || image.trim() === "") {
