@@ -15,6 +15,25 @@ interface OnboardingState {
   travelDuration: string;
   preferredLocation: string;
   
+  // Guide Onboarding Data
+  guideProfile: {
+    fullName: string;
+    about: string;
+    firstTripTitle: string;
+    location: string;
+    duration: string;
+    listingPrice: string;
+    priceUnit: string;
+  };
+
+  // Agency Onboarding Data
+  agencyProfile: {
+    agencyName: string;
+    registrationNumber: string;
+    businessType: string;
+    pricingModel: string;
+  };
+
   // Actions
   setUserRole: (role: UserRole) => void;
   setStep: (step: number) => void;
@@ -24,6 +43,8 @@ interface OnboardingState {
   resetOnboarding: () => void;
   setTranslateDismissed: (dismissed: boolean) => void;
   updateData: (data: Partial<Pick<OnboardingState, 'interests' | 'budget' | 'travelDuration' | 'preferredLocation'>>) => void;
+  updateGuideData: (data: Partial<OnboardingState['guideProfile']>) => void;
+  updateAgencyData: (data: Partial<OnboardingState['agencyProfile']>) => void;
 }
 
 export const useOnboardingStore = create<OnboardingState>()(
@@ -37,6 +58,21 @@ export const useOnboardingStore = create<OnboardingState>()(
       budget: '',
       travelDuration: '',
       preferredLocation: '',
+      guideProfile: {
+        fullName: '',
+        about: '',
+        firstTripTitle: '',
+        location: '',
+        duration: '',
+        listingPrice: '',
+        priceUnit: 'per Day'
+      },
+      agencyProfile: {
+        agencyName: '',
+        registrationNumber: '',
+        businessType: '',
+        pricingModel: ''
+      },
 
       setUserRole: (role) => set({ userRole: role }),
       setStep: (step) => set({ onboardingStep: step }),
@@ -50,10 +86,31 @@ export const useOnboardingStore = create<OnboardingState>()(
         interests: [],
         budget: '',
         travelDuration: '',
-        preferredLocation: ''
+        preferredLocation: '',
+        guideProfile: {
+          fullName: '',
+          about: '',
+          firstTripTitle: '',
+          location: '',
+          duration: '',
+          listingPrice: '',
+          priceUnit: 'per Day'
+        },
+        agencyProfile: {
+          agencyName: '',
+          registrationNumber: '',
+          businessType: '',
+          pricingModel: ''
+        }
       }),
       setTranslateDismissed: (dismissed) => set({ translateDismissed: dismissed }),
       updateData: (data) => set((state) => ({ ...state, ...data })),
+      updateGuideData: (data) => set((state) => ({ 
+        guideProfile: { ...state.guideProfile, ...data } 
+      })),
+      updateAgencyData: (data) => set((state) => ({ 
+        agencyProfile: { ...state.agencyProfile, ...data } 
+      })),
     }),
     {
       name: 'sriguide-onboarding-storage',

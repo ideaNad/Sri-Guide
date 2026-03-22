@@ -8,11 +8,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     LayoutDashboard, Briefcase, Map, Users,
     Building2, LogOut, Menu, X, Compass, Bell, Plus,
-    X as CloseIcon
+    X as CloseIcon, HelpCircle, AlertCircle
 } from "lucide-react";
 import apiClient from "@/services/api-client";
 import FeedbackModal from "@/features/feedback/components/FeedbackModal";
 import { MessageSquare } from "lucide-react";
+import { HelpDrawer } from "@/components/help/HelpDrawer";
 
 const AGENCY_NAV = [
     { name: "Overview", href: "/agency", icon: <LayoutDashboard size={20} /> },
@@ -29,8 +30,10 @@ export default function AgencyLayout({ children }: { children: React.ReactNode }
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
-        if (!loading && (!user || user.role !== "TravelAgency")) {
-            router.replace("/");
+        if (!loading) {
+            if (!user || user.role !== "TravelAgency") {
+                router.replace("/");
+            }
         }
     }, [user, loading, router]);
 
@@ -44,6 +47,7 @@ export default function AgencyLayout({ children }: { children: React.ReactNode }
 
 const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: string, setSidebarOpen: (open: boolean) => void, logout: () => void, user: any }) => {
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
 
     return (
         <div className="flex flex-col h-full bg-white border-r border-gray-100 relative">
@@ -86,10 +90,9 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
                         </div>
                     </div>
                 </div>
-                <span className="text-[10px] font-black text-teal-600 uppercase tracking-[0.3em] px-8 block mb-4">Travel Agency</span>
 
                 <nav className="flex-1 px-4 space-y-1">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-4 mb-4">Main Navigation</p>
+                    <p className="text-[10px] font-black text-teal-600 uppercase tracking-[0.3em] px-4 mb-4">Main Navigation</p>
                 {AGENCY_NAV.map((item) => {
                     const isActive = pathname === item.href;
                     return (
@@ -107,7 +110,7 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
                                 <span className={isActive ? "text-teal-400" : "text-gray-400 group-hover:text-teal-600 transition-colors"}>
                                     {item.icon}
                                 </span>
-                                <span className="text-sm">{item.name}</span>
+                                <span className="text-sm tracking-wide">{item.name}</span>
                             </div>
                             {isActive && <motion.div layoutId="activeInd" className="w-1.5 h-1.5 rounded-full bg-teal-400" />}
                         </Link>
@@ -122,12 +125,22 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
                         <span className="text-gray-400 group-hover:text-teal-600 transition-colors">
                             <MessageSquare size={20} />
                         </span>
-                        <span className="text-sm">Feedback</span>
+                        <span className="text-sm tracking-wide">Feedback</span>
                     </div>
                 </button>
             </nav>
 
-            <div className="p-6 mt-auto border-t border-gray-50 bg-white">
+            <div className="p-6 mt-auto border-t border-gray-50 bg-white space-y-2">
+                <button
+                    onClick={() => setIsHelpOpen(true)}
+                    className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-gray-600 hover:bg-sky-50 transition-all font-bold text-sm group"
+                >
+                    <div className="p-2 rounded-xl bg-sky-50 group-hover:bg-sky-100 transition-colors text-sky-600">
+                        <AlertCircle size={18} />
+                    </div>
+                    <span>Help & Support</span>
+                </button>
+
                 <button
                     onClick={logout}
                     className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-rose-500 hover:bg-rose-50 transition-all font-bold text-sm group"
@@ -140,6 +153,18 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
             </div>
 
             <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
+            
+            <HelpDrawer 
+                open={isHelpOpen}
+                onOpenChange={setIsHelpOpen}
+                title="Agency Help Center"
+                description="Manage your tours and guides effectively. Explore our documentation for agencies."
+                items={[
+                    { title: "Tour Management", description: "How to maximize your visibility with great tours." },
+                    { title: "Guide Roster", description: "Learn how to manage and recruit guides." },
+                    { title: "Dashboard Analytics", description: "Understand your performance metrics." },
+                ]}
+            />
         </div>
     );
 };

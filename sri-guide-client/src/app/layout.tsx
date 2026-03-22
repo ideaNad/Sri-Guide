@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Comfortaa } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/providers/AuthContext";
+import CookieConsent from "@/components/layout/CookieConsent";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -90,6 +91,7 @@ export default function RootLayout({
       <body className={`${jakarta.variable} ${comfortaa.variable} antialiased selection:bg-primary selection:text-white font-jakarta`}>
         <AuthProvider>
           {children}
+          <CookieConsent />
         </AuthProvider>
       </body>
     </html>

@@ -7,6 +7,7 @@ import { useAuth } from "@/providers/AuthContext";
 import apiClient from "@/services/api-client";
 import { motion, AnimatePresence } from "framer-motion";
 import FeedbackModal from "@/features/feedback/components/FeedbackModal";
+import { HelpDrawer } from "@/components/help/HelpDrawer";
 import { 
     LayoutDashboard, User, Settings, ShieldCheck, 
     MessageSquare, Heart, Compass, LogOut, X as CloseIcon,
@@ -31,6 +32,7 @@ export default function DashboardSidebar({ isOpen, setIsOpen }: DashboardSidebar
 
     const SidebarContent = () => {
         const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+        const [isHelpOpen, setIsHelpOpen] = useState(false);
 
         return (
             <div className="flex flex-col h-full bg-white border-r border-gray-100 relative shadow-sm">
@@ -106,7 +108,17 @@ export default function DashboardSidebar({ isOpen, setIsOpen }: DashboardSidebar
                     </button>
                 </nav>
                 
-                <div className="p-6 mt-auto border-t border-gray-50 bg-white">
+                <div className="p-6 mt-auto border-t border-gray-50 bg-white space-y-2">
+                    <button
+                        onClick={() => setIsHelpOpen(true)}
+                        className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-gray-600 hover:bg-sky-50 transition-all font-bold text-sm group"
+                    >
+                        <div className="p-2 rounded-xl bg-sky-50 group-hover:bg-sky-100 transition-colors text-sky-600">
+                            <AlertCircle size={18} />
+                        </div>
+                        <span>Help & Support</span>
+                    </button>
+
                     <button
                         onClick={logout}
                         className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-rose-500 hover:bg-rose-50 transition-all font-bold text-sm group"
@@ -119,6 +131,18 @@ export default function DashboardSidebar({ isOpen, setIsOpen }: DashboardSidebar
                 </div>
 
                 <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
+                
+                <HelpDrawer 
+                    open={isHelpOpen}
+                    onOpenChange={setIsHelpOpen}
+                    title="Dashboard Help"
+                    description="Need help with your account or finding tours? Check out our resources."
+                    items={[
+                        { title: "Manage Profile", description: "Learn how to update your personal info." },
+                        { title: "Saved Tours", description: "How to save and find your favorite experiences." },
+                        { title: "Contact Support", description: "Reach out to us for any technical issues." },
+                    ]}
+                />
             </div>
         );
     };

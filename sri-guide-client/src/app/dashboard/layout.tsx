@@ -19,8 +19,10 @@ export default function DashboardLayout({
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
-        if (!loading && !user) {
-            router.push("/");
+        if (!loading) {
+            if (!user) {
+                router.push("/");
+            }
         }
     }, [user, loading, router]);
 

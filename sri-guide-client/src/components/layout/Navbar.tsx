@@ -2,17 +2,19 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, ShieldCheck } from "lucide-react";
+import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, ShieldCheck, HelpCircle } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import AuthModal from "@/features/auth/components/AuthModal";
 import { useAuth } from "@/providers/AuthContext";
 import apiClient from "@/services/api-client";
+import { HelpDrawer } from "@/components/help/HelpDrawer";
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
     const isHomePage = pathname === "/";
@@ -32,6 +34,7 @@ const Navbar = () => {
         { name: "Tours", href: "/tours" },
         { name: "Agencies", href: "/agencies" },
         { name: "Guides", href: "/guides" },
+        { name: "Privacy", href: "/privacy-policy" },
         { name: "Contact", href: "/contact" },
     ];
 
@@ -109,6 +112,18 @@ const NavItems = ({ mobile = false, textColor, navLinks, setIsMobileMenuOpen }: 
 
                 {/* Auth & CTA */}
                 <div className="hidden lg:flex items-center gap-4">
+                    <button
+                        onClick={() => setIsHelpOpen(true)}
+                        className={`p-2.5 rounded-full transition-all flex items-center justify-center ${
+                            !isScrolled && isHomePage 
+                            ? "bg-white/10 text-white hover:bg-white/20 border border-white/20" 
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                        title="Help Center"
+                    >
+                        <HelpCircle size={20} />
+                    </button>
+
                     {user ? (
                         <div className={`flex items-center gap-6 ${!isScrolled && isHomePage ? 'bg-white/10 backdrop-blur-md px-5 py-1 rounded-full border border-white/20 shadow-sm' : ''}`}>
                             <Link
@@ -180,6 +195,15 @@ const NavItems = ({ mobile = false, textColor, navLinks, setIsMobileMenuOpen }: 
                                 className="h-40 w-auto object-contain"
                             />
                         </Link>
+
+                        <div className="absolute top-8 right-24 flex items-center gap-4">
+                            <button
+                                onClick={() => { setIsHelpOpen(true); setIsMobileMenuOpen(false); }}
+                                className="p-3 bg-gray-100 rounded-full text-gray-600"
+                            >
+                                <HelpCircle size={24} />
+                            </button>
+                        </div>
 
                         <button
                             className="absolute top-8 right-8 text-black p-2 bg-gray-100 rounded-full"
@@ -262,6 +286,20 @@ const NavItems = ({ mobile = false, textColor, navLinks, setIsMobileMenuOpen }: 
                     else if (userData.role === "TravelAgency") router.push("/agency");
                     else router.push("/dashboard");
                 }}
+            />
+
+            {/* Global Help Drawer */}
+            <HelpDrawer 
+                open={isHelpOpen}
+                onOpenChange={setIsHelpOpen}
+                title="SriGuide Help Center"
+                description="How can we help you today? Explore our guides or contact support."
+                items={[
+                    { title: "Getting Started", description: "Learn how to use SriGuide to find the best tours." },
+                    { title: "Booking a Guide", description: "Step-by-step guide on how to book and pay." },
+                    { title: "Safety & Privacy", description: "Your safety is our priority. Read our guidelines." },
+                    { title: "Become a Guide", description: "Share your passion and earn money." },
+                ]}
             />
         </>
     );

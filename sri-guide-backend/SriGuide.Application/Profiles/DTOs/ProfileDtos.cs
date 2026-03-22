@@ -10,6 +10,11 @@ public record UserProfileDto(
     bool IsVerified,
     string? ProfileImageUrl,
     DateTime CreatedAt,
+    bool OnboardingCompleted,
+    string? Interests,
+    string? Budget,
+    string? TravelDuration,
+    string? PreferredLocation,
     GuideProfileDto? GuideProfile,
     AgencyProfileDto? AgencyProfile
 );

@@ -8,5 +8,6 @@ public record AuthResponse(
     string FullName,
     string Email,
     UserRole Role,
-    string? ProfileImageUrl
+    string? ProfileImageUrl,
+    bool OnboardingCompleted
 );

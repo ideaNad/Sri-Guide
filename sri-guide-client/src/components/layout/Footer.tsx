@@ -98,9 +98,9 @@ const Footer = () => {
                     <p>© 2026 SriGuide Travel (Pvt) Ltd. All Rights Reserved.</p>
 
                     <div className="flex space-x-6 uppercase tracking-widest text-[10px]">
-                        <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
+                        <Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
                         <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>
-                        <Link href="#" className="hover:text-white transition-colors">Cookies Policy</Link>
+                        <Link href="/privacy-policy" className="hover:text-white transition-colors">Cookies Policy</Link>
                     </div>
                 </div>
             </div>

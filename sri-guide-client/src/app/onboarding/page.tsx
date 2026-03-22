@@ -21,36 +21,45 @@ import apiClient from '@/services/api-client';
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { user, login } = useAuth();
+  const { user, loading, updateUser } = useAuth();
   const { 
     userRole, 
     setUserRole, 
     onboardingStep, 
     setStep,
     completeOnboarding,
-    onboardingCompleted 
+    // onboardingCompleted, // Removed to avoid naming conflict and loop
+    resetOnboarding,
+    interests,
+    budget,
+    travelDuration,
+    preferredLocation,
+    guideProfile,
+    agencyProfile,
+    updateData,
+    updateGuideData,
+    updateAgencyData
   } = useOnboardingStore();
 
-  // Local state for form data
-  const [touristData, setTouristData] = React.useState({
-    interests: [] as string[],
-    budget: '',
-    duration: '',
-    location: '',
-  });
+  // Redirect if onboarding already completed or user not logged in
+  React.useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        router.push('/');
+      } else if (user.onboardingCompleted) {
+        // Find correct dashboard based on role
+        if (user.role === 'Guide') router.push('/guide');
+        else if (user.role === 'TravelAgency') router.push('/agency');
+        else router.push('/dashboard');
+      }
+    }
+  }, [user, loading, router]);
 
-  const [guideData, setGuideData] = React.useState({
-    profileName: '',
-    about: '',
-    tripTitle: '',
-    pricing: '',
-  });
-
-  const [agencyData, setAgencyData] = React.useState({
-    businessName: '',
-    regNumber: '',
-    pricing: '',
-  });
+  if (loading || !user) return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="w-10 h-10 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   // Guided Tour Steps
   const tourSteps: JoyrideStep[] = [
@@ -71,33 +80,65 @@ export default function OnboardingPage() {
 
   // Handle completion
   const handleComplete = async () => {
-    if (user && userRole === 'tourist') {
-      try {
+    try {
+      if (!user) return;
+
+      if (userRole === 'tourist') {
         await apiClient.post('/profile/update-user', {
           userId: user.id,
           onboardingCompleted: true,
-          interests: touristData.interests.join(','),
-          budget: touristData.budget,
-          travelDuration: touristData.duration,
-          preferredLocation: touristData.location
+          interests: interests.join(','),
+          budget: budget,
+          travelDuration: travelDuration,
+          preferredLocation: preferredLocation
         });
-        
-        // Update local auth user in context
-        login({
-          ...user,
+      } else if (userRole === 'guide') {
+        // Update basic user info
+        await apiClient.post('/profile/update-user', {
+          userId: user.id,
           onboardingCompleted: true,
-          interests: touristData.interests,
-          budget: touristData.budget,
-          travelDuration: touristData.duration,
-          preferredLocation: touristData.location
+          fullName: guideProfile.fullName || user.fullName
         });
-      } catch (error) {
-        console.error("Failed to save onboarding data", error);
-      }
-    }
 
-    completeOnboarding();
-    router.push('/dashboard');
+        // Update guide specific info
+        await apiClient.post('/profile/update-guide', {
+          userId: user.id,
+          bio: guideProfile.about,
+          dailyRate: guideProfile.priceUnit === 'per Day' ? parseFloat(guideProfile.listingPrice) : null,
+          hourlyRate: guideProfile.priceUnit === 'per Hour' ? parseFloat(guideProfile.listingPrice) : null,
+        });
+      } else if (userRole === 'agency') {
+        // Update basic user info
+        await apiClient.post('/profile/update-user', {
+          userId: user.id,
+          onboardingCompleted: true,
+          fullName: agencyProfile.agencyName || user.fullName
+        });
+
+        // Update agency specific info (using the update-user for onboardingCompleted, and agency/update for profile)
+        await apiClient.post('/profile/agency/update', {
+          userId: user.id,
+          companyName: agencyProfile.agencyName,
+          bio: `Business Type: ${agencyProfile.businessType}. Pricing: ${agencyProfile.pricingModel}`
+        });
+      }
+
+      // Refresh user data in context
+      const { data: updatedUser } = await apiClient.get('/profile/me');
+      updateUser(updatedUser as any);
+
+      // Local store update
+      completeOnboarding();
+      
+      // Navigate based on role
+      if (userRole === 'guide') router.push('/guide');
+      else if (userRole === 'agency') router.push('/agency');
+      else router.push('/dashboard');
+
+    } catch (error) {
+      console.error('Failed to complete onboarding:', error);
+      alert('Failed to save onboarding data. Please try again.');
+    }
   };
 
   // Tourist Steps
@@ -108,8 +149,8 @@ export default function OnboardingPage() {
       description: "Pick your interests so we can personalize your Sri Lankan adventure.",
       component: (
         <InterestsForm 
-          selectedInterests={touristData.interests} 
-          onChange={(interests) => setTouristData({ ...touristData, interests })}
+          selectedInterests={interests} 
+          onChange={(newInterests) => updateData({ interests: newInterests })}
         />
       ),
     },
@@ -119,8 +160,8 @@ export default function OnboardingPage() {
       description: "Don't worry, we have something for everyone.",
       component: (
         <BudgetForm 
-          selectedBudget={touristData.budget}
-          onChange={(budget) => setTouristData({ ...touristData, budget })}
+          selectedBudget={budget}
+          onChange={(newBudget) => updateData({ budget: newBudget })}
         />
       ),
     },
@@ -130,8 +171,8 @@ export default function OnboardingPage() {
       description: "Tell us your duration to find the perfect itinerary.",
       component: (
         <DurationForm 
-          selectedDuration={touristData.duration}
-          onChange={(duration) => setTouristData({ ...touristData, duration })}
+          selectedDuration={travelDuration}
+          onChange={(duration) => updateData({ travelDuration: duration })}
         />
       ),
     },
@@ -141,8 +182,8 @@ export default function OnboardingPage() {
       description: "Pick a region that catches your eye.",
       component: (
         <LocationForm 
-          selectedLocation={touristData.location}
-          onChange={(location) => setTouristData({ ...touristData, location })}
+          selectedLocation={preferredLocation}
+          onChange={(location) => updateData({ preferredLocation: location })}
         />
       ),
     },
@@ -154,19 +195,19 @@ export default function OnboardingPage() {
       id: 0,
       title: "Your Profile",
       description: "Tell travelers who you are and why they should book with you.",
-      component: <GuideFlow data={guideData} setData={setGuideData} step={0} />,
+      component: <GuideFlow data={guideProfile} setData={updateGuideData} step={0} />,
     },
     {
       id: 1,
       title: "Add a Trip",
       description: "Create your first experience to share with the world.",
-      component: <GuideFlow data={guideData} setData={setGuideData} step={1} />,
+      component: <GuideFlow data={guideProfile} setData={updateGuideData} step={1} />,
     },
     {
       id: 2,
       title: "Set Pricing",
       description: "Choose a fair price for your amazing expertise.",
-      component: <GuideFlow data={guideData} setData={setGuideData} step={2} />,
+      component: <GuideFlow data={guideProfile} setData={updateGuideData} step={2} />,
     },
   ];
 
@@ -176,31 +217,40 @@ export default function OnboardingPage() {
       id: 0,
       title: "Business Details",
       description: "Let's get your agency registered and ready.",
-      component: <AgencyFlow data={agencyData} setData={setAgencyData} step={0} />,
+      component: <AgencyFlow data={agencyProfile} setData={updateAgencyData} step={0} />,
     },
     {
       id: 1,
       title: "Listing Status",
       description: "Ready to showcase your tour packages?",
-      component: <AgencyFlow data={agencyData} setData={setAgencyData} step={1} />,
+      component: <AgencyFlow data={agencyProfile} setData={updateAgencyData} step={1} />,
     },
     {
       id: 2,
       title: "Choose Plan",
       description: "Pick the best way to grow your business.",
-      component: <AgencyFlow data={agencyData} setData={setAgencyData} step={2} />,
+      component: <AgencyFlow data={agencyProfile} setData={updateAgencyData} step={2} />,
     },
   ];
 
   // Logic to determine if current step is valid
   const isStepValid = () => {
     if (userRole === 'tourist') {
-      if (onboardingStep === 0) return touristData.interests.length > 0;
-      if (onboardingStep === 1) return touristData.budget !== '';
-      if (onboardingStep === 2) return touristData.duration !== '';
-      if (onboardingStep === 3) return touristData.location !== '';
+      if (onboardingStep === 0) return interests.length > 0;
+      if (onboardingStep === 1) return budget !== '';
+      if (onboardingStep === 2) return travelDuration !== '';
+      if (onboardingStep === 3) return preferredLocation !== '';
     }
-    // For guide/agency assume valid for demo purposes
+    if (userRole === 'guide') {
+        // Simple validation for guide
+        if (onboardingStep === 0) return guideProfile.fullName !== '';
+        return true;
+    }
+    if (userRole === 'agency') {
+        // Simple validation for agency
+        if (onboardingStep === 0) return agencyProfile.agencyName !== '';
+        return true;
+    }
     return true;
   };
 
@@ -269,9 +319,9 @@ export default function OnboardingPage() {
                 </div>
               </div>
             </motion.div>
-          ) : userRole === 'tourist' ? (
+          ) : (
             <motion.div
-              key="tourist-onboarding"
+              key="onboarding-stepper"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -281,25 +331,6 @@ export default function OnboardingPage() {
                 onComplete={handleComplete}
                 isStepValid={isStepValid()}
               />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="other-roles-placeholder"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-20"
-            >
-              <h2 className="text-3xl font-black mb-4">Coming Soon</h2>
-              <p className="text-slate-500 mb-8">
-                The {userRole} onboarding flow is under construction. <br />
-                Try the Tourist role for a demo of the system.
-              </p>
-              <button 
-                onClick={() => setUserRole(null)}
-                className="px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all"
-              >
-                Go Back
-              </button>
             </motion.div>
           )}
         </AnimatePresence>

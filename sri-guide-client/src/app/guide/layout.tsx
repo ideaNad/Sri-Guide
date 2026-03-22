@@ -8,9 +8,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     LayoutDashboard, User, Star, TrendingUp,
     ChevronRight, LogOut, Menu, X, Compass, Bell, ShieldCheck, 
-    X as CloseIcon
+    X as CloseIcon, HelpCircle, AlertCircle
 } from "lucide-react";
 import apiClient from "@/services/api-client";
+import { HelpDrawer } from "@/components/help/HelpDrawer";
 
 const GUIDE_NAV = [
     { name: "Overview", href: "/guide", icon: <LayoutDashboard size={20} /> },
@@ -42,8 +43,10 @@ export default function GuideLayout({ children }: { children: React.ReactNode })
     }, [user]);
 
     useEffect(() => {
-        if (!loading && (!user || user.role !== "Guide")) {
-            router.replace("/");
+        if (!loading) {
+            if (!user || user.role !== "Guide") {
+                router.replace("/");
+            }
         }
     }, [user, loading, router]);
 
@@ -55,75 +58,103 @@ export default function GuideLayout({ children }: { children: React.ReactNode })
         );
     }
 
-const SidebarContent = ({ pathname, setSidebarOpen, logout, user, photoUrl }: { pathname: string, setSidebarOpen: (open: boolean) => void, logout: () => void, user: any, photoUrl: string | null }) => (
-    <div className="flex flex-col h-full bg-white border-r border-gray-100">
-        <div className="sticky top-0 bg-white z-10 px-8 py-10 border-b border-gray-50 flex items-center justify-between mb-4">
-            <Link href="/" className="relative flex items-center h-20 md:h-24 z-10 px-1" onClick={() => setSidebarOpen(false)}>
-                <img
-                    src="/logo.svg"
-                    alt="Sri Guide Logo"
-                    className="h-20 md:h-24 w-auto transition-all duration-500 object-contain"
-                />
-            </Link>
-            <button 
-                onClick={() => setSidebarOpen(false)}
-                className="lg:hidden p-2 text-gray-400 hover:text-gray-900 transition-colors bg-gray-50 rounded-xl"
-            >
-                <CloseIcon size={20} />
-            </button>
-        </div>
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl">
-                {photoUrl ? (
+const SidebarContent = ({ pathname, setSidebarOpen, logout, user, photoUrl }: { pathname: string, setSidebarOpen: (open: boolean) => void, logout: () => void, user: any, photoUrl: string | null }) => {
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
+
+    return (
+        <div className="flex flex-col h-full bg-white border-r border-gray-100">
+            <div className="sticky top-0 bg-white z-10 px-8 py-10 border-b border-gray-50 flex items-center justify-between mb-4">
+                <Link href="/" className="relative flex items-center h-20 md:h-24 z-10 px-1" onClick={() => setSidebarOpen(false)}>
                     <img
-                        src={photoUrl}
-                        alt={user?.fullName}
-                        className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                        src="/logo.svg"
+                        alt="Sri Guide Logo"
+                        className="h-20 md:h-24 w-auto transition-all duration-500 object-contain"
                     />
-                ) : (
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold flex-shrink-0">
-                        {user?.fullName?.charAt(0)}
+                </Link>
+                <button 
+                    onClick={() => setSidebarOpen(false)}
+                    className="lg:hidden p-2 text-gray-400 hover:text-gray-900 transition-colors bg-gray-50 rounded-xl"
+                >
+                    <CloseIcon size={20} />
+                </button>
+            </div>
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl mx-4">
+                    {photoUrl ? (
+                        <img
+                            src={photoUrl}
+                            alt={user?.fullName}
+                            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                        />
+                    ) : (
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold flex-shrink-0">
+                            {user?.fullName?.charAt(0)}
+                        </div>
+                    )}
+                    <div className="overflow-hidden">
+                        <p className="text-sm font-black text-gray-900 truncate leading-tight">{user?.fullName}</p>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Local Guide</p>
                     </div>
-                )}
-                <div className="overflow-hidden">
-                    <p className="text-sm font-black text-gray-900 truncate">{user?.fullName}</p>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Local Guide</p>
                 </div>
+
+            <nav className="flex-1 px-4 space-y-1 mt-6">
+                {GUIDE_NAV.map((link) => {
+                    const isActive = pathname === link.href;
+                    return (
+                        <Link
+                            key={link.name}
+                            href={link.href}
+                            onClick={() => setSidebarOpen(false)}
+                            className={`flex items-center gap-3 px-6 py-4 rounded-2xl transition-all group ${
+                                isActive
+                                    ? "bg-primary text-white shadow-lg shadow-primary/20"
+                                    : "text-gray-500 hover:bg-gray-50"
+                            }`}
+                        >
+                            <span className={isActive ? "text-white" : "text-gray-400 group-hover:text-primary"}>
+                                {link.icon}
+                            </span>
+                            <span className="font-bold text-sm tracking-wide">{link.name}</span>
+                        </Link>
+                    );
+                })}
+            </nav>
+
+            <div className="p-6 mt-auto border-t border-gray-50 bg-white space-y-2">
+                <button
+                    onClick={() => setIsHelpOpen(true)}
+                    className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-gray-600 hover:bg-sky-50 transition-all font-bold text-sm group"
+                >
+                    <div className="p-2 rounded-xl bg-sky-50 group-hover:bg-sky-100 transition-colors text-sky-600">
+                        <AlertCircle size={18} />
+                    </div>
+                    <span>Help & Support</span>
+                </button>
+
+                <button
+                    onClick={logout}
+                    className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-rose-500 hover:bg-rose-50 transition-all font-bold text-sm group"
+                >
+                    <div className="p-2 rounded-xl bg-rose-50 group-hover:bg-rose-100 transition-colors text-rose-500">
+                        <LogOut size={18} />
+                    </div>
+                    <span>Logout</span>
+                </button>
             </div>
 
-        <nav className="flex-1 px-4 space-y-1">
-            {GUIDE_NAV.map((link) => {
-                const isActive = pathname === link.href;
-                return (
-                    <Link
-                        key={link.name}
-                        href={link.href}
-                        onClick={() => setSidebarOpen(false)}
-                        className={`flex items-center gap-3 px-6 py-4 rounded-2xl transition-all group ${
-                            isActive
-                                ? "bg-primary text-white shadow-lg shadow-primary/20"
-                                : "text-gray-500 hover:bg-gray-50"
-                        }`}
-                    >
-                        <span className={isActive ? "text-white" : "text-gray-400 group-hover:text-primary"}>
-                            {link.icon}
-                        </span>
-                        <span className="font-bold text-sm">{link.name}</span>
-                    </Link>
-                );
-            })}
-        </nav>
-
-        <div className="p-6 mt-auto border-t border-gray-50 bg-white">
-            <button
-                onClick={logout}
-                className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-rose-500 hover:bg-rose-50 transition-all font-bold text-sm"
-            >
-                <LogOut size={18} />
-                <span>Logout</span>
-            </button>
+            <HelpDrawer 
+                open={isHelpOpen}
+                onOpenChange={setIsHelpOpen}
+                title="Guide Help Center"
+                description="Need help with your trips or profile? Check out our resources for guides."
+                items={[
+                    { title: "Manage Trips", description: "How to create and edit your offered experiences." },
+                    { title: "Earnings & Payments", description: "Learn about how you get paid for your services." },
+                    { title: "Communicating with Tourists", description: "Best practices for a great traveler experience." },
+                ]}
+            />
         </div>
-    </div>
-);
+    );
+};
 
     return (
         <div className="flex min-h-screen bg-gray-50/50">
