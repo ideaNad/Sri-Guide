@@ -50,9 +50,6 @@ public class UpgradeToAgencyCommandHandler : IRequestHandler<UpgradeToAgencyComm
 
         _context.AgencyProfiles.Add(agencyProfile);
         
-        // Update user role
-        user.Role = UserRole.TravelAgency;
-        
         // Link guide to this new agency
         var guideProfile = await _context.GuideProfiles
             .FirstOrDefaultAsync(g => g.UserId == user.Id, cancellationToken);

@@ -19,12 +19,18 @@ public class ApproveAgencyCommandHandler : IRequestHandler<ApproveAgencyCommand,
     public async Task<bool> Handle(ApproveAgencyCommand request, CancellationToken cancellationToken)
     {
         var agency = await _context.AgencyProfiles
+            .Include(a => a.User)
             .FirstOrDefaultAsync(a => a.Id == request.AgencyProfileId, cancellationToken);
         
         if (agency == null) return false;
 
         agency.VerificationStatus = VerificationStatus.Approved;
         agency.IsVerified = true;
+
+        if (agency.User != null)
+        {
+            agency.User.Role = UserRole.TravelAgency;
+        }
 
         await _context.SaveChangesAsync(cancellationToken);
         return true;

@@ -103,6 +103,9 @@ public class GetGuideDashboardQueryHandler : IRequestHandler<GetGuideDashboardQu
             t.Images.Select(i => i.ImageUrl).ToList()
         )).ToList();
 
+        var ownedAgency = await _context.AgencyProfiles
+            .FirstOrDefaultAsync(a => a.UserId == request.UserId, cancellationToken);
+
         return new GuideDashboardDto(
             guideProfile.User!.FullName,
             guideProfile.User!.ProfileImageUrl,
@@ -112,10 +115,12 @@ public class GetGuideDashboardQueryHandler : IRequestHandler<GetGuideDashboardQu
             completeness,
             guideProfile.IsLegit,
             guideProfile.VerificationStatus.ToString(),
-            activities.OrderByDescending(a => a.TimeAgo).ToList(), // Simple sort, maybe better way
+            activities.OrderByDescending(a => a.TimeAgo).ToList(),
             recentTrips,
             guideProfile.Agency?.CompanyName,
-            guideProfile.AgencyRecruitmentStatus
+            guideProfile.AgencyRecruitmentStatus,
+            ownedAgency?.VerificationStatus.ToString(),
+            ownedAgency != null && ownedAgency.VerificationStatus == VerificationStatus.Pending
         );
     }
 

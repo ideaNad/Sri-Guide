@@ -14,7 +14,9 @@ public record GuideDashboardDto(
     List<DashboardActivityDto> RecentActivities,
     List<DashboardTripDto> RecentTrips,
     string? AgencyName = null,
-    RecruitmentStatus? AgencyRecruitmentStatus = null
+    RecruitmentStatus? AgencyRecruitmentStatus = null,
+    string? AgencyVerificationStatus = null,
+    bool HasPendingAgencyUpgrade = false
 );
 
 public record DashboardActivityDto(

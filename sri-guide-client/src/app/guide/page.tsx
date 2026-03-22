@@ -24,6 +24,8 @@ interface DashboardStats {
     recentTrips: any[];
     agencyName?: string;
     agencyRecruitmentStatus?: number | string;
+    agencyVerificationStatus?: string;
+    hasPendingAgencyUpgrade?: boolean;
 }
 
 export default function GuideDashboardPage() {
@@ -39,7 +41,8 @@ export default function GuideDashboardPage() {
         fullName: "",
         profileImageUrl: "",
         recentActivities: [],
-        recentTrips: []
+        recentTrips: [],
+        hasPendingAgencyUpgrade: false
     });
     const [loading, setLoading] = useState(true);
 
@@ -174,6 +177,30 @@ export default function GuideDashboardPage() {
                     </motion.div>
                 ))}
             </div>
+            
+            {/* Pending Agency Upgrade Banner */}
+            {stats.hasPendingAgencyUpgrade && (
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-amber-50 border-2 border-amber-200 rounded-[2.5rem] p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg shadow-amber-100"
+                >
+                    <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-amber-500 shadow-sm border border-amber-100">
+                            <Clock size={28} />
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-black text-gray-900 italic uppercase leading-none">Agency Request Pending</h3>
+                            <p className="text-sm font-bold text-gray-500 mt-2">
+                                Your application to become a <span className="text-amber-600 font-black">Travel Agency</span> is currently under review by our administrators.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="px-6 py-3 bg-white border border-amber-100 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-amber-600 italic">
+                        Processing Approval
+                    </div>
+                </motion.div>
+            )}
 
             {/* Main Content: Immersive Banners (Long Cards) */}
             <div className="space-y-12">
@@ -307,24 +334,26 @@ export default function GuideDashboardPage() {
                 </div>
 
                 {/* Scale Up / Become an Agency (Bottom Banner) */}
-                <div className="bg-gray-900 rounded-[2.5rem] p-10 md:p-14 border border-gray-100 shadow-xl relative overflow-hidden group text-white">
-                    <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] -mr-48 -mt-48 transition-transform duration-1000 group-hover:scale-110" />
-                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                        <div className="max-w-xl">
-                            <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-4 block">Business Expansion</span>
-                            <h3 className="text-3xl font-black mb-4 uppercase italic leading-none">Ready to scale up?</h3>
-                            <p className="text-white/60 text-sm md:text-base mb-0 font-medium leading-relaxed">
-                                Join the network of top travel agencies. Invite other guides, manage team schedules, and handle larger group bookings with an <span className="text-white font-black italic underline decoration-primary decoration-2 underline-offset-4">Agency Profile</span>.
-                            </p>
+                {!stats.hasPendingAgencyUpgrade && (
+                    <div className="bg-gray-900 rounded-[2.5rem] p-10 md:p-14 border border-gray-100 shadow-xl relative overflow-hidden group text-white">
+                        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] -mr-48 -mt-48 transition-transform duration-1000 group-hover:scale-110" />
+                        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                            <div className="max-w-xl">
+                                <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-4 block">Business Expansion</span>
+                                <h3 className="text-3xl font-black mb-4 uppercase italic leading-none">Ready to scale up?</h3>
+                                <p className="text-white/60 text-sm md:text-base mb-0 font-medium leading-relaxed">
+                                    Join the network of top travel agencies. Invite other guides, manage team schedules, and handle larger group bookings with an <span className="text-white font-black italic underline decoration-primary decoration-2 underline-offset-4">Agency Profile</span>.
+                                </p>
+                            </div>
+                            <button 
+                                onClick={() => router.push("/guide/upgrade")}
+                                className="shrink-0 px-10 py-5 bg-white text-gray-900 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-primary transition-all active:scale-95 shadow-xl shadow-black/20"
+                            >
+                                Become an Agency
+                            </button>
                         </div>
-                        <button 
-                            onClick={() => router.push("/guide/upgrade")}
-                            className="shrink-0 px-10 py-5 bg-white text-gray-900 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-primary transition-all active:scale-95 shadow-xl shadow-black/20"
-                        >
-                            Become an Agency
-                        </button>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );

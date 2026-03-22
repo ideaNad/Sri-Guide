@@ -93,18 +93,18 @@ const AdminUpgradesPage = () => {
                             >
                                 <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                                     <div className="space-y-1">
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                                             Applicant
-                                        </p>
+                                        </div>
                                         <p className="font-black text-gray-900 text-sm tracking-tight">{upgrade.userName}</p>
                                         <p className="text-[10px] text-gray-400 font-bold">UID: {upgrade.userId.slice(-8)}</p>
                                     </div>
                                     <div className="space-y-1 text-left">
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
                                             <Building2 size={10} className="text-primary" />
                                             Proposed Agency
-                                        </p>
+                                        </div>
                                         <p className="font-black text-gray-900 text-sm tracking-tight">{upgrade.companyName}</p>
                                         <p className="text-[10px] text-secondary font-black uppercase tracking-widest">{upgrade.registrationNumber}</p>
                                     </div>
