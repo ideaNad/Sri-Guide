@@ -98,7 +98,11 @@ const PlacesManagementPage = () => {
         uploadData.append("file", file);
 
         try {
-            const response = await apiClient.post<{ url: string }>("/media/upload", uploadData);
+            const response = await apiClient.post<{ url: string }>("/media/upload", uploadData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
             setFormData(prev => ({ ...prev, imageUrl: response.data.url }));
         } catch (error) {
             console.error("Upload failed", error);
