@@ -1,0 +1,13 @@
+{
+  "name": "sri-guide-client-production-scripts",
+  "private": true,
+  "description": "Reference for production commands. Use the main package.json for npm install / lockfile.",
+  "scripts": {
+    "build": "next build",
+    "start": "next start -H 127.0.0.1 -p 3020",
+    "start:production": "next start -H 127.0.0.1 -p 3020"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
