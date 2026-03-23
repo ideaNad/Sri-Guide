@@ -892,15 +892,17 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
                                         </div>
                                         <h4 className="text-3xl font-black text-gray-900 leading-tight tracking-tighter">Shared Experiences</h4>
                                     </div>
-                                    <button
-                                        onClick={() => {
-                                            if (!user) { setIsAuthModalOpen(true); return; }
-                                            setIsReviewModalOpen(true);
-                                        }}
-                                        className="bg-gray-900 text-white px-8 py-3 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-primary transition-all rounded-xl"
-                                    >
-                                        Share My Story
-                                    </button>
+                                    {(!user || user.role === "Tourist") && (
+                                        <button
+                                            onClick={() => {
+                                                if (!user) { setIsAuthModalOpen(true); return; }
+                                                setIsReviewModalOpen(true);
+                                            }}
+                                            className="bg-gray-900 text-white px-8 py-3 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-primary transition-all rounded-xl"
+                                        >
+                                            Share My Story
+                                        </button>
+                                    )}
                                 </div>
 
                                 <div className="space-y-8">
