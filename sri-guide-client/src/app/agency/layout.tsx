@@ -59,7 +59,7 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
                         <img
                             src="/logo.svg"
                             alt="Sri Guide Logo"
-                            className="h-20 md:h-24 w-auto transition-all duration-500 object-contain"
+                            className="absolute left-0 h-40 md:h-44 w-auto transition-all duration-500 object-contain max-w-none"
                         />
                     </Link>
                     <button 
@@ -160,9 +160,9 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
                 title="Agency Help Center"
                 description="Manage your tours and guides effectively. Explore our documentation for agencies."
                 items={[
-                    { title: "Tour Management", description: "How to maximize your visibility with great tours." },
-                    { title: "Guide Roster", description: "Learn how to manage and recruit guides." },
-                    { title: "Dashboard Analytics", description: "Understand your performance metrics." },
+                    { title: "Tour Management", description: "How to maximize your visibility with great tours.", category: 'agency' },
+                    { title: "Guide Roster", description: "Learn how to manage and recruit guides.", category: 'agency' },
+                    { title: "Dashboard Analytics", description: "Understand your performance metrics.", category: 'agency' },
                 ]}
             />
         </div>

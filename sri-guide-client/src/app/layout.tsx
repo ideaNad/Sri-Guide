@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Comfortaa } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/providers/AuthContext";
 import CookieConsent from "@/components/layout/CookieConsent";
+import Script from "next/script";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -93,6 +94,19 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth" data-scroll-behavior="smooth">
       <body className={`${jakarta.variable} ${comfortaa.variable} antialiased selection:bg-primary selection:text-white font-jakarta`}>
         <AuthProvider>
+          <Script
+            src="https://www.googletagmanager.com/gtag/js?id=G-RB3LFLMMSP"
+            strategy="afterInteractive"
+          />
+          <Script id="google-analytics" strategy="afterInteractive">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+
+              gtag('config', 'G-RB3LFLMMSP');
+            `}
+          </Script>
           {children}
           <CookieConsent />
           <ToastContainer />

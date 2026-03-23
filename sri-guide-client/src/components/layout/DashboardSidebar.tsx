@@ -42,7 +42,7 @@ export default function DashboardSidebar({ isOpen, setIsOpen }: DashboardSidebar
                         <img
                             src="/logo.svg"
                             alt="Sri Guide Logo"
-                            className="h-20 md:h-24 w-auto transition-all duration-500 object-contain"
+                            className="absolute left-0 h-40 md:h-44 w-auto transition-all duration-500 object-contain max-w-none"
                         />
                     </Link>
                     <button 
@@ -138,9 +138,9 @@ export default function DashboardSidebar({ isOpen, setIsOpen }: DashboardSidebar
                     title="Dashboard Help"
                     description="Need help with your account or finding tours? Check out our resources."
                     items={[
-                        { title: "Manage Profile", description: "Learn how to update your personal info." },
-                        { title: "Saved Tours", description: "How to save and find your favorite experiences." },
-                        { title: "Contact Support", description: "Reach out to us for any technical issues." },
+                        { title: "Manage Profile", description: "Learn how to update your personal info.", category: 'tourist' },
+                        { title: "Saved Tours", description: "How to save and find your favorite experiences.", category: 'tourist' },
+                        { title: "Contact Support", description: "Reach out to us for any technical issues.", category: 'tourist' },
                     ]}
                 />
             </div>

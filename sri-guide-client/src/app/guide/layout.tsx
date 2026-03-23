@@ -68,7 +68,7 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user, photoUrl }: { 
                     <img
                         src="/logo.svg"
                         alt="Sri Guide Logo"
-                        className="h-20 md:h-24 w-auto transition-all duration-500 object-contain"
+                        className="absolute left-0 h-40 md:h-44 w-auto transition-all duration-500 object-contain max-w-none"
                     />
                 </Link>
                 <button 
@@ -147,9 +147,9 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user, photoUrl }: { 
                 title="Guide Help Center"
                 description="Need help with your trips or profile? Check out our resources for guides."
                 items={[
-                    { title: "Manage Trips", description: "How to create and edit your offered experiences." },
-                    { title: "Earnings & Payments", description: "Learn about how you get paid for your services." },
-                    { title: "Communicating with Tourists", description: "Best practices for a great traveler experience." },
+                    { title: "Manage Trips", description: "How to create and edit your offered experiences.", category: 'guide' },
+                    { title: "Earnings & Payments", description: "Learn about how you get paid for your services.", category: 'guide' },
+                    { title: "Communicating with Tourists", description: "Best practices for a great traveler experience.", category: 'guide' },
                 ]}
             />
         </div>
