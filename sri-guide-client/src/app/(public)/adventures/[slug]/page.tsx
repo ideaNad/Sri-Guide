@@ -23,14 +23,38 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const response = await apiClient.get<AdventureTrip>(`/trip/${slug}`);
     const trip = response.data;
+    const title = `${trip.title} | Adventure in Sri Lanka`;
+    const description = trip.description?.replace(/<[^>]*>/g, '').substring(0, 160) || `Experience an exciting adventure in Sri Lanka: ${trip.title}.`;
+    const url = `https://www.sriguide.com/adventures/${slug}`;
+    const image = (trip.images && trip.images.length > 0) ? trip.images[0] : "/share-image.jpg";
 
     return {
-      title: `${trip.title} | Adventure in Sri Lanka`,
-      description: trip.description?.substring(0, 160),
+      title,
+      description,
+      alternates: {
+        canonical: url,
+      },
       openGraph: {
         title: `${trip.title} | SriGuide`,
-        description: trip.description?.substring(0, 160),
-        images: (trip.images && trip.images.length > 0) ? [trip.images[0]] : [],
+        description,
+        url,
+        siteName: "SriGuide",
+        images: [
+          {
+            url: image,
+            width: 1200,
+            height: 630,
+            alt: trip.title,
+          },
+        ],
+        locale: "en_US",
+        type: "article",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${trip.title} | SriGuide`,
+        description,
+        images: [image],
       },
     };
   } catch (error) {

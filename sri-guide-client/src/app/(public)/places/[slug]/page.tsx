@@ -13,14 +13,38 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const response = await apiClient.get<any>(`/places/${slug}`);
     const place = response.data;
+    const title = `${place.title} | Discover Sri Lanka`;
+    const description = place.description?.replace(/<[^>]*>/g, '').substring(0, 160) || `Explore the beauty and culture of ${place.title}, a must-visit destination in Sri Lanka.`;
+    const url = `https://www.sriguide.com/places/${slug}`;
+    const image = place.imageUrl || "/share-image.jpg";
 
     return {
-      title: `${place.title} | Discover Sri Lanka`,
-      description: place.description?.replace(/<[^>]*>/g, '').substring(0, 160) || `Explore the beauty and culture of ${place.title}, a must-visit destination in Sri Lanka.`,
+      title,
+      description,
+      alternates: {
+        canonical: url,
+      },
       openGraph: {
         title: `${place.title} | SriGuide`,
-        description: place.description?.replace(/<[^>]*>/g, '').substring(0, 160),
-        images: place.imageUrl ? [place.imageUrl] : [],
+        description,
+        url,
+        siteName: "SriGuide",
+        images: [
+          {
+            url: image,
+            width: 1200,
+            height: 630,
+            alt: place.title,
+          },
+        ],
+        locale: "en_US",
+        type: "article",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${place.title} | SriGuide`,
+        description,
+        images: [image],
       },
     };
   } catch (error) {

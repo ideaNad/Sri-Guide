@@ -38,18 +38,18 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://sriguide.com"), // User to update with actual domain
+  metadataBase: new URL("https://www.sriguide.com"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
     title: "SriGuide — Discover Sri Lanka with Expert Local Guides",
     description: "Experience the authentic Sri Lanka. Find certified local guides, discover curated tours, and hidden adventures.",
-    url: "https://sriguide.com",
+    url: "https://www.sriguide.com",
     siteName: "SriGuide",
     images: [
       {
-        url: "/og-image.jpg", // Need to ensure this exists or use a default
+        url: "/share-image.jpg",
         width: 1200,
         height: 630,
         alt: "SriGuide - Discover Sri Lanka",
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "SriGuide — Discover Sri Lanka with Expert Local Guides",
     description: "Experience the authentic Sri Lanka. Find certified local guides and discover curated tours.",
-    images: ["/og-image.jpg"],
+    images: ["/share-image.jpg"],
   },
   icons: {
     icon: "/favicon.png",
