@@ -6,7 +6,7 @@ module.exports = {
   apps: [
     {
       name: 'sri-guide-web',
-      cwd: '/var/www/sriguide/client/sri-guide-client',
+      cwd: '/var/www/sriguide/Sri-Guide/sri-guide-client',
       script: 'npm',
       args: 'run start:production',
       instances: 1,
@@ -15,6 +15,7 @@ module.exports = {
       max_restarts: 20,
       env: {
         NODE_ENV: 'production',
+        PORT: 3020
       },
     },
     // Optional: run the .NET API with PM2 instead of systemd (pick one).

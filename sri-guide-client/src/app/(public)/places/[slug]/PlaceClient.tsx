@@ -124,7 +124,7 @@ export default function PlaceClient({ slug, initialData }: { slug: string, initi
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
-                                className="prose prose-xl prose-primary max-w-none"
+                                className="prose prose-base md:prose-xl prose-primary max-w-none break-words overflow-x-hidden"
                             >
                                 <div 
                                     className="text-gray-600 leading-relaxed font-medium space-y-6"
@@ -141,7 +141,7 @@ export default function PlaceClient({ slug, initialData }: { slug: string, initi
                                 </p>
                                 
                                 <button 
-                                    onClick={() => router.push(`/discovery?query=${encodeURIComponent(place.title)}`)}
+                                    onClick={() => router.push(`/tours?query=${encodeURIComponent(place.title)}`)}
                                     className="w-full py-5 bg-gray-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-primary transition-all shadow-xl shadow-gray-200 mb-4"
                                 >
                                     Find Tours Here

@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import Card from "@/components/ui/Card";
 import apiClient from "@/services/api-client";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Filter, SlidersHorizontal, Search, MapPin, Calendar, Users, Loader2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Filter, SlidersHorizontal, Search, MapPin, Calendar, Users, Loader2, Compass } from "lucide-react";
 
 interface Tour {
     id: string;
@@ -24,17 +25,27 @@ interface Tour {
     reviews?: number;
     rating?: number;
 }
-const ToursPage = () => {
+const ToursPageContent = () => {
+    const searchParams = useSearchParams();
+    
     const [tours, setTours] = useState<Tour[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState("All");
-    const [searchQuery, setSearchQuery] = useState("");
+    const [searchQuery, setSearchQuery] = useState(searchParams.get("query") || "");
     const [priceRange, setPriceRange] = useState(500);
 
     const [sortBy, setSortBy] = useState("Most Popular");
     const [pageNumber, setPageNumber] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
+
+    useEffect(() => {
+        const query = searchParams.get("query");
+        if (query) {
+            setSearchQuery(query);
+            setPageNumber(1);
+        }
+    }, [searchParams]);
 
     const fetchTours = async () => {
         setLoading(true);
@@ -250,5 +261,16 @@ const ToursPage = () => {
     );
 };
 
-import { Compass } from "lucide-react";
+const ToursPage = () => {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="w-12 h-12 text-primary animate-spin" />
+            </div>
+        }>
+            <ToursPageContent />
+        </Suspense>
+    );
+};
+
 export default ToursPage;
