@@ -21,12 +21,16 @@ public class UploadTripImageCommandHandler : IRequestHandler<UploadTripImageComm
     public async Task<string> Handle(UploadTripImageCommand request, CancellationToken cancellationToken)
     {
         var trip = await _context.Trips
+            .Include(t => t.Images)
             .FirstOrDefaultAsync(t => t.Id == request.TripId && 
                 (request.GuideId != null ? t.GuideId == request.GuideId : t.AgencyId == request.AgencyId), 
                 cancellationToken);
 
         if (trip == null)
             throw new Exception("Trip not found or unauthorized");
+
+        if (trip.Images.Count >= 5)
+            throw new Exception("Maximum of 5 photos allowed per trip");
 
         if (request.File.Length > 0)
         {

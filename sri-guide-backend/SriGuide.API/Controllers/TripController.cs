@@ -93,6 +93,26 @@ public class TripController : ControllerBase
         return Ok();
     }
 
+    [HttpDelete("{tripId}/photo")]
+    [Authorize(Roles = "Guide,TravelAgency")]
+    public async Task<IActionResult> DeleteTripPhoto(Guid tripId, [FromQuery] string imageUrl)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var agencyId = User.FindFirstValue("AgencyProfileId");
+        
+        if (userId == null) return Unauthorized();
+
+        var success = await _mediator.Send(new DeleteTripImageCommand(
+            tripId, 
+            User.IsInRole("Guide") ? Guid.Parse(userId) : null,
+            imageUrl,
+            !string.IsNullOrEmpty(agencyId) ? Guid.Parse(agencyId) : null));
+            
+        if (!success) return NotFound("Trip or photo not found.");
+
+        return Ok();
+    }
+
     [HttpPut("{tripId}")]
     [Authorize(Roles = "Guide,TravelAgency")]
     public async Task<IActionResult> UpdateTrip(Guid tripId, [FromBody] UpdateTripCommand command)

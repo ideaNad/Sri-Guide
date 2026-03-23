@@ -58,6 +58,14 @@ export default function GuideTripsPage() {
 
     const handleCreateTrip = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Check image limit
+        const totalImages = existingImages.length + selectedFiles.length;
+        if (totalImages > 5) {
+            alert("Maximum 5 photos allowed per adventure.");
+            return;
+        }
+
         setSubmitting(true);
         try {
             let tripId = editingTripId;
@@ -98,6 +106,15 @@ export default function GuideTripsPage() {
         setSubmitting(true); // Can reuse submitting state to show loading maybe? Or just await silently.
         
         try {
+            // Check current images count
+            const currentTrip = trips.find(t => t.id === tripId);
+            const currentCount = currentTrip?.images?.length || 0;
+            
+            if (currentCount + files.length > 5) {
+                alert(`You can only upload ${5 - currentCount} more photo(s). Total limit is 5.`);
+                return;
+            }
+
             for (let i = 0; i < files.length; i++) {
                 const formData = new FormData();
                 formData.append("file", files[i]);
@@ -241,7 +258,13 @@ export default function GuideTripsPage() {
                                         className="w-full h-full absolute inset-0 opacity-0 cursor-pointer"
                                         onChange={(e) => {
                                             if (e.target.files) {
-                                                setSelectedFiles(Array.from(e.target.files));
+                                                const newFiles = Array.from(e.target.files);
+                                                if (existingImages.length + newFiles.length > 5) {
+                                                    alert("Total photos cannot exceed 5. Please select fewer files.");
+                                                    e.target.value = "";
+                                                    return;
+                                                }
+                                                setSelectedFiles(newFiles);
                                             }
                                         }}
                                     />
