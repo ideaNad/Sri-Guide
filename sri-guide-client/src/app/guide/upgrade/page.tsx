@@ -106,8 +106,22 @@ const UpgradePage = () => {
                     </div>
                     <h2 className="text-3xl font-black text-gray-900 mb-4 tracking-tighter">Application Rejected</h2>
                     <p className="text-gray-500 font-medium mb-8">
-                        Your previous request to upgrade to a Travel Agency was rejected. Please contact support for more details.
+                        Your previous request to upgrade to a Travel Agency was rejected. Please contact support for more details, or you can try submitting a fresh application.
                     </p>
+                    <button 
+                        onClick={async () => {
+                            if (!confirm("Are you sure you want to reset your application?")) return;
+                            try {
+                                await apiClient.post("/profile/reset-agency-upgrade");
+                                window.location.reload();
+                            } catch (err) {
+                                alert("Failed to reset");
+                            }
+                        }}
+                        className="px-10 py-4 bg-gray-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary transition-all shadow-xl"
+                    >
+                        Reset & Try Again
+                    </button>
                 </motion.div>
             </div>
         );

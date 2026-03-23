@@ -139,6 +139,18 @@ public class ProfileController : ControllerBase
         var result = await _mediator.Send(command with { UserId = Guid.Parse(userId) });
         return Ok(result);
     }
+
+    [HttpPost("reset-agency-upgrade")]
+    [Authorize(Roles = "Guide")]
+    public async Task<IActionResult> ResetAgencyUpgrade()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var result = await _mediator.Send(new ResetAgencyUpgradeCommand(Guid.Parse(userId)));
+        return Ok(result);
+    }
+
     [HttpGet("agency")]
     [Authorize(Roles = "TravelAgency")]
     public async Task<ActionResult<AgencyProfileDto>> GetAgencyProfile()

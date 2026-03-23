@@ -71,6 +71,17 @@ export default function GuideDashboardPage() {
         }
     };
 
+    const handleResetRequest = async () => {
+        if (!confirm("Are you sure you want to reset your application? You will need to fill out the form again.")) return;
+        try {
+            await apiClient.post("/profile/reset-agency-upgrade");
+            await fetchDashboardData();
+        } catch (error) {
+            console.error("Error resetting request", error);
+            alert("Failed to reset application.");
+        }
+    };
+
     const statCards = [
         { label: "Avg. Rating", value: stats.averageRating.toFixed(1), icon: <Star className="text-yellow-500 fill-yellow-500" />, trend: `${stats.totalReviews} reviews`, trendColor: "text-teal-600 bg-teal-50" },
         { 
@@ -214,6 +225,36 @@ export default function GuideDashboardPage() {
                 </motion.div>
             )}
 
+            {/* Rejected Agency Upgrade Banner */}
+            {stats.agencyVerificationStatus === "Rejected" && (
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-rose-50 border-2 border-rose-200 rounded-[2.5rem] p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg shadow-rose-100"
+                >
+                    <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-rose-500 shadow-sm border border-rose-100">
+                            <AlertCircle size={28} />
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-xl font-black text-gray-900 italic uppercase leading-none">Application Rejected</h3>
+                                <span className="px-3 py-1 bg-rose-600 text-white text-[8px] font-black uppercase tracking-[0.2em] rounded-full italic">Rejected</span>
+                            </div>
+                            <p className="text-sm font-bold text-gray-500 mt-2">
+                                Your application to become a <span className="text-rose-600 font-black">Travel Agency</span> was rejected. You can review and submit a fresh application.
+                            </p>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={handleResetRequest}
+                        className="px-8 py-4 bg-gray-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-600 transition-all shadow-xl shadow-rose-200"
+                    >
+                        Request Again
+                    </button>
+                </motion.div>
+            )}
+
             {/* Main Content: Immersive Banners (Long Cards) */}
             <div className="space-y-12">
                 {stats.profileCompleteness < 100 && (
@@ -346,7 +387,7 @@ export default function GuideDashboardPage() {
                 </div>
 
                 {/* Scale Up / Become an Agency (Bottom Banner) */}
-                {!stats.hasPendingAgencyUpgrade && (
+                {!stats.hasPendingAgencyUpgrade && stats.agencyVerificationStatus !== "Rejected" && (
                     <div className="bg-gray-900 rounded-[2.5rem] p-10 md:p-14 border border-gray-100 shadow-xl relative overflow-hidden group text-white">
                         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] -mr-48 -mt-48 transition-transform duration-1000 group-hover:scale-110" />
                         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
