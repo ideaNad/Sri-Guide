@@ -5,13 +5,14 @@ import { useParams, useSearchParams } from "next/navigation";
 import {
     MapPin, Heart, ArrowRight,
     Calendar, ChevronRight, Clock, Tag, Building2,
-    X, ChevronLeft, ChevronRight as ChevronRightIcon, Images, ZoomIn, Map, Star
+    X, ChevronLeft, ChevronRight as ChevronRightIcon, Images, ZoomIn, Map, Star, Share2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/services/api-client";
 import { useAuth } from "@/providers/AuthContext";
 import Link from "next/link";
 import AuthModal from "@/features/auth/components/AuthModal";
+import { useShare } from "@/hooks/useShare";
 import { Loader2 } from "lucide-react";
 import ReviewModal from "@/features/reviews/components/ReviewModal";
 
@@ -367,6 +368,7 @@ const ImageGrid = ({
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function AdventureClient({ slug, initialData, type }: { slug: string, initialData?: TripDetail, type?: string | null }) {
     const { user, login } = useAuth();
+    const { share } = useShare();
     const [tour, setTour] = useState<TripDetail | null>(() => {
         if (!initialData) return null;
         const data: any = initialData;
@@ -685,6 +687,18 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
                                 >
                                     <Heart size={16} className={tour.isLikedByCurrentUser ? "fill-rose-500 text-rose-500" : ""} />
                                     {tour.likeCount > 0 && <span>{tour.likeCount}</span>}
+                                </button>
+
+                                <button 
+                                    onClick={() => share({
+                                        title: tour.title,
+                                        text: tour.description,
+                                        url: window.location.href
+                                    })}
+                                    className="p-2.5 bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-primary hover:border-primary transition-all shadow-sm"
+                                    title="Share Adventure"
+                                >
+                                    <Share2 size={18} />
                                 </button>
                             </div>
                         </div>

@@ -19,8 +19,11 @@ interface PopularPlace {
     createdAt: string;
 }
 
+import { useShare } from "@/hooks/useShare";
+
 export default function PlaceClient({ slug, initialData }: { slug: string, initialData?: PopularPlace }) {
     const router = useRouter();
+    const { share } = useShare();
     const [place, setPlace] = useState<PopularPlace | null>(initialData || null);
     const [loading, setLoading] = useState(!initialData);
 
@@ -120,14 +123,38 @@ export default function PlaceClient({ slug, initialData }: { slug: string, initi
                 <div className="container mx-auto px-6">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
                         <div className="lg:col-span-8">
+                            <style>{`
+                                .richtextbody { color: #4b5563; line-height: 1.8; font-size: 1rem; word-break: break-word; overflow-wrap: break-word; }
+                                .richtextbody h1,.richtextbody h2,.richtextbody h3,.richtextbody h4 { font-weight: 800; color: #111827; margin: 1.5em 0 0.5em; line-height: 1.3; }
+                                .richtextbody h1 { font-size: 2rem; } .richtextbody h2 { font-size: 1.75rem; } .richtextbody h3 { font-size: 1.5rem; }
+                                .richtextbody p { margin: 1em 0; }
+                                .richtextbody ul,.richtextbody ol { padding-left: 1.5em; margin: 1em 0; }
+                                .richtextbody ul { list-style-type: disc; } .richtextbody ol { list-style-type: decimal; }
+                                .richtextbody li { margin: 0.5em 0; }
+                                .richtextbody strong,.richtextbody b { font-weight: 700; color: #111827; }
+                                .richtextbody em,.richtextbody i { font-style: italic; }
+                                .richtextbody a { color: #059669; text-decoration: underline; }
+                                .richtextbody blockquote { border-left: 4px solid #10b981; padding-left: 1.5em; color: #6b7280; font-style: italic; margin: 1.5em 0; }
+                                .richtextbody img { max-width: 100%; height: auto; border-radius: 1rem; margin: 2em 0; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+                                .richtextbody table { width: 100%; border-collapse: collapse; margin: 2em 0; font-size: 0.9rem; display: block; overflow-x: auto; }
+                                .richtextbody td,.richtextbody th { border: 1px solid #e5e7eb; padding: 0.75em 1em; text-align: left; }
+                                .richtextbody th { background: #f9fafb; font-weight: 700; }
+                                @media (max-width: 640px) {
+                                    .richtextbody { font-size: 0.95rem; }
+                                    .richtextbody h1 { font-size: 1.75rem; }
+                                    .richtextbody h2 { font-size: 1.5rem; }
+                                    .richtextbody h3 { font-size: 1.25rem; }
+                                }
+                            `}</style>
+
                             <motion.div 
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
-                                className="prose prose-base md:prose-xl prose-primary max-w-none break-words overflow-x-hidden"
+                                className="max-w-none"
                             >
                                 <div 
-                                    className="text-gray-600 leading-relaxed font-medium space-y-6"
+                                    className="richtextbody"
                                     dangerouslySetInnerHTML={{ __html: place.description }}
                                 />
                             </motion.div>
@@ -148,6 +175,11 @@ export default function PlaceClient({ slug, initialData }: { slug: string, initi
                                 </button>
 
                                 <button 
+                                    onClick={() => share({
+                                        title: place.title,
+                                        text: place.description,
+                                        url: window.location.href
+                                    })}
                                     className="w-full py-5 bg-white border-2 border-gray-100 text-gray-400 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-3"
                                 >
                                     <Share2 size={16} /> Share Destination

@@ -92,11 +92,14 @@ export interface PublicProfile {
     }[];
 }
 
+import { useShare } from "@/hooks/useShare";
+
 export default function ProfileClient({ slug, initialData }: { slug: string, initialData?: PublicProfile }) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { user, login } = useAuth();
     const { toast } = useToast();
+    const { share } = useShare();
     const [profile, setProfile] = useState<PublicProfile | null>(initialData || null);
 
 
@@ -248,6 +251,17 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
                                         <span className="text-xs text-gray-500 font-bold tracking-wide">
                                             {profile.totalReviews} {isAgencyPath ? 'TOTAL' : 'TRAVELER'} REVIEWS
                                         </span>
+                                        <button 
+                                            onClick={() => share({
+                                                title: `Check out ${profile.fullName} on SriGuide`,
+                                                text: profile.bio,
+                                                url: window.location.href
+                                            })}
+                                            className="ml-auto p-2.5 bg-white border border-gray-100 rounded-full text-gray-400 hover:text-primary hover:border-primary transition-all shadow-sm"
+                                            title="Share Profile"
+                                        >
+                                            <Share2 size={18} />
+                                        </button>
                                     </div>
                                 )}
                             </div>

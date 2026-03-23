@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import ReviewModal from "@/features/reviews/components/ReviewModal";
 import AuthModal from "@/features/auth/components/AuthModal";
+import { useShare } from "@/hooks/useShare";
 
 interface Review {
     id: string;
@@ -57,6 +58,7 @@ interface TripDetail {
 
 export default function TourClient({ slug, initialData }: { slug: string, initialData?: TripDetail }) {
     const { user, login } = useAuth();
+    const { share } = useShare();
     const [tour, setTour] = useState<TripDetail | null>(() => {
         if (!initialData) return null;
         const data: any = initialData;
@@ -226,7 +228,14 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                     >
                         <Heart className={`w-5 h-5 ${tour.isLikedByCurrentUser ? "fill-white" : ""}`} />
                     </button>
-                    <button className="w-14 h-14 bg-white/10 backdrop-blur-md border border-white/20 border-l-0 flex items-center justify-center text-white hover:bg-white hover:text-gray-900 transition-all">
+                    <button 
+                        onClick={() => share({
+                            title: tour.title,
+                            text: tour.description,
+                            url: window.location.href
+                        })}
+                        className="w-14 h-14 bg-white/10 backdrop-blur-md border border-white/20 border-l-0 flex items-center justify-center text-white hover:bg-white hover:text-gray-900 transition-all"
+                    >
                         <Share2 className="w-5 h-5" />
                     </button>
                 </div>
