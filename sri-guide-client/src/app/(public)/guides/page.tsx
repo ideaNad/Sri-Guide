@@ -36,7 +36,7 @@ const GuidesPage = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [showFilters, setShowFilters] = useState(false);
-    
+
     // Filter states
     const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
     const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
@@ -105,16 +105,16 @@ const GuidesPage = () => {
                     <form onSubmit={handleSearch} className="max-w-xl flex flex-col md:flex-row items-stretch bg-white mt-8 border border-gray-100 shadow-xl rounded-2xl overflow-hidden group hover:shadow-2xl transition-all duration-300">
                         <div className="flex items-center flex-1 px-6 py-4 md:py-0">
                             <Search className="w-5 h-5 text-gray-400 mr-4 font-bold" />
-                            <input 
-                                type="text" 
-                                placeholder="Search by name, language..." 
-                                className="flex-1 outline-none text-sm font-semibold text-gray-700 placeholder:font-medium placeholder:tracking-normal px-0" 
+                            <input
+                                type="text"
+                                placeholder="Search by name, language..."
+                                className="flex-1 outline-none text-sm font-semibold text-gray-700 placeholder:font-medium placeholder:tracking-normal px-0"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-                        <button 
-                            type="button" 
+                        <button
+                            type="button"
                             onClick={() => setShowFilters(!showFilters)}
                             className={`px-6 py-4 md:py-0 border-l border-gray-100 flex items-center justify-center gap-2 font-bold text-sm transition-colors ${showFilters || selectedLanguages.length > 0 || selectedSpecialties.length > 0 || selectedAreas.length > 0 ? 'text-primary bg-primary/5' : 'text-gray-500 hover:text-gray-900 bg-gray-50 hover:bg-gray-100'}`}
                         >
@@ -122,7 +122,7 @@ const GuidesPage = () => {
                             {(selectedLanguages.length + selectedSpecialties.length + selectedAreas.length) > 0 && (
                                 <span className="bg-primary text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center">
                                     {selectedLanguages.length + selectedSpecialties.length + selectedAreas.length}
-                               </span>
+                                </span>
                             )}
                         </button>
                         <button type="submit" className="bg-primary text-white px-10 py-5 font-bold text-sm hover:bg-secondary transition-all">Search</button>
@@ -131,7 +131,7 @@ const GuidesPage = () => {
                     {/* Advanced Filters Block */}
                     <AnimatePresence>
                         {showFilters && (
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0, height: 0, marginTop: 0 }}
                                 animate={{ opacity: 1, height: "auto", marginTop: 24 }}
                                 exit={{ opacity: 0, height: 0, marginTop: 0 }}
@@ -203,7 +203,7 @@ const GuidesPage = () => {
                                     </div>
                                 </div>
                                 <div className="bg-gray-50 px-8 py-4 border-t border-gray-100 flex items-center justify-between">
-                                    <button 
+                                    <button
                                         onClick={() => {
                                             setSelectedLanguages([]);
                                             setSelectedSpecialties([]);
@@ -244,10 +244,10 @@ const GuidesPage = () => {
 
                                     <div className="flex items-start justify-between mb-8 relative z-10">
                                         <div className="w-28 h-28 overflow-hidden shadow-lg rounded-full border-4 border-white transform transition-all group-hover:scale-105 group-hover:rotate-2">
-                                            <img 
-                                                src={guide.image ? (guide.image.startsWith('http') ? guide.image : `${apiClient.defaults.baseURL?.replace('/api', '')}${guide.image.startsWith('/') ? '' : '/'}${guide.image}`) : `https://ui-avatars.com/api/?name=${guide.title}&background=F5F4F0&color=2563eb`} 
-                                                alt={guide.title} 
-                                                className="w-full h-full object-cover transition-all duration-500" 
+                                            <img
+                                                src={guide.image ? (guide.image.startsWith('http') ? guide.image : `${apiClient.defaults.baseURL?.replace('/api', '')}${guide.image.startsWith('/') ? '' : '/'}${guide.image}`) : `https://ui-avatars.com/api/?name=${guide.title}&background=F5F4F0&color=2563eb`}
+                                                alt={guide.title}
+                                                className="w-full h-full object-cover transition-all duration-500"
                                             />
                                         </div>
                                         <div className="flex flex-col items-end">
@@ -293,7 +293,7 @@ const GuidesPage = () => {
                                     </div>
 
                                     <div className="pt-4 border-t border-gray-50 relative z-10">
-                                        <Link 
+                                        <Link
                                             href={`/profile/${guide.slug || guide.id}`}
                                             className="w-full flex items-center justify-center py-4 rounded-2xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all font-black text-xs uppercase tracking-[0.2em] shadow-sm hover:shadow-xl hover:shadow-primary/20"
                                         >
@@ -312,11 +312,10 @@ const GuidesPage = () => {
                                     <button
                                         key={i}
                                         onClick={() => setPageNumber(i + 1)}
-                                        className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold text-sm shadow-sm transition-all ${
-                                            pageNumber === i + 1 
-                                            ? "bg-primary text-white shadow-md" 
-                                            : "bg-white border border-gray-100 text-gray-500 hover:border-primary hover:text-primary"
-                                        }`}
+                                        className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold text-sm shadow-sm transition-all ${pageNumber === i + 1
+                                                ? "bg-primary text-white shadow-md"
+                                                : "bg-white border border-gray-100 text-gray-500 hover:border-primary hover:text-primary"
+                                            }`}
                                     >
                                         {i + 1}
                                     </button>

@@ -192,16 +192,25 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                                 <span className="font-medium">{tour.location}</span>
                             </div>
                             {tour.rating > 0 && (
-                                <div className="flex bg-yellow-400 px-3 py-1 rounded-full items-center gap-1.5 border border-yellow-300 shadow-lg scale-110 ml-2">
-                                    <Star size={12} className="fill-white text-white" />
-                                    <span className="text-xs font-black text-white">{tour.rating.toFixed(1)}</span>
-                                    <span className="text-[10px] text-white/80 font-bold">({tour.reviewsCount})</span>
+                                <div className="flex bg-blue-400/10 backdrop-blur-md px-3 py-1.5 rounded-full items-center gap-1.5 border border-blue-200/50 shadow-sm ml-2">
+                                    <div className="flex items-center gap-0.5">
+                                        {[...Array(5)].map((_, i) => (
+                                            <Star
+                                                key={i}
+                                                size={10}
+                                                fill={i < Math.floor(tour.rating) ? "currentColor" : "none"}
+                                                className={i < Math.floor(tour.rating) ? "text-yellow-400" : "text-yellow-400/30"}
+                                            />
+                                        ))}
+                                    </div>
+                                    <span className="text-xs font-black text-blue-100 ml-1">{tour.rating.toFixed(1)}</span>
+                                    <span className="text-[10px] text-blue-100/60 font-bold">({tour.reviewsCount})</span>
                                 </div>
                             )}
                             {tour.guideRating > 0 && (
-                                <div className="flex bg-white/10 backdrop-blur-md px-3 py-1 rounded-full items-center gap-1.5 border border-white/20">
-                                    <Star size={12} className="fill-highlight text-highlight" />
-                                    <span className="text-xs font-bold">{tour.guideRating.toFixed(1)}</span>
+                                <div className="flex bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full items-center gap-1.5 border border-white/20">
+                                    <Star size={10} className="fill-yellow-400 text-yellow-500" />
+                                    <span className="text-xs font-bold text-white">{tour.guideRating.toFixed(1)}</span>
                                     <span className="text-[10px] text-white/70">({tour.guideTotalReviews})</span>
                                 </div>
                             )}
@@ -445,10 +454,10 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                                     <p className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] mb-1">Proposed Guide</p>
                                     <h4 className="text-xl font-black text-gray-900 group-hover:text-primary transition-colors tracking-tighter">{tour.guideName}</h4>
                                     {tour.guideRating > 0 && (
-                                        <div className="flex items-center gap-1 mt-1 text-highlight">
-                                            <Star size={12} fill="currentColor" />
+                                        <div className="flex items-center gap-1 mt-1">
+                                            <Star size={10} fill="currentColor" className="text-yellow-500" />
                                             <span className="text-xs font-bold text-gray-700">{tour.guideRating.toFixed(1)}</span>
-                                            <span className="text-[10px] text-gray-400 font-medium lowercase">({tour.guideTotalReviews} reviews)</span>
+                                            <span className="text-[10px] text-gray-400 font-medium">({tour.guideTotalReviews} reviews)</span>
                                         </div>
                                     )}
                                 </div>

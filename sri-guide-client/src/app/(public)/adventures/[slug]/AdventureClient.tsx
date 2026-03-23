@@ -653,10 +653,19 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
                             </h1>
                             <div className="flex flex-col sm:flex-row gap-3 items-center">
                                 {tour.rating > 0 && (
-                                    <div className="flex bg-yellow-400 text-white px-3 py-1.5 rounded-2xl items-center gap-1.5 shadow-sm border border-yellow-300 transform -rotate-1">
-                                        <Star size={14} className="fill-white text-white" />
-                                        <span className="text-sm font-black">{tour.rating.toFixed(1)}</span>
-                                        <span className="text-[10px] opacity-75 font-bold">({tour.reviewsCount})</span>
+                                    <div className="flex bg-blue-400/10 text-blue-600 px-3 py-1.5 rounded-2xl items-center gap-1.5 shadow-sm border border-blue-200/50 transform -rotate-1">
+                                        <div className="flex items-center gap-0.5">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star
+                                                    key={i}
+                                                    size={10}
+                                                    fill={i < Math.floor(tour.rating) ? "currentColor" : "none"}
+                                                    className={i < Math.floor(tour.rating) ? "text-yellow-500" : "text-yellow-500/30"}
+                                                />
+                                            ))}
+                                        </div>
+                                        <span className="text-sm font-black ml-0.5">{tour.rating.toFixed(1)}</span>
+                                        <span className="text-[10px] text-blue-600/60 font-bold ml-0.5">({tour.reviewsCount})</span>
                                     </div>
                                 )}
                                 {/* {tour.guideRating > 0 && (

@@ -160,6 +160,25 @@ const Card: React.FC<CardProps> = ({
                     {title}
                 </h3>
 
+                {(type === "tour" || type === "agency" || type === "adventure") && rating !== undefined && rating > 0 && (
+                    <div className="flex items-center gap-1.5 mb-3 bg-blue-50/80 px-2.5 py-1 rounded-full border border-blue-100 w-fit group-hover:bg-blue-100/50 transition-colors">
+                        <div className="flex items-center gap-0.5">
+                            {[...Array(5)].map((_, i) => (
+                                <Star
+                                    key={i}
+                                    size={10}
+                                    fill={i < Math.floor(rating) ? "currentColor" : "none"}
+                                    className={i < Math.floor(rating) ? "text-yellow-500" : "text-yellow-200"}
+                                />
+                            ))}
+                        </div>
+                        <span className="text-[10px] font-black text-blue-700 ml-0.5">{rating.toFixed(1)}</span>
+                        {reviews !== undefined && reviews > 0 && (
+                            <span className="text-[9px] font-bold text-blue-600/60 ml-0.5">({reviews})</span>
+                        )}
+                    </div>
+                )}
+
                 {subtitle && <p className="text-sm font-medium text-gray-500 mb-3 truncate">{subtitle}</p>}
 
                 <div className="space-y-2">
@@ -178,10 +197,22 @@ const Card: React.FC<CardProps> = ({
                             </div>
                         )}
 
-                        {rating !== undefined && rating > 0 && (type === "guide" || type === "agency" || type === "tour" || type === "adventure") && (
-                            <div className="flex items-center gap-1.5 bg-yellow-400/90 text-white px-3 py-1 rounded-full text-[10px] font-black shadow-sm group-hover:bg-yellow-400 transition-colors">
-                                <Star size={10} fill="currentColor" className="mr-0.5" />
-                                {rating.toFixed(1)} {reviews !== undefined && reviews > 0 && `(${reviews})`}
+                        {rating !== undefined && rating > 0 && type === "guide" && (
+                            <div className="flex items-center gap-1 bg-yellow-400/10 px-3 py-1.5 rounded-full border border-yellow-200/50 group-hover:bg-yellow-400/20 transition-all duration-300">
+                                <div className="flex items-center">
+                                    {[...Array(5)].map((_, i) => (
+                                        <Star
+                                            key={i}
+                                            size={10}
+                                            fill={i < Math.floor(rating) ? "currentColor" : "none"}
+                                            className={i < Math.floor(rating) ? "text-yellow-500" : "text-yellow-500/30"}
+                                        />
+                                    ))}
+                                </div>
+                                <span className="text-[10px] font-black text-yellow-700 ml-0.5">{rating.toFixed(1)}</span>
+                                {reviews !== undefined && reviews > 0 && (
+                                    <span className="text-[9px] font-bold text-yellow-600/60 ml-0.5">({reviews})</span>
+                                )}
                             </div>
                         )}
 

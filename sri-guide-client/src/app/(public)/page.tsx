@@ -64,12 +64,12 @@ interface RecentTrip {
 }
 
 interface PopularPlace {
-    id: string;
-    title: string;
-    description: string;
-    imageUrl: string;
-    viewCount: number;
-    slug?: string;
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  viewCount: number;
+  slug?: string;
 }
 
 export default function Home() {
@@ -225,8 +225,8 @@ export default function Home() {
                 ))
               ) : popularTours.length > 0 ? (
                 popularTours.map((tour) => (
-                  <motion.div 
-                    key={tour.id} 
+                  <motion.div
+                    key={tour.id}
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true }}
@@ -386,8 +386,8 @@ export default function Home() {
             ) : guides.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {guides.map((guide) => (
-                  <Link 
-                    href={`/profile/${guide.slug || guide.id}`} 
+                  <Link
+                    href={`/profile/${guide.slug || guide.id}`}
                     key={guide.id}
                   >
                     <motion.div
@@ -395,22 +395,32 @@ export default function Home() {
                       className="group bg-white p-8 rounded-3xl border border-gray-100 flex flex-col items-center text-center shadow-lg hover:shadow-xl transition-all duration-300 h-full"
                     >
                       <div className="w-24 h-24 rounded-full overflow-hidden mb-6 border-4 border-gray-50 group-hover:border-primary/20 transition-all shadow-md">
-                        <img 
-                          src={getImageUrl(guide.image)} 
+                        <img
+                          src={getImageUrl(guide.image)}
                           alt={guide.title}
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                       </div>
                       <h4 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors mb-2">{guide.title}</h4>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-4 opacity-60 italic">{guide.subtitle || "Local Guide"}</p>
                       
                       {guide.rating > 0 && (
-                        <div className="flex items-center justify-center gap-1.5 mb-4 bg-yellow-400/10 text-yellow-600 px-3 py-1 rounded-full">
-                          <Star size={12} className="fill-highlight text-highlight" />
-                          <span className="text-xs font-black">{guide.rating.toFixed(1)}</span>
-                          <span className="text-[10px] font-bold opacity-60">({guide.reviews})</span>
+                        <div className="flex items-center justify-center gap-1.5 mb-3 bg-blue-50/80 px-2.5 py-1 rounded-full border border-blue-100 group-hover:bg-blue-100/50 transition-colors w-fit mx-auto">
+                          <div className="flex items-center gap-0.5">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                size={10}
+                                fill={i < Math.floor(guide.rating) ? "currentColor" : "none"}
+                                className={i < Math.floor(guide.rating) ? "text-yellow-500" : "text-yellow-200"}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-[10px] font-black text-blue-700 ml-0.5">{guide.rating.toFixed(1)}</span>
+                          <span className="text-[9px] font-bold text-blue-600/60 ml-0.5 transition-opacity">({guide.reviews})</span>
                         </div>
                       )}
+
+                      <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-4 opacity-60 italic">{guide.subtitle || "Local Guide"}</p>
 
                       <div className="flex items-center gap-2 text-gray-400 mb-6">
                         <MapPin size={14} className="text-primary/40" />
@@ -449,17 +459,17 @@ export default function Home() {
             ) : agencies.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {agencies.map((agency) => (
-                    <Card
-                      key={agency.id}
-                      id={agency.id}
-                      slug={agency.slug}
-                      title={agency.title}
-                      image={agency.image || ""}
-                      rating={agency.rating}
-                      reviews={agency.reviews}
-                      type="agency"
-                      subtitle="Official Travel Agency"
-                    />
+                  <Card
+                    key={agency.id}
+                    id={agency.id}
+                    slug={agency.slug}
+                    title={agency.title}
+                    image={agency.image || ""}
+                    rating={agency.rating}
+                    reviews={agency.reviews}
+                    type="agency"
+                    subtitle="Official Travel Agency"
+                  />
                 ))}
               </div>
             ) : (
