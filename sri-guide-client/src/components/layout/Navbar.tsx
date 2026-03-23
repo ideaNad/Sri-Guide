@@ -35,7 +35,7 @@ const Navbar = () => {
         { name: "Tours", href: "/tours" },
         { name: "Agencies", href: "/agencies" },
         { name: "Guides", href: "/guides" },
-        { name: "Privacy", href: "/privacy-policy" },
+        // { name: "Privacy", href: "/privacy-policy" },
         { name: "Contact", href: "/contact" },
     ];
 
@@ -49,23 +49,23 @@ const Navbar = () => {
     const textColor = isScrolled || !isHomePage ? "text-black" : "text-white";
     const logoColor = isScrolled || !isHomePage ? "text-primary" : "text-white";
 
-const NavItems = ({ mobile = false, textColor, navLinks, setIsMobileMenuOpen }: { mobile?: boolean, textColor: string, navLinks: any[], setIsMobileMenuOpen: (open: boolean) => void }) => (
-    <>
-        {navLinks.map((link) => (
-            <Link
-                key={link.name}
-                href={link.href}
-                className={mobile
-                    ? "text-3xl font-black text-black hover:text-primary transition-colors uppercase tracking-tight"
-                    : `px-6 py-2.5 text-[13px] font-bold ${textColor} hover:bg-black/5 rounded-full transition-all flex items-center`
-                }
-                onClick={() => mobile && setIsMobileMenuOpen(false)}
-            >
-                {link.name}
-            </Link>
-        ))}
-    </>
-);
+    const NavItems = ({ mobile = false, textColor, navLinks, setIsMobileMenuOpen }: { mobile?: boolean, textColor: string, navLinks: any[], setIsMobileMenuOpen: (open: boolean) => void }) => (
+        <>
+            {navLinks.map((link) => (
+                <Link
+                    key={link.name}
+                    href={link.href}
+                    className={mobile
+                        ? "text-3xl font-black text-black hover:text-primary transition-colors uppercase tracking-tight"
+                        : `px-6 py-2.5 text-[13px] font-bold ${textColor} hover:bg-black/5 rounded-full transition-all flex items-center`
+                    }
+                    onClick={() => mobile && setIsMobileMenuOpen(false)}
+                >
+                    {link.name}
+                </Link>
+            ))}
+        </>
+    );
 
     const getDashboardHref = () => {
         if (!user) return "/";
@@ -77,201 +77,200 @@ const NavItems = ({ mobile = false, textColor, navLinks, setIsMobileMenuOpen }: 
 
     return (
         <>
-        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${navBackground}`}>
-            <div className="container mx-auto px-6 md:px-12 lg:px-24 flex items-center justify-between">
+            <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${navBackground}`}>
+                <div className="container mx-auto px-6 md:px-12 lg:px-24 flex items-center justify-between">
 
-                {/* Logo */}
-                <Link href="/" className="relative transition-all duration-500 flex items-center h-8 md:h-10 z-10">
-                    <img
-                        id="navbar-logo"
-                        src="/logo.svg"
-                        alt="SRIGuide Logo"
-                        className={`absolute left-0 h-40 md:h-40 w-auto transition-all duration-500 object-contain max-w-none ${!isScrolled && isHomePage ? "brightness-0 invert" : ""} ${isMobileMenuOpen ? "opacity-0 pointer-events-none" : "opacity-100"
-                            }`}
-                    />
-                </Link>
+                    {/* Logo */}
+                    <Link href="/" className="relative transition-all duration-500 flex items-center h-8 md:h-10 z-10">
+                        <img
+                            id="navbar-logo"
+                            src="/logo.svg"
+                            alt="SRIGuide Logo"
+                            className={`absolute left-0 h-40 md:h-40 w-auto transition-all duration-500 object-contain max-w-none ${!isScrolled && isHomePage ? "brightness-0 invert" : ""} ${isMobileMenuOpen ? "opacity-0 pointer-events-none" : "opacity-100"
+                                }`}
+                        />
+                    </Link>
 
-                {/* Desktop Menu */}
-                {/* Floating rounded menu only on home page & top */}
-                {!isScrolled && isHomePage ? (
-                    <div className="hidden lg:flex items-center space-x-1 p-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 transition-all duration-500">
-                        {navLinks.map((link) => (
-                            <Link
-                                key={link.name}
-                                href={link.href}
-                                className="px-6 py-2.5 text-[13px] font-bold text-white hover:bg-black/5 rounded-full transition-all flex items-center"
-                            >
-                                {link.name}
-                            </Link>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="hidden lg:flex items-center space-x-1">
-                        <NavItems textColor={textColor} navLinks={navLinks} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-                    </div>
-                )}
-
-                {/* Auth & CTA */}
-                <div className="hidden lg:flex items-center gap-4">
-                    <button
-                        onClick={() => setIsHelpOpen(true)}
-                        className={`p-2.5 rounded-full transition-all flex items-center justify-center ${
-                            !isScrolled && isHomePage 
-                            ? "bg-white/10 text-white hover:bg-white/20 border border-white/20" 
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
-                        title="Help Center"
-                    >
-                        <HelpCircle size={20} />
-                    </button>
-
-                    {user ? (
-                        <div className={`flex items-center gap-6 ${!isScrolled && isHomePage ? 'bg-white/10 backdrop-blur-md px-5 py-1 rounded-full border border-white/20 shadow-sm' : ''}`}>
-                            <Link
-                                href={getDashboardHref()}
-                                className={`flex items-center gap-2 text-[13px] font-bold ${textColor} hover:text-primary transition-colors`}
-                            >
-                                <LayoutDashboard size={18} />
-                                <span>Dashboard</span>
-                            </Link>
-                            {user.role === "Admin" && (
+                    {/* Desktop Menu */}
+                    {/* Floating rounded menu only on home page & top */}
+                    {!isScrolled && isHomePage ? (
+                        <div className="hidden lg:flex items-center space-x-1 p-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 transition-all duration-500">
+                            {navLinks.map((link) => (
                                 <Link
-                                    href="/admin/users"
-                                    className={`flex items-center gap-2 text-[13px] font-bold ${textColor} hover:text-primary transition-colors`}
+                                    key={link.name}
+                                    href={link.href}
+                                    className="px-6 py-2.5 text-[13px] font-bold text-white hover:bg-black/5 rounded-full transition-all flex items-center"
                                 >
-                                    <ShieldCheck size={18} className="text-secondary" />
-                                    <span>Manage Platform</span>
+                                    {link.name}
                                 </Link>
-                            )}
-                            <button
-                                onClick={logout}
-                                className="flex items-center gap-2 text-[13px] font-bold text-rose-500 hover:text-rose-600 transition-colors"
-                            >
-                                <LogOut size={18} />
-                                <span>Logout</span>
-                            </button>
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20 overflow-hidden">
-                                {user.profileImageUrl ? (
-                                    <img 
-                                        src={user.profileImageUrl.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${user.profileImageUrl}` : user.profileImageUrl} 
-                                        alt={user.fullName} 
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    user.fullName.charAt(0)
-                                )}
-                            </div>
+                            ))}
                         </div>
                     ) : (
-                        <button
-                            onClick={() => setIsAuthModalOpen(true)}
-                            className={`px-8 py-3 bg-primary hover:bg-secondary text-white rounded-full text-[13px] font-bold transition-all shadow-lg shadow-primary/20 flex items-center gap-2 active:scale-95`}
-                        >
-                            <User size={16} />
-                            <span>Sign In</span>
-                        </button>
+                        <div className="hidden lg:flex items-center space-x-1">
+                            <NavItems textColor={textColor} navLinks={navLinks} setIsMobileMenuOpen={setIsMobileMenuOpen} />
+                        </div>
                     )}
+
+                    {/* Auth & CTA */}
+                    <div className="hidden lg:flex items-center gap-4">
+                        <button
+                            onClick={() => setIsHelpOpen(true)}
+                            className={`p-2.5 rounded-full transition-all flex items-center justify-center ${!isScrolled && isHomePage
+                                    ? "bg-white/10 text-white hover:bg-white/20 border border-white/20"
+                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                }`}
+                            title="Help Center"
+                        >
+                            <HelpCircle size={20} />
+                        </button>
+
+                        {user ? (
+                            <div className={`flex items-center gap-6 ${!isScrolled && isHomePage ? 'bg-white/10 backdrop-blur-md px-5 py-1 rounded-full border border-white/20 shadow-sm' : ''}`}>
+                                <Link
+                                    href={getDashboardHref()}
+                                    className={`flex items-center gap-2 text-[13px] font-bold ${textColor} hover:text-primary transition-colors`}
+                                >
+                                    <LayoutDashboard size={18} />
+                                    <span>Dashboard</span>
+                                </Link>
+                                {user.role === "Admin" && (
+                                    <Link
+                                        href="/admin/users"
+                                        className={`flex items-center gap-2 text-[13px] font-bold ${textColor} hover:text-primary transition-colors`}
+                                    >
+                                        <ShieldCheck size={18} className="text-secondary" />
+                                        <span>Manage Platform</span>
+                                    </Link>
+                                )}
+                                <button
+                                    onClick={logout}
+                                    className="flex items-center gap-2 text-[13px] font-bold text-rose-500 hover:text-rose-600 transition-colors"
+                                >
+                                    <LogOut size={18} />
+                                    <span>Logout</span>
+                                </button>
+                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20 overflow-hidden">
+                                    {user.profileImageUrl ? (
+                                        <img
+                                            src={user.profileImageUrl.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${user.profileImageUrl}` : user.profileImageUrl}
+                                            alt={user.fullName}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        user.fullName.charAt(0)
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => setIsAuthModalOpen(true)}
+                                className={`px-8 py-3 bg-primary hover:bg-secondary text-white rounded-full text-[13px] font-bold transition-all shadow-lg shadow-primary/20 flex items-center gap-2 active:scale-95`}
+                            >
+                                <User size={16} />
+                                <span>Sign In</span>
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Mobile Menu Button */}
+                    <button className={`lg:hidden ${textColor}`} onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                        {isMobileMenuOpen ? <X /> : <Menu />}
+                    </button>
                 </div>
 
-                {/* Mobile Menu Button */}
-                <button className={`lg:hidden ${textColor}`} onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                    {isMobileMenuOpen ? <X /> : <Menu />}
-                </button>
-            </div>
-
-            {/* Mobile Menu Overlay */}
-            <AnimatePresence>
-                {isMobileMenuOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="fixed top-0 left-0 w-full h-screen bg-white lg:hidden py-12 px-6 flex flex-col items-center justify-center space-y-10 z-[60]"
-                    >
-                        {/* Logo inside Mobile Menu */}
-                        <Link href="/" className="absolute top-8 left-6" onClick={() => setIsMobileMenuOpen(false)}>
-                            <img
-                                src="/logo.svg"
-                                alt="SRIGuide Logo"
-                                className="h-40 w-auto object-contain"
-                            />
-                        </Link>
-
-                        <div className="absolute top-8 right-24 flex items-center gap-4">
-                            <button
-                                onClick={() => { setIsHelpOpen(true); setIsMobileMenuOpen(false); }}
-                                className="p-3 bg-gray-100 rounded-full text-gray-600"
-                            >
-                                <HelpCircle size={24} />
-                            </button>
-                        </div>
-
-                        <button
-                            className="absolute top-8 right-8 text-black p-2 bg-gray-100 rounded-full"
-                            onClick={() => setIsMobileMenuOpen(false)}
+                {/* Mobile Menu Overlay */}
+                <AnimatePresence>
+                    {isMobileMenuOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="fixed top-0 left-0 w-full h-screen bg-white lg:hidden py-12 px-6 flex flex-col items-center justify-center space-y-10 z-[60]"
                         >
-                            <X className="w-8 h-8" />
-                        </button>
+                            {/* Logo inside Mobile Menu */}
+                            <Link href="/" className="absolute top-8 left-6" onClick={() => setIsMobileMenuOpen(false)}>
+                                <img
+                                    src="/logo.svg"
+                                    alt="SRIGuide Logo"
+                                    className="h-40 w-auto object-contain"
+                                />
+                            </Link>
 
-                        <div className="flex flex-col items-center space-y-8">
-                            <NavItems mobile textColor={textColor} navLinks={navLinks} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-                        </div>
+                            <div className="absolute top-8 right-24 flex items-center gap-4">
+                                <button
+                                    onClick={() => { setIsHelpOpen(true); setIsMobileMenuOpen(false); }}
+                                    className="p-3 bg-gray-100 rounded-full text-gray-600"
+                                >
+                                    <HelpCircle size={24} />
+                                </button>
+                            </div>
 
-                        <div className="w-full max-w-xs space-y-4">
-                            {user ? (
-                                <>
-                                    <div className="flex flex-col items-center gap-4 mb-6">
-                                        <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold border-4 border-primary/20 overflow-hidden text-3xl shadow-xl">
-                                            {user.profileImageUrl ? (
-                                                <img 
-                                                    src={user.profileImageUrl.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${user.profileImageUrl}` : user.profileImageUrl} 
-                                                    alt={user.fullName} 
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            ) : (
-                                                user.fullName.charAt(0)
-                                            )}
+                            <button
+                                className="absolute top-8 right-8 text-black p-2 bg-gray-100 rounded-full"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                <X className="w-8 h-8" />
+                            </button>
+
+                            <div className="flex flex-col items-center space-y-8">
+                                <NavItems mobile textColor={textColor} navLinks={navLinks} setIsMobileMenuOpen={setIsMobileMenuOpen} />
+                            </div>
+
+                            <div className="w-full max-w-xs space-y-4">
+                                {user ? (
+                                    <>
+                                        <div className="flex flex-col items-center gap-4 mb-6">
+                                            <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold border-4 border-primary/20 overflow-hidden text-3xl shadow-xl">
+                                                {user.profileImageUrl ? (
+                                                    <img
+                                                        src={user.profileImageUrl.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${user.profileImageUrl}` : user.profileImageUrl}
+                                                        alt={user.fullName}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    user.fullName.charAt(0)
+                                                )}
+                                            </div>
+                                            <div className="text-center">
+                                                <h3 className="text-2xl font-black text-black uppercase tracking-tight">{user.fullName}</h3>
+                                                <p className="text-sm font-bold text-gray-400">{user.email}</p>
+                                            </div>
                                         </div>
-                                        <div className="text-center">
-                                            <h3 className="text-2xl font-black text-black uppercase tracking-tight">{user.fullName}</h3>
-                                            <p className="text-sm font-bold text-gray-400">{user.email}</p>
-                                        </div>
-                                    </div>
-                                    <Link
-                                        href={getDashboardHref()}
-                                        className="w-full block text-center py-5 bg-gray-100 text-black rounded-full text-lg font-black uppercase tracking-widest"
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        Dashboard
-                                    </Link>
-                                    {user.role === "Admin" && (
                                         <Link
-                                            href="/admin/users"
-                                            className="w-full block text-center py-5 bg-secondary/10 text-secondary rounded-full text-lg font-black uppercase tracking-widest"
+                                            href={getDashboardHref()}
+                                            className="w-full block text-center py-5 bg-gray-100 text-black rounded-full text-lg font-black uppercase tracking-widest"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
-                                            Admin Panel
+                                            Dashboard
                                         </Link>
-                                    )}
+                                        {user.role === "Admin" && (
+                                            <Link
+                                                href="/admin/users"
+                                                className="w-full block text-center py-5 bg-secondary/10 text-secondary rounded-full text-lg font-black uppercase tracking-widest"
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                            >
+                                                Admin Panel
+                                            </Link>
+                                        )}
+                                        <button
+                                            onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+                                            className="w-full py-5 bg-rose-50 text-rose-500 rounded-full text-lg font-black uppercase tracking-widest"
+                                        >
+                                            Logout
+                                        </button>
+                                    </>
+                                ) : (
                                     <button
-                                        onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                                        className="w-full py-5 bg-rose-50 text-rose-500 rounded-full text-lg font-black uppercase tracking-widest"
+                                        onClick={() => { setIsAuthModalOpen(true); setIsMobileMenuOpen(false); }}
+                                        className="w-full py-5 bg-primary text-white rounded-full text-lg font-black uppercase tracking-widest shadow-xl"
                                     >
-                                        Logout
+                                        Sign In
                                     </button>
-                                </>
-                            ) : (
-                                <button
-                                    onClick={() => { setIsAuthModalOpen(true); setIsMobileMenuOpen(false); }}
-                                    className="w-full py-5 bg-primary text-white rounded-full text-lg font-black uppercase tracking-widest shadow-xl"
-                                >
-                                    Sign In
-                                </button>
-                            )}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                                )}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
             </nav>
 
@@ -290,7 +289,7 @@ const NavItems = ({ mobile = false, textColor, navLinks, setIsMobileMenuOpen }: 
             />
 
             {/* Global Help Drawer */}
-            <HelpDrawer 
+            <HelpDrawer
                 open={isHelpOpen}
                 onOpenChange={setIsHelpOpen}
                 title="SriGuide Help Center"

@@ -18,6 +18,9 @@ public class ToggleTripLikeCommandHandler : IRequestHandler<ToggleTripLikeComman
 
     public async Task<bool> Handle(ToggleTripLikeCommand request, CancellationToken cancellationToken)
     {
+        var tripExists = await _context.Trips.AnyAsync(t => t.Id == request.TripId, cancellationToken);
+        if (!tripExists) return false;
+
         var existing = await _context.TripLikes
             .FirstOrDefaultAsync(tl => tl.TripId == request.TripId && tl.UserId == request.UserId, cancellationToken);
 

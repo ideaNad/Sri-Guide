@@ -553,7 +553,8 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
     const handleToggleLike = async () => {
         if (!user) { setIsAuthModalOpen(true); return; }
         try {
-            const response = await apiClient.post<{ liked: boolean }>(`/trip/${tour?.id || slug}/toggle-like`);
+            const endpoint = tour?.isAgencyTour ? 'tours' : 'trip';
+            const response = await apiClient.post<{ liked: boolean }>(`/${endpoint}/${tour?.id || slug}/toggle-like`);
             if (tour) {
                 setTour({
                     ...tour,

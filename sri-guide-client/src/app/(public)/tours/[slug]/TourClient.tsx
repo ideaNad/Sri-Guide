@@ -133,7 +133,7 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
     const handleToggleLike = async () => {
         if (!user) return;
         try {
-            const response = await apiClient.post<{ liked: boolean }>(`/trip/${tour?.id || slug}/toggle-like`);
+            const response = await apiClient.post<{ liked: boolean }>(`/tours/${tour?.id || slug}/toggle-like`);
             if (tour) {
                 setTour({
                     ...tour,

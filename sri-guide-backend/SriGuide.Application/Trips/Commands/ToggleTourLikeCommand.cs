@@ -18,6 +18,9 @@ public class ToggleTourLikeCommandHandler : IRequestHandler<ToggleTourLikeComman
 
     public async Task<bool> Handle(ToggleTourLikeCommand request, CancellationToken cancellationToken)
     {
+        var tourExists = await _context.Tours.AnyAsync(t => t.Id == request.TourId, cancellationToken);
+        if (!tourExists) return false;
+
         var existing = await _context.TourLikes
             .FirstOrDefaultAsync(tl => tl.TourId == request.TourId && tl.UserId == request.UserId, cancellationToken);
 
