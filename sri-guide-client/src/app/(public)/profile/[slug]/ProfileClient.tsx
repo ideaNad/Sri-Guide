@@ -219,7 +219,7 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
                                             Travel Agency
                                         </div>
                                     )}
-                                    {!isAgencyPath && profile.isLegit && (
+                                    {!isAgencyPath && profile.isLegit && profile.verificationStatus !== 'Pending' && (
                                         <div className="inline-flex items-center text-xs font-bold px-4 py-1.5 rounded-full shadow-sm bg-emerald-50 text-emerald-700 border border-emerald-200">
                                             <ShieldCheck size={16} className="mr-2" />
                                             Licensed Guide

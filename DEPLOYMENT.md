@@ -196,11 +196,60 @@ curl -sS -I https://your-domain.com
 
 ---
 
-## 6. Updates
+## 6. Updates (SEO-safe flow)
 
-**API:** replace published files, `sudo systemctl restart sriguide-api` (or `pm2 restart sriguide-api`).
+Use this order when frontend changes include SEO improvements (metadata, canonical, robots, sitemap, structured data, SSR content).
 
-**Frontend:** `git pull` (or upload), `npm ci --omit=dev`, `npm run build`, `pm2 restart sri-guide-web`.
+### Frontend SEO update checklist
+
+1. Pull the latest frontend changes:
+
+```bash
+cd /var/www/sriguide/client/sri-guide-client
+git pull
+```
+
+2. Verify production environment values still match the live domain:
+
+- `NEXT_PUBLIC_API_URL=https://your-domain.com/api`
+- Any SEO-related env values used by your app (site URL, analytics IDs, etc.)
+
+3. Install and build:
+
+```bash
+npm ci --omit=dev
+npm run build
+```
+
+4. Restart Next.js process:
+
+```bash
+pm2 restart sri-guide-web
+pm2 status
+```
+
+5. Validate SEO-critical pages and assets:
+
+```bash
+curl -sS https://your-domain.com | rg -n "<title>|meta name=\"description\"|canonical"
+curl -sS https://your-domain.com/robots.txt
+curl -sS https://your-domain.com/sitemap.xml
+curl -sS -I https://your-domain.com
+```
+
+6. Confirm SSR/metadata for key routes (home, destination details, blog/article pages) in browser "View Source", not only DevTools DOM.
+
+7. Optional quick Lighthouse check (Production URL) for SEO score before and after release.
+
+### API updates (unchanged)
+
+Replace published files, then restart:
+
+```bash
+sudo systemctl restart sriguide-api
+# or
+pm2 restart sriguide-api
+```
 
 ---
 

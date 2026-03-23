@@ -72,9 +72,15 @@ export default function GuideDashboardPage() {
     };
 
     const statCards = [
-        { label: "Avg. Rating", value: stats.averageRating.toFixed(1), icon: <Star className="text-yellow-500 fill-yellow-500" />, trend: `${stats.totalReviews} reviews` },
-        { label: "License Status", value: stats.isLegit ? "Verified" : "Unverified", icon: <ShieldCheck className={stats.isLegit ? "text-emerald-500" : "text-gray-400"} />, trend: stats.verificationStatus === "None" ? "Not submitted" : stats.verificationStatus === "Pending" ? "Pending approval" : stats.verificationStatus === "Approved" ? "Approved" : stats.verificationStatus === "Rejected" ? "Rejected" : stats.verificationStatus },
-        { label: "Profile", value: `${stats.profileCompleteness}%`, icon: <Users className="text-primary" />, trend: "Completeness" },
+        { label: "Avg. Rating", value: stats.averageRating.toFixed(1), icon: <Star className="text-yellow-500 fill-yellow-500" />, trend: `${stats.totalReviews} reviews`, trendColor: "text-teal-600 bg-teal-50" },
+        { 
+            label: "License Status", 
+            value: stats.isLegit && stats.verificationStatus !== "Pending" ? "Verified" : "Unverified", 
+            icon: <ShieldCheck className={stats.isLegit && stats.verificationStatus !== "Pending" ? "text-emerald-500" : "text-gray-400"} />, 
+            trend: stats.verificationStatus === "None" ? "Not submitted" : stats.verificationStatus === "Pending" ? "Pending approval" : stats.verificationStatus === "Approved" ? "Approved" : stats.verificationStatus === "Rejected" ? "Rejected" : stats.verificationStatus,
+            trendColor: stats.verificationStatus === "Pending" ? "text-amber-600 bg-amber-50" : stats.verificationStatus === "Rejected" ? "text-rose-600 bg-rose-50" : stats.verificationStatus === "Approved" ? "text-emerald-600 bg-emerald-50" : "text-teal-600 bg-teal-50"
+        },
+        { label: "Profile", value: `${stats.profileCompleteness}%`, icon: <Users className="text-primary" />, trend: "Completeness", trendColor: "text-teal-600 bg-teal-50" },
     ];
 
     if (loading) {
@@ -113,7 +119,7 @@ export default function GuideDashboardPage() {
                         <p className="text-gray-500 font-bold mt-2">Here&apos;s what&apos;s happening with your guiding business today.</p>
                     </div>
                 </div>
-                {stats.isLegit && (
+                {stats.isLegit && stats.verificationStatus !== 'Pending' && (
                     <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-2xl border border-emerald-100 shadow-sm">
                         <ShieldCheck size={20} className="fill-emerald-500 text-white" />
                         <span className="font-black text-xs uppercase tracking-widest italic">Licensed Guide</span>
@@ -178,7 +184,7 @@ export default function GuideDashboardPage() {
                         <div>
                             <h3 className="font-black text-gray-900 text-xl tracking-tight leading-none mb-1">{stat.value}</h3>
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">{stat.label}</p>
-                            <span className="text-[9px] font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full mt-2 inline-block italic">{stat.trend}</span>
+                            <span className={`text-[9px] font-bold ${stat.trendColor} px-2 py-0.5 rounded-full mt-2 inline-block italic`}>{stat.trend}</span>
                         </div>
                     </motion.div>
                 ))}

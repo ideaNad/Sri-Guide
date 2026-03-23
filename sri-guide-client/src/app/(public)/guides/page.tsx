@@ -17,6 +17,7 @@ interface DiscoveryItem {
     reviews: number;
     type: string;
     isLegit?: boolean;
+    verificationStatus?: string;
     tags: string[];
     agencyName?: string;
     slug?: string;
@@ -278,7 +279,7 @@ const GuidesPage = () => {
                                                     <ShieldCheck className="w-4 h-4 text-blue-500" /> Travel Agency
                                                 </span>
                                             )}
-                                            {guide.isLegit && (
+                                            {guide.isLegit && guide.verificationStatus !== 'Pending' && (
                                                 <span className="text-emerald-600 font-semibold text-xs flex items-center gap-1.5 bg-emerald-50 px-2 py-1 rounded">
                                                     <ShieldCheck className="w-4 h-4 text-emerald-500" /> Licensed Guide <Star size={10} className="fill-emerald-500 text-emerald-500" />
                                                 </span>

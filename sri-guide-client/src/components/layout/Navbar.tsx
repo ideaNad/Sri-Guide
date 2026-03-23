@@ -9,6 +9,7 @@ import AuthModal from "@/features/auth/components/AuthModal";
 import { useAuth } from "@/providers/AuthContext";
 import apiClient from "@/services/api-client";
 import { HelpDrawer } from "@/components/help/HelpDrawer";
+import { HELP_ITEMS } from "@/constants/HelpData";
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -294,12 +295,7 @@ const NavItems = ({ mobile = false, textColor, navLinks, setIsMobileMenuOpen }: 
                 onOpenChange={setIsHelpOpen}
                 title="SriGuide Help Center"
                 description="How can we help you today? Explore our guides or contact support."
-                items={[
-                    { title: "Getting Started", description: "Learn how to use SriGuide to find the best tours." },
-                    { title: "Booking a Guide", description: "Step-by-step guide on how to book and pay." },
-                    { title: "Safety & Privacy", description: "Your safety is our priority. Read our guidelines." },
-                    { title: "Become a Guide", description: "Share your passion and earn money." },
-                ]}
+                items={HELP_ITEMS}
             />
         </>
     );
