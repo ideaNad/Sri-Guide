@@ -10,6 +10,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/services/api-client";
 import { useAuth } from "@/providers/AuthContext";
 import { useRouter } from "next/navigation";
+import { useConfirm } from "@/hooks/useConfirm";
+import { useToast } from "@/hooks/useToast";
+
 
 interface Tour {
     id: string;
@@ -30,7 +33,10 @@ interface Tour {
 export default function AgencyToursPage() {
     const { user } = useAuth();
     const router = useRouter();
+    const { confirm } = useConfirm();
+    const { toast } = useToast();
     const [tours, setTours] = useState<Tour[]>([]);
+
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'hidden'>('all');
@@ -58,14 +64,23 @@ export default function AgencyToursPage() {
     };
 
     const handleDeleteTour = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this tour package? This action cannot be undone.")) return;
+        const confirmed = await confirm({
+            title: "Delete Tour",
+            message: "Are you sure you want to delete this tour package? This action cannot be undone.",
+            variant: "danger"
+        });
+        if (!confirmed) return;
+        
         try {
             await apiClient.delete(`/Agency/tours/${id}`);
             setTours(prev => prev.filter(t => t.id !== id));
+            toast.success("Tour package deleted successfully.");
         } catch (error) {
             console.error("Failed to delete tour", error);
+            toast.error("Failed to delete tour package. Please try again.");
         }
     };
+
 
     const handleToggleActive = async (id: string) => {
         try {

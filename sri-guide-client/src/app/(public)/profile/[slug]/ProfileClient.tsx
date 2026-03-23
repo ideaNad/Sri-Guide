@@ -11,7 +11,9 @@ import { motion } from "framer-motion";
 import apiClient from "@/services/api-client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/providers/AuthContext";
+import { useToast } from "@/hooks/useToast";
 import Link from "next/link";
+
 import AuthModal from "@/features/auth/components/AuthModal";
 import Card from "@/components/ui/Card";
 
@@ -94,7 +96,9 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
     const router = useRouter();
     const searchParams = useSearchParams();
     const { user, login } = useAuth();
+    const { toast } = useToast();
     const [profile, setProfile] = useState<PublicProfile | null>(initialData || null);
+
 
     const isAgencyPath = searchParams.get('type') === 'agency';
     const [reviews, setReviews] = useState<Review[]>([]);
@@ -618,9 +622,10 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
                                             return;
                                         }
                                         if (user.role !== 'Tourist') {
-                                            alert("Only Tourists can write reviews.");
+                                            toast.warning("Only Tourists can write reviews.", "Action Restricted");
                                             return;
                                         }
+
                                         setReviewFormOpen(!reviewFormOpen);
                                     }}
                                     className="mt-4 sm:mt-0 px-6 py-2.5 bg-secondary text-white rounded-full text-xs font-bold uppercase tracking-wider hover:bg-primary transition-all shadow-sm"

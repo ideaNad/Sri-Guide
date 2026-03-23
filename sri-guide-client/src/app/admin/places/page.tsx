@@ -8,7 +8,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/services/api-client";
 import dynamic from 'next/dynamic';
 import Link from "next/link";
+import { useToast } from "@/hooks/useToast";
+import { useConfirm } from "@/hooks/useConfirm";
 import 'react-quill-new/dist/quill.snow.css';
+
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
@@ -23,8 +26,11 @@ interface PopularPlace {
 }
 
 const PlacesManagementPage = () => {
+    const { toast } = useToast();
+    const { confirm } = useConfirm();
     const [places, setPlaces] = useState<PopularPlace[]>([]);
     const [loading, setLoading] = useState(true);
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingPlace, setEditingPlace] = useState<PopularPlace | null>(null);
     const [formData, setFormData] = useState({
@@ -106,8 +112,9 @@ const PlacesManagementPage = () => {
             setFormData(prev => ({ ...prev, imageUrl: response.data.url }));
         } catch (error) {
             console.error("Upload failed", error);
-            alert("Image upload failed");
+            toast.error("Image upload failed", "Upload Error");
         } finally {
+
             setUploading(false);
         }
     };
@@ -124,20 +131,27 @@ const PlacesManagementPage = () => {
             handleCloseModal();
         } catch (error) {
             console.error("Error saving place:", error);
-            alert("Failed to save place");
+            toast.error("Failed to save place", "Save Error");
         }
+
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this place?")) return;
+        const confirmed = await confirm({
+            title: "Delete Place",
+            message: "Are you sure you want to delete this place?",
+            variant: "danger"
+        });
+        if (!confirmed) return;
         try {
             await apiClient.delete(`/places/${id}`);
             fetchPlaces();
         } catch (error) {
             console.error("Error deleting place:", error);
-            alert("Failed to delete place");
+            toast.error("Failed to delete place", "Delete Error");
         }
     };
+
 
     return (
         <div className="space-y-8">

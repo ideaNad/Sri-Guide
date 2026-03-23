@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import apiClient from "@/services/api-client";
+import { useToast } from "@/hooks/useToast";
+
 
 interface Booking {
     id: string;
@@ -20,8 +22,10 @@ interface Booking {
 }
 
 export default function AgencyBookingsPage() {
+    const { toast } = useToast();
     const [bookings, setBookings] = React.useState<Booking[]>([]);
     const [loading, setLoading] = React.useState(true);
+
 
     const fetchBookings = async () => {
         setLoading(true);
@@ -45,8 +49,9 @@ export default function AgencyBookingsPage() {
             fetchBookings();
         } catch (error) {
             console.error("Error updating booking status:", error);
-            alert("Failed to update booking status.");
+            toast.error("Failed to update booking status.", "Update Failed");
         }
+
     };
 
     if (loading) return <div className="flex items-center justify-center min-h-[400px]">

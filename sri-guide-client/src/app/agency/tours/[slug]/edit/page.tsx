@@ -8,7 +8,9 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useParams } from "next/navigation";
+import { useToast } from "@/hooks/useToast";
 import apiClient from "@/services/api-client";
+
 import ImageUpload from "@/components/ui/ImageUpload";
 import "react-quill-new/dist/quill.snow.css";
 import ReactQuill from "react-quill-new";
@@ -32,7 +34,9 @@ interface Guide {
 
 const EditTourPage = () => {
     const router = useRouter();
+    const { toast } = useToast();
     const { slug } = useParams();
+
     const tourId = slug as string;
     
     const [step, setStep] = useState(1);
@@ -102,8 +106,9 @@ const EditTourPage = () => {
                 });
             } catch (error) {
                 console.error("Error fetching data:", error);
-                alert("Failed to load tour details.");
+                toast.error("Failed to load tour details.", "Load Error");
             } finally {
+
                 setFetching(false);
             }
         };
@@ -194,10 +199,11 @@ const EditTourPage = () => {
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
-            alert("Please complete all required fields and try again!");
+            toast.error("Please complete all required fields and try again!", "Validation Error");
             setStep(1);
             return;
         }
+
 
         setLoading(true);
         setErrors({});
@@ -224,7 +230,8 @@ const EditTourPage = () => {
             if (error.response?.data?.errors) {
                 setErrors(error.response.data.errors);
             }
-            alert("Failed to update adventure. Please check the highlights!");
+            toast.error("Failed to update adventure. Please check the highlights!", "Update Error");
+
         } finally {
             setLoading(false);
         }

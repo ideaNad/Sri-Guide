@@ -4,6 +4,8 @@ import React, { useState, useRef } from "react";
 import { Upload, X, Loader2, Image as ImageIcon, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/services/api-client";
+import { useToast } from "@/hooks/useToast";
+
 
 interface ImageUploadProps {
     value?: string;
@@ -28,9 +30,11 @@ export default function ImageUpload({
     maxCount = 10,
     currentCount = 0
 }: ImageUploadProps) {
+    const { toast } = useToast();
     const [uploading, setUploading] = useState(false);
     const [preview, setPreview] = useState<string | null>(value || null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
 
     // Sync preview with value when it changes externally
     React.useEffect(() => {
@@ -46,9 +50,10 @@ export default function ImageUpload({
         if (multiple && onMultipleChange) {
             const remaining = maxCount - currentCount;
             if (remaining <= 0) {
-                alert(`You can only upload up to ${maxCount} images.`);
+                toast.warning(`You can only upload up to ${maxCount} images.`, "Upload Limit");
                 return;
             }
+
             
             const filesToUpload = Array.from(files).slice(0, remaining);
             setUploading(true);
@@ -68,8 +73,9 @@ export default function ImageUpload({
                 if (fileInputRef.current) fileInputRef.current.value = "";
             } catch (error) {
                 console.error("Multi-upload failed:", error);
-                alert("Some images failed to upload. Please try again.");
+                toast.error("Some images failed to upload. Please try again.", "Upload Error");
             } finally {
+
                 setUploading(false);
             }
         } else {
@@ -94,8 +100,9 @@ export default function ImageUpload({
                 if (fileInputRef.current) fileInputRef.current.value = "";
             } catch (error) {
                 console.error("Upload failed:", error);
-                alert("Failed to upload image. Please try again.");
+                toast.error("Failed to upload image. Please try again.", "Upload Error");
                 setPreview(value || null);
+
             } finally {
                 setUploading(false);
             }

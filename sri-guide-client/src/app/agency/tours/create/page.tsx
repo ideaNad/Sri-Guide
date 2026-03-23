@@ -11,6 +11,8 @@ import ImageUpload from "@/components/ui/ImageUpload";
 import "react-quill-new/dist/quill.snow.css";
 import ReactQuill from "react-quill-new";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/useToast";
+
 
 // SRI LANKA DISTRICTS
 const DISTRICTS = [
@@ -26,7 +28,9 @@ const CATEGORIES = [
 
 const CreateTourPage = () => {
     const router = useRouter();
+    const { toast } = useToast();
     const [step, setStep] = useState(1);
+
     const [loading, setLoading] = useState(false);
     
     const [formData, setFormData] = useState({
@@ -131,10 +135,11 @@ const CreateTourPage = () => {
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
-            alert("Please complete all required fields and try again!");
+            toast.error("Please complete all required fields and try again!", "Validation Error");
             setStep(1); // Jump back to narratives if errors there
             return;
         }
+
 
         setLoading(true);
         setErrors({});
@@ -158,7 +163,7 @@ const CreateTourPage = () => {
             if (error.response?.data?.errors) {
                 setErrors(error.response.data.errors);
             }
-            alert("Failed to publish adventure. Please check the highlights and try again!");
+            toast.error("Failed to publish adventure. Please check the highlights and try again!", "Publish Error");
         } finally {
             setLoading(false);
         }
@@ -526,11 +531,12 @@ const CreateTourPage = () => {
                             <button 
                                 onClick={() => {
                                     if (!formData.title || !formData.mainImageUrl) {
-                                        alert("Please add at least a title and a cover image!");
+                                        toast.warning("Please add at least a title and a cover image!", "Missing Information");
                                         return;
                                     }
                                     setStep(2);
                                 }}
+
                                 className="bg-primary hover:bg-secondary text-white px-12 py-5 rounded-2xl font-black text-[12px] uppercase tracking-[0.2em] transition-all shadow-2xl shadow-primary/30 flex items-center gap-4 group"
                             >
                                 Next Phase

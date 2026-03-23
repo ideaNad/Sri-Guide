@@ -18,10 +18,14 @@ import { GuideFlow } from '@/components/onboarding/guide/GuideFlow';
 import { AgencyFlow } from '@/components/onboarding/agency/AgencyFlow';
 import { useAuth } from '@/providers/AuthContext';
 import apiClient from '@/services/api-client';
+import { useToast } from '@/hooks/useToast';
+
 
 export default function OnboardingPage() {
   const router = useRouter();
   const { user, loading, updateUser } = useAuth();
+  const { toast } = useToast();
+
   const { 
     userRole, 
     setUserRole, 
@@ -137,8 +141,9 @@ export default function OnboardingPage() {
 
     } catch (error) {
       console.error('Failed to complete onboarding:', error);
-      alert('Failed to save onboarding data. Please try again.');
+      toast.error('Failed to save onboarding data. Please try again.', 'Update Failed');
     }
+
   };
 
   // Tourist Steps
@@ -342,9 +347,9 @@ export default function OnboardingPage() {
           title="Onboarding Help"
           description="Stuck? We're here to help you get started with SriGuide."
           items={[
-            { title: "Choosing a Role", description: "Learn about the differences between Tourist, Guide, and Agency." },
-            { title: "Personalization", description: "How we use your interests to show you the best content." },
-            { title: "Privacy", description: "Your data is safe with us. Read our privacy policy." },
+            { title: "Choosing a Role", description: "Learn about the differences between Tourist, Guide, and Agency.", category: "general" },
+            { title: "Personalization", description: "How we use your interests to show you the best content.", category: "general" },
+            { title: "Privacy", description: "Your data is safe with us. Read our privacy policy.", category: "general" },
           ]}
           trigger={
             <button className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 text-slate-900 font-bold rounded-full shadow-lg hover:bg-slate-50 transition-all group help-center-button">

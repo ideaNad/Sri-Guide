@@ -10,6 +10,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/services/api-client";
 import { useAuth } from "@/providers/AuthContext";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/useToast";
+import { useConfirm } from "@/hooks/useConfirm";
+
 
 interface Trip {
     id: string;
@@ -24,7 +27,10 @@ interface Trip {
 export default function GuideTripsPage() {
     const { user } = useAuth();
     const router = useRouter();
+    const { toast } = useToast();
+    const { confirm } = useConfirm();
     const [trips, setTrips] = useState<Trip[]>([]);
+
     const [loading, setLoading] = useState(true);
     const [isAdding, setIsAdding] = useState(false);
     const [newTrip, setNewTrip] = useState({
@@ -62,9 +68,10 @@ export default function GuideTripsPage() {
         // Check image limit
         const totalImages = existingImages.length + selectedFiles.length;
         if (totalImages > 5) {
-            alert("Maximum 5 photos allowed per adventure.");
+            toast.error("Maximum 5 photos allowed per adventure.", "Limit Reached");
             return;
         }
+
 
         setSubmitting(true);
         try {
@@ -111,9 +118,10 @@ export default function GuideTripsPage() {
             const currentCount = currentTrip?.images?.length || 0;
             
             if (currentCount + files.length > 5) {
-                alert(`You can only upload ${5 - currentCount} more photo(s). Total limit is 5.`);
+                toast.warning(`You can only upload ${5 - currentCount} more photo(s). Total limit is 5.`, "Upload Limit");
                 return;
             }
+
 
             for (let i = 0; i < files.length; i++) {
                 const formData = new FormData();
@@ -134,7 +142,18 @@ export default function GuideTripsPage() {
     };
 
     const handleRemoveExistingImage = async (imageUrl: string) => {
-        if (!editingTripId || !confirm("Remove this photo from your trip?")) return;
+        if (!editingTripId) return;
+        
+        const confirmed = await confirm({
+            title: "Remove Photo?",
+            message: "Are you sure you want to remove this photo from your trip?",
+            variant: "danger",
+            confirmText: "Remove",
+            cancelText: "Keep it"
+        });
+
+        if (!confirmed) return;
+
         try {
             await apiClient.delete(`/trip/${editingTripId}/photo?imageUrl=${encodeURIComponent(imageUrl)}`);
             setExistingImages(prev => prev.filter(img => img !== imageUrl));
@@ -145,7 +164,16 @@ export default function GuideTripsPage() {
     };
 
     const handleDeleteTrip = async (tripId: string) => {
-        if (!confirm("Are you sure you want to delete this trip? This action cannot be undone.")) return;
+        const confirmed = await confirm({
+            title: "Delete Trip?",
+            message: "Are you sure you want to delete this trip? This action cannot be undone.",
+            variant: "danger",
+            confirmText: "Delete",
+            cancelText: "Cancel"
+        });
+
+        if (!confirmed) return;
+
         try {
             await apiClient.delete(`/trip/${tripId}`);
             fetchTrips();
@@ -260,10 +288,11 @@ export default function GuideTripsPage() {
                                             if (e.target.files) {
                                                 const newFiles = Array.from(e.target.files);
                                                 if (existingImages.length + newFiles.length > 5) {
-                                                    alert("Total photos cannot exceed 5. Please select fewer files.");
+                                                    toast.error("Total photos cannot exceed 5. Please select fewer files.", "Photo Limit");
                                                     e.target.value = "";
                                                     return;
                                                 }
+
                                                 setSelectedFiles(newFiles);
                                             }
                                         }}

@@ -81,6 +81,9 @@ export const metadata: Metadata = {
   },
 };
 
+import { ToastContainer } from "@/components/ui/Toast";
+import { ConfirmBottomSheet } from "@/components/ui/ConfirmBottomSheet";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -92,6 +95,8 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <CookieConsent />
+          <ToastContainer />
+          <ConfirmBottomSheet />
         </AuthProvider>
       </body>
     </html>

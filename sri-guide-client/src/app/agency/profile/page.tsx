@@ -10,6 +10,8 @@ import {
 import { motion } from "framer-motion";
 import apiClient from "@/services/api-client";
 import { useAuth } from "@/providers/AuthContext";
+import { useToast } from "@/hooks/useToast";
+
 
 const XIcon = ({ size }: { size?: number }) => (
     <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -37,7 +39,9 @@ interface AgencyProfile {
 
 export default function AgencyProfilePage() {
     const { user } = useAuth();
+    const { toast } = useToast();
     const [loading, setLoading] = useState(true);
+
     const [saving, setSaving] = useState(false);
     const [profile, setProfile] = useState<AgencyProfile | null>(null);
     const [success, setSuccess] = useState(false);
@@ -69,8 +73,9 @@ export default function AgencyProfilePage() {
             setTimeout(() => setSuccess(false), 3000);
         } catch (error) {
             console.error("Error updating profile:", error);
-            alert("Failed to update profile. Please try again.");
+            toast.error("Failed to update profile. Please try again.", "Update Failed");
         } finally {
+
             setSaving(false);
         }
     };
@@ -92,8 +97,9 @@ export default function AgencyProfilePage() {
             setTimeout(() => setSuccess(false), 3000);
         } catch (error) {
             console.error("Failed to upload photo", error);
-            alert("Failed to upload photo.");
+            toast.error("Failed to upload photo.", "Upload Error");
         } finally {
+
             setSaving(false);
         }
     };

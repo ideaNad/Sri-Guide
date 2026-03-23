@@ -10,6 +10,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/services/api-client";
 import { useAuth } from "@/providers/AuthContext";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/useToast";
+import { useConfirm } from "@/hooks/useConfirm";
+
 
 interface Trip {
     id: string;
@@ -25,7 +28,10 @@ interface Trip {
 export default function AgencyTripsPage() {
     const { user } = useAuth();
     const router = useRouter();
+    const { toast } = useToast();
+    const { confirm } = useConfirm();
     const [trips, setTrips] = useState<Trip[]>([]);
+
     const [loading, setLoading] = useState(true);
     const [isAdding, setIsAdding] = useState(false);
     const [newTrip, setNewTrip] = useState({
@@ -118,7 +124,13 @@ export default function AgencyTripsPage() {
     };
 
     const handleRemoveExistingImage = async (imageUrl: string) => {
-        if (!editingTripId || !confirm("Remove this photo from your trip?")) return;
+        const confirmed = await confirm({
+            title: "Remove Photo",
+            message: "Remove this photo from your trip?",
+            variant: "danger"
+        });
+        if (!editingTripId || !confirmed) return;
+
         try {
             await apiClient.delete(`/Agency/trips/${editingTripId}/photo?imageUrl=${encodeURIComponent(imageUrl)}`);
             setExistingImages(prev => prev.filter(img => img !== imageUrl));
@@ -129,7 +141,13 @@ export default function AgencyTripsPage() {
     };
 
     const handleDeleteTrip = async (tripId: string) => {
-        if (!confirm("Are you sure you want to delete this trip? This action cannot be undone.")) return;
+        const confirmed = await confirm({
+            title: "Delete Trip",
+            message: "Are you sure you want to delete this trip? This action cannot be undone.",
+            variant: "danger"
+        });
+        if (!confirmed) return;
+
         try {
             await apiClient.delete(`/Agency/trips/${tripId}`);
             fetchTrips();

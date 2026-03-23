@@ -9,11 +9,17 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import apiClient from "@/services/api-client";
+import { useToast } from "@/hooks/useToast";
+import { useConfirm } from "@/hooks/useConfirm";
+
 
 const UpgradePage = () => {
     const { user, login } = useAuth();
     const router = useRouter();
+    const { toast } = useToast();
+    const { confirm } = useConfirm();
     const [loading, setLoading] = useState(false);
+
     const [success, setSuccess] = useState(false);
     const [status, setStatus] = useState<"None" | "Pending" | "Approved" | "Rejected">("None");
     const [fetchingStatus, setFetchingStatus] = useState(true);
@@ -58,8 +64,9 @@ const UpgradePage = () => {
             }, 3000);
         } catch (error) {
             console.error("Upgrade failed:", error);
-            alert("Upgrade failed. You may have already submitted a request, or only Guides can upgrade.");
+            toast.error("Upgrade failed. You may have already submitted a request, or only Guides can upgrade.", "Upgrade Error");
         } finally {
+
             setLoading(false);
         }
     };
@@ -110,14 +117,21 @@ const UpgradePage = () => {
                     </p>
                     <button 
                         onClick={async () => {
-                            if (!confirm("Are you sure you want to reset your application?")) return;
+                            const confirmed = await confirm({
+                                title: "Reset Application?",
+                                message: "Are you sure you want to reset your application?",
+                                variant: "danger"
+                            });
+                            if (!confirmed) return;
+
                             try {
                                 await apiClient.post("/profile/reset-agency-upgrade");
                                 window.location.reload();
                             } catch (err) {
-                                alert("Failed to reset");
+                                toast.error("Failed to reset application.", "Error");
                             }
                         }}
+
                         className="px-10 py-4 bg-gray-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary transition-all shadow-xl"
                     >
                         Reset & Try Again

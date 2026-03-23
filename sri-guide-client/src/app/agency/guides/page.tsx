@@ -10,6 +10,9 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import apiClient from "@/services/api-client";
+import { useToast } from "@/hooks/useToast";
+import { useConfirm } from "@/hooks/useConfirm";
+
 
 interface Guide {
     id: string;
@@ -41,7 +44,10 @@ interface AvailableGuide {
 
 export default function AgencyGuidesPage() {
     const router = useRouter();
+    const { toast } = useToast();
+    const { confirm } = useConfirm();
     const [guides, setGuides] = useState<Guide[]>([]);
+
     const [pagination, setPagination] = useState({
         pageNumber: 1,
         totalPages: 1,
@@ -98,8 +104,9 @@ export default function AgencyGuidesPage() {
             setShowRecruitModal(false);
         } catch (error) {
             console.error("Error recruiting guide:", error);
-            alert("Failed to recruit guide.");
+            toast.error("Failed to recruit guide.", "Recruitment Error");
         } finally {
+
             setRecruiting(null);
         }
     };
@@ -108,15 +115,23 @@ export default function AgencyGuidesPage() {
         const message = isPending 
             ? "Cancel this recruitment request?" 
             : "Are you sure you want to remove this guide from your agency?";
-        if (!confirm(message)) return;
+        
+        const confirmed = await confirm({
+            title: isPending ? "Cancel Request" : "Remove Guide",
+            message: message,
+            variant: "danger"
+        });
+        if (!confirmed) return;
+
         try {
             await apiClient.post("/agency/guides/remove", { guideId });
             await fetchGuides();
         } catch (error) {
             console.error("Error removing guide:", error);
-            alert("Failed to remove guide.");
+            toast.error("Failed to remove guide.", "Error");
         }
     };
+
 
     if (loading) return <div className="flex items-center justify-center min-h-[400px]">
         <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />

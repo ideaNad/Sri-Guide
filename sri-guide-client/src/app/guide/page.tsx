@@ -10,6 +10,9 @@ import { motion } from "framer-motion";
 import apiClient from "@/services/api-client";
 import { useAuth } from "@/providers/AuthContext";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/useToast";
+import { useConfirm } from "@/hooks/useConfirm";
+
 
 interface DashboardStats {
     totalBookings: number;
@@ -31,7 +34,10 @@ interface DashboardStats {
 export default function GuideDashboardPage() {
     const { user } = useAuth();
     const router = useRouter();
+    const { toast } = useToast();
+    const { confirm } = useConfirm();
     const [stats, setStats] = useState<DashboardStats>({
+
         totalBookings: 0,
         averageRating: 0,
         totalReviews: 0,
@@ -67,20 +73,27 @@ export default function GuideDashboardPage() {
             await fetchDashboardData();
         } catch (error) {
             console.error("Error responding to offer", error);
-            alert("Failed to process your response.");
+            toast.error("Failed to process your response.", "Error");
         }
+
     };
 
     const handleResetRequest = async () => {
-        if (!confirm("Are you sure you want to reset your application? You will need to fill out the form again.")) return;
+        const confirmed = await confirm({
+            title: "Reset Application?",
+            message: "Are you sure you want to reset your application? You will need to fill out the form again.",
+            variant: "danger"
+        });
+        if (!confirmed) return;
         try {
             await apiClient.post("/profile/reset-agency-upgrade");
             await fetchDashboardData();
         } catch (error) {
             console.error("Error resetting request", error);
-            alert("Failed to reset application.");
+            toast.error("Failed to reset application.", "Error");
         }
     };
+
 
     const statCards = [
         { label: "Avg. Rating", value: stats.averageRating.toFixed(1), icon: <Star className="text-yellow-500 fill-yellow-500" />, trend: `${stats.totalReviews} reviews`, trendColor: "text-teal-600 bg-teal-50" },
