@@ -266,12 +266,16 @@ export default function Home() {
         {/* Featured Places - Unique Mosaic Grid */}
         <section className="py-24 bg-white">
           <div className="container mx-auto px-4 md:px-6">
-            <SectionHeader
-              centered
-              badge="Top Destinations"
-              title="Popular Places in Sri Lanka"
-              subtitle="Explore the diversity of the pearl of the Indian Ocean."
-            />
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+              <SectionHeader
+                badge="Top Destinations"
+                title="Popular Places in Sri Lanka"
+                subtitle="Explore the diversity of the pearl of the Indian Ocean."
+              />
+              <Link href="/places" className="mb-12 bg-gray-900 text-white px-8 py-3 font-bold text-[10px] uppercase tracking-widest rounded-full hover:bg-black transition-all shadow-md">
+                View All Places
+              </Link>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-6 h-[800px] md:h-[600px]">
               {loadingPlaces ? (
