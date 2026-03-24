@@ -56,7 +56,7 @@ public class ProfileController : ControllerBase
     }
 
     [HttpPost("request-verification")]
-    [Authorize(Roles = "Guide")]
+    [Authorize(Roles = "Guide,TravelAgency")]
     public async Task<IActionResult> RequestVerification([FromBody] RequestVerificationCommand command)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

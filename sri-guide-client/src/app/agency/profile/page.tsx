@@ -7,7 +7,7 @@ import {
     Twitter, Save, Loader2, Info, CheckCircle2,
     ShieldCheck, Mail, Camera, User, Briefcase, 
     MapPin, Star, Languages as LangIcon, X, Plus,
-    DollarSign, Clock, Zap, MessageCircle
+    DollarSign, Clock, Zap, MessageCircle, AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/services/api-client";
@@ -31,7 +31,7 @@ export default function AgencyProfilePage() {
     const [saving, setSaving] = useState(false);
     const [activeTab, setActiveTab] = useState<"agency" | "owner">("agency");
     const [profile, setProfile] = useState<Profile | null>(null);
-    const [success, setSuccess] = useState(false);
+    const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
     const [pricingModel, setPricingModel] = useState<'hourly' | 'daily' | 'negotiable'>('daily');
 
     useEffect(() => {
@@ -58,17 +58,17 @@ export default function AgencyProfilePage() {
     const handleSaveAgency = async () => {
         if (!profile?.agencyProfile || !user) return;
         setSaving(true);
-        setSuccess(false);
+        setMessage(null);
         try {
             await apiClient.post("/profile/agency/update", {
                 userId: user.id,
                 ...profile.agencyProfile
             });
-            setSuccess(true);
-            setTimeout(() => setSuccess(false), 3000);
+            setMessage({ type: "success", text: "Agency profile updated successfully!" });
+            setTimeout(() => setMessage(null), 3000);
         } catch (error) {
             console.error("Error updating agency profile:", error);
-            toast.error("Failed to update agency profile.", "Update Failed");
+            setMessage({ type: "error", text: "Failed to update agency profile." });
         } finally {
             setSaving(false);
         }
@@ -77,9 +77,36 @@ export default function AgencyProfilePage() {
     const handleSaveOwner = async () => {
         if (!profile || !user) return;
         setSaving(true);
-        setSuccess(false);
+        setMessage(null);
+
+        // Validation for URLs and Phones
+        const urlRegex = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
+        const phoneRegex = /^\+?[0-9\s\-()]{7,20}$/;
+
+        const gProfile = profile.guideProfile;
+        if (gProfile?.phoneNumber && !phoneRegex.test(gProfile.phoneNumber)) {
+            setMessage({ type: "error", text: "Invalid Phone Number format. Use +CountryCode format." });
+            setSaving(false);
+            return;
+        }
+        if (gProfile?.whatsAppNumber && !phoneRegex.test(gProfile.whatsAppNumber)) {
+            setMessage({ type: "error", text: "Invalid WhatsApp Number format. Use +CountryCode format." });
+            setSaving(false);
+            return;
+        }
+
+        const socialFields = ['youTubeLink', 'tikTokLink', 'facebookLink', 'instagramLink', 'twitterLink', 'linkedinLink'] as const;
+        for (const field of socialFields) {
+            const val = (gProfile as any)?.[field];
+            if (val && !urlRegex.test(val)) {
+                setMessage({ type: "error", text: `Invalid URL format for ${field.replace('Link', '')}. Please include https://` });
+                setSaving(false);
+                return;
+            }
+        }
+
         try {
-            // Update User Full Name first if changed? Usually owner name is user name.
+            // Update User Full Name first if changed
             await apiClient.post("/profile/update-user", {
                 userId: user.id,
                 fullName: profile.fullName
@@ -110,11 +137,42 @@ export default function AgencyProfilePage() {
             
             if (user) login({ ...user, fullName: profile.fullName });
             
-            setSuccess(true);
-            setTimeout(() => setSuccess(false), 3000);
+            setMessage({ type: "success", text: "Owner profile updated successfully!" });
+            setTimeout(() => setMessage(null), 3000);
         } catch (error) {
             console.error("Error updating owner profile:", error);
-            toast.error("Failed to update owner profile.", "Update Failed");
+            setMessage({ type: "error", text: "Failed to update owner profile." });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleRequestVerification = async () => {
+        if (!profile || !user) return;
+        setSaving(true);
+        setMessage(null);
+        try {
+            await apiClient.post("/profile/request-verification", {
+                registrationNumber: profile.guideProfile?.registrationNumber,
+                licenseExpirationDate: profile.guideProfile?.licenseExpirationDate
+            });
+            setMessage({ type: "success", text: "Verification request submitted! Admin will review it soon." });
+
+            // Update profile state to reflect pending status locally
+            if (profile) {
+                setProfile({
+                    ...profile,
+                    guideProfile: {
+                        ...profile.guideProfile,
+                        verificationStatus: "Pending"
+                    }
+                } as Profile);
+            }
+
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        } catch (error) {
+            console.error("Failed to submit verification", error);
+            setMessage({ type: "error", text: "Failed to submit verification request. Please try again." });
         } finally {
             setSaving(false);
         }
@@ -136,11 +194,11 @@ export default function AgencyProfilePage() {
                 setProfile({ ...profile, profileImageUrl: response.data });
                 if (user) login({ ...user, profileImageUrl: response.data });
             }
-            setSuccess(true);
-            setTimeout(() => setSuccess(false), 3000);
+            setMessage({ type: "success", text: "Profile picture updated!" });
+            setTimeout(() => setMessage(null), 3000);
         } catch (error) {
             console.error("Failed to upload photo", error);
-            toast.error("Failed to upload photo.", "Upload Error");
+            setMessage({ type: "error", text: "Failed to upload photo." });
         } finally {
             setSaving(false);
         }
@@ -199,18 +257,25 @@ export default function AgencyProfilePage() {
                 </button>
             </div>
 
-            {success && (
-                <motion.div 
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-emerald-50 border border-emerald-100 p-6 rounded-3xl flex items-center gap-4 text-emerald-700 shadow-sm"
-                >
-                    <div className="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center">
-                        <CheckCircle2 size={20} />
-                    </div>
-                    <p className="text-sm font-black uppercase tracking-widest">Profile updated successfully!</p>
-                </motion.div>
-            )}
+            <AnimatePresence>
+                {message && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -50, x: "-50%" }}
+                        animate={{ opacity: 1, y: 0, x: "-50%" }}
+                        exit={{ opacity: 0, y: -50, x: "-50%" }}
+                        className={`fixed top-24 left-1/2 z-[100] p-5 rounded-3xl border shadow-2xl flex items-center gap-4 min-w-[320px] ${message.type === "success"
+                                ? "bg-emerald-50 border-emerald-100 text-emerald-700"
+                                : "bg-rose-50 border-rose-100 text-rose-700"
+                            }`}
+                    >
+                        {message.type === "success" ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
+                        <p className="font-bold text-sm flex-1">{message.text}</p>
+                        <button onClick={() => setMessage(null)} className="p-2 hover:bg-black/5 rounded-full transition-colors">
+                            <X size={16} />
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <AnimatePresence mode="wait">
                 {activeTab === "agency" ? (
@@ -258,6 +323,7 @@ export default function AgencyProfilePage() {
                                         type="text"
                                         value={profile.agencyProfile?.companyName || ""}
                                         onChange={e => setProfile({ ...profile, agencyProfile: { ...profile.agencyProfile!, companyName: e.target.value } })}
+                                        placeholder="Epic Sri Lanka Tours"
                                         className={inputClasses}
                                     />
                                 </div>
@@ -313,6 +379,7 @@ export default function AgencyProfilePage() {
                                         type="text"
                                         value={profile.agencyProfile?.phone || ""}
                                         onChange={e => setProfile({ ...profile, agencyProfile: { ...profile.agencyProfile!, phone: e.target.value } })}
+                                        placeholder="+94 77 123 4567"
                                         className={inputClasses}
                                     />
                                 </div>
@@ -325,6 +392,7 @@ export default function AgencyProfilePage() {
                                         type="text"
                                         value={profile.agencyProfile?.whatsApp || ""}
                                         onChange={e => setProfile({ ...profile, agencyProfile: { ...profile.agencyProfile!, whatsApp: e.target.value } })}
+                                        placeholder="+94 77 123 4567"
                                         className={inputClasses}
                                     />
                                 </div>
@@ -429,7 +497,8 @@ export default function AgencyProfilePage() {
                                 <textarea 
                                     value={profile.agencyProfile?.bio || ""}
                                     onChange={e => setProfile({ ...profile, agencyProfile: { ...profile.agencyProfile!, bio: e.target.value } })}
-                                    rows={6}
+                                    rows={4}
+                                    placeholder="Tell potential tourists about your agency's mission and history..."
                                     className={`${inputClasses} resize-none rounded-[2rem] px-8 py-6`}
                                 />
                             </div>
@@ -456,6 +525,7 @@ export default function AgencyProfilePage() {
                                             type="url"
                                             value={(profile.agencyProfile as any)?.[social.name] || ""}
                                             onChange={e => setProfile({ ...profile, agencyProfile: { ...profile.agencyProfile!, [social.name]: e.target.value } })}
+                                            placeholder={`${social.label} Profile URL`}
                                             className={inputClasses + " bg-white shadow-sm"}
                                         />
                                     </div>
@@ -479,6 +549,7 @@ export default function AgencyProfilePage() {
                                     type="text"
                                     value={profile.fullName || ""}
                                     onChange={e => setProfile({ ...profile, fullName: e.target.value })}
+                                    placeholder="Alex Rivers"
                                     className={inputClasses}
                                 />
                             </div>
@@ -488,28 +559,36 @@ export default function AgencyProfilePage() {
                                 <textarea 
                                     value={profile.guideProfile?.bio || ""}
                                     onChange={e => setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, bio: e.target.value } })}
-                                    rows={6}
-                                    placeholder="Your personal expertise and background..."
+                                    rows={4}
+                                    placeholder="Tell potential tourists about your knowledge and passion..."
                                     className={`${inputClasses} resize-none rounded-[2rem] px-8 py-6`}
                                 />
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Phone</label>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2 flex items-center gap-2">
+                                        <Phone size={12} className="text-teal-600" />
+                                        Mobile (+94...)
+                                    </label>
                                     <input 
                                         type="text"
                                         value={profile.guideProfile?.phoneNumber || ""}
                                         onChange={e => setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, phoneNumber: e.target.value } })}
+                                        placeholder="+94 77 123 4567"
                                         className={inputClasses}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">WhatsApp</label>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2 flex items-center gap-2">
+                                        <MessageCircle size={12} className="text-teal-600" />
+                                        WhatsApp (+94...)
+                                    </label>
                                     <input 
                                         type="text"
                                         value={profile.guideProfile?.whatsAppNumber || ""}
                                         onChange={e => setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, whatsAppNumber: e.target.value } })}
+                                        placeholder="+94 77 123 4567"
                                         className={inputClasses}
                                     />
                                 </div>
@@ -525,9 +604,9 @@ export default function AgencyProfilePage() {
                                     <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 block ml-2">Pricing Model</label>
                                     <div className="flex flex-col gap-4">
                                         {[
-                                            { id: 'hourly', label: 'Hourly', icon: Clock },
-                                            { id: 'daily', label: 'Daily', icon: Zap },
-                                            { id: 'negotiable', label: 'Negotiable', icon: MessageCircle }
+                                            { id: 'hourly', label: 'Hourly Rate', icon: Clock },
+                                            { id: 'daily', label: 'Daily Rate', icon: Zap },
+                                            { id: 'negotiable', label: 'Contact for Rates', icon: MessageCircle }
                                         ].map((model) => (
                                             <button
                                                 key={model.id}
@@ -543,13 +622,15 @@ export default function AgencyProfilePage() {
 
                                 <div className="flex items-center justify-center">
                                     {pricingModel !== 'negotiable' && (
-                                        <div className="text-center space-y-2 w-full">
-                                            <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 block">Rate (USD)</label>
+                                        <div className="text-center space-y-2 w-full h-[120px]">
+                                            <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 block">
+                                                {pricingModel === 'hourly' ? "Hourly Rate (USD)" : "Daily Rate (USD)"}
+                                            </label>
                                             <div className="relative">
                                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-black text-gray-300">$</span>
                                                 <input 
                                                     type="number"
-                                                    value={pricingModel === 'hourly' ? profile.guideProfile?.hourlyRate : profile.guideProfile?.dailyRate}
+                                                    value={pricingModel === 'hourly' ? (profile.guideProfile?.hourlyRate ?? 0) : (profile.guideProfile?.dailyRate ?? 0)}
                                                     onChange={e => {
                                                         const val = Number(e.target.value);
                                                         if (pricingModel === 'hourly') setProfile({...profile, guideProfile: {...profile.guideProfile!, hourlyRate: val}});
@@ -615,7 +696,7 @@ export default function AgencyProfilePage() {
                                     </div>
                                     <input 
                                         type="text"
-                                        placeholder="Type specialty & press Enter"
+                                        placeholder="Type Specialty & Press Enter"
                                         onKeyDown={e => {
                                             if (e.key === 'Enter') {
                                                 const val = e.currentTarget.value.trim();
@@ -663,12 +744,18 @@ export default function AgencyProfilePage() {
                          </div>
 
                          {/* Owner Verification Details */}
-                         <div className="bg-teal-50/30 p-12 rounded-[3.5rem] border border-dashed border-teal-200 space-y-8">
+                         <div className="bg-white p-12 rounded-[3.5rem] border border-gray-100 shadow-sm space-y-10">
                             <div className="flex items-center gap-3">
-                                <ShieldCheck className="text-teal-600" size={24} />
-                                <h3 className="text-xl font-black text-gray-900 italic tracking-tight">Professional Credentials</h3>
+                                <div className="p-3 rounded-2xl bg-teal-50 text-teal-600">
+                                    <ShieldCheck size={24} />
+                                </div>
+                                <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">Verification (Licensed Guide Badge)</h3>
                             </div>
                             
+                            <p className="text-xs text-gray-500 font-medium leading-relaxed italic">
+                                Provide your official registration details to receive the <span className="text-teal-600 font-bold">LICENSED GUIDE</span> badge.
+                            </p>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Registration Number</label>
@@ -676,47 +763,79 @@ export default function AgencyProfilePage() {
                                         type="text"
                                         value={profile.guideProfile?.registrationNumber || ""}
                                         onChange={e => setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, registrationNumber: e.target.value } })}
-                                        placeholder="SLTDA Registration #"
-                                        className={inputClasses + " bg-white shadow-sm"}
+                                        placeholder="SLTDA/G/..."
+                                        className={inputClasses}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">License Expiry</label>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">License Expiry Date</label>
                                     <input 
                                         type="date"
                                         value={profile.guideProfile?.licenseExpirationDate ? new Date(profile.guideProfile.licenseExpirationDate).toISOString().split('T')[0] : ""}
                                         onChange={e => setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, licenseExpirationDate: e.target.value } })}
-                                        className={inputClasses + " bg-white shadow-sm"}
+                                        className={inputClasses}
                                     />
                                 </div>
                             </div>
+
+                            <button
+                                onClick={handleRequestVerification}
+                                disabled={saving || !profile.guideProfile?.registrationNumber || !profile.guideProfile?.licenseExpirationDate || profile.guideProfile?.verificationStatus === "Pending"}
+                                className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all disabled:opacity-50 ${profile.guideProfile?.verificationStatus === "Pending"
+                                        ? "bg-amber-50 text-amber-700 border border-amber-200 cursor-not-allowed"
+                                        : "bg-teal-50 text-teal-700 border border-teal-100 hover:bg-teal-500 hover:text-white"
+                                    }`}
+                            >
+                                {saving ? "Processing..." : (profile.guideProfile?.verificationStatus === "Pending" ? "Pending Approval" : "Submit for Verification")}
+                            </button>
                          </div>
 
                          {/* Owner Social Presence */}
-                         <div className="bg-gray-50/50 p-12 rounded-[3.5rem] border border-dashed border-gray-200">
-                            <h2 className="text-xl font-black text-gray-900 italic tracking-tight mb-8">Personal Social Presence</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                         <div className="bg-white p-12 rounded-[3.5rem] border border-gray-100 shadow-sm space-y-10">
+                            <div className="flex items-center gap-3">
+                                <div className="p-3 rounded-2xl bg-teal-50 text-teal-600">
+                                    <Instagram size={24} />
+                                </div>
+                                <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">Social Presence</h3>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {[
-                                    { name: 'facebookLink', label: 'Facebook', icon: Facebook, color: 'text-blue-600' },
-                                    { name: 'instagramLink', label: 'Instagram', icon: Instagram, color: 'text-pink-600' },
-                                    { name: 'linkedinLink', label: 'LinkedIn', icon: Linkedin, color: 'text-blue-700' },
-                                    { name: 'youTubeLink', label: 'YouTube', icon: Youtube, color: 'text-red-600' },
-                                    { name: 'tikTokLink', label: 'TikTok', icon: MessageCircle, color: 'text-gray-900' },
-                                    { name: 'twitterLink', label: 'X', icon: XIcon, color: 'text-gray-900' }
-                                ].map((social) => (
-                                    <div key={social.name} className="space-y-2">
-                                        <label className={`text-[10px] font-black uppercase tracking-[0.2em] ml-2 flex items-center gap-2 ${social.color}`}>
-                                            <social.icon size={12} />
-                                            {social.label}
-                                        </label>
-                                        <input 
-                                            type="url"
-                                            value={(profile.guideProfile as any)?.[social.name] || ""}
-                                            onChange={e => setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, [social.name]: e.target.value } })}
-                                            className={inputClasses + " bg-white shadow-sm"}
-                                        />
-                                    </div>
-                                ))}
+                                    { name: 'instagramLink', label: 'Instagram Profile URL', icon: Instagram, hex: '#E1306C' },
+                                    { name: 'twitterLink', label: 'X Profile URL', icon: Twitter, hex: '#000000' },
+                                    { name: 'linkedinLink', label: 'LinkedIn Profile URL', icon: Linkedin, hex: '#0A66C2' },
+                                    { name: 'youTubeLink', label: 'YouTube Channel URL', icon: Youtube, hex: '#FF0000' },
+                                    { name: 'facebookLink', label: 'Facebook Page URL', icon: Facebook, hex: '#1877F2' },
+                                    { name: 'tikTokLink', label: 'TikTok Profile URL', icon: MessageCircle, hex: '#000000' }
+                                ].map((social) => {
+                                    return (
+                                        <div key={social.name}>
+                                            <div className="relative group">
+                                                <div
+                                                    className="absolute left-6 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-all"
+                                                    style={{ backgroundColor: `${social.hex}15`, color: social.hex }}
+                                                >
+                                                    <social.icon size={16} />
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    name={social.name}
+                                                    value={(profile.guideProfile as any)?.[social.name] || ""}
+                                                    onChange={e => setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, [social.name]: e.target.value } })}
+                                                    placeholder={social.label}
+                                                    className="w-full bg-gray-50 border rounded-2xl py-4 pl-16 pr-6 font-bold text-gray-900 outline-none focus:bg-white transition-all text-sm border-transparent"
+                                                    onFocus={(e) => {
+                                                        e.currentTarget.style.borderColor = social.hex;
+                                                        e.currentTarget.style.backgroundColor = 'white';
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        e.currentTarget.style.borderColor = 'transparent';
+                                                        e.currentTarget.style.backgroundColor = '';
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                          </div>
                     </motion.div>
