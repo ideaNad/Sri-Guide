@@ -16,7 +16,7 @@ public record GuideReviewDto(
     string? TripTitle
 );
 
-public record GetGuideReviewsQuery(Guid GuideUserId) : IRequest<List<GuideReviewDto>>;
+public record GetGuideReviewsQuery(Guid GuideUserId, string? Type = null) : IRequest<List<GuideReviewDto>>;
 
 public class GetGuideReviewsQueryHandler : IRequestHandler<GetGuideReviewsQuery, List<GuideReviewDto>>
 {
@@ -37,7 +37,20 @@ public class GetGuideReviewsQueryHandler : IRequestHandler<GetGuideReviewsQuery,
 
         if (guideProfile == null && agencyProfile == null) return new List<GuideReviewDto>();
 
-        bool isAgency = agencyProfile != null;
+        // Determine if we want Agency or Guide reviews
+        bool isAgency;
+        if (request.Type?.ToLower() == "agency")
+        {
+            isAgency = true;
+        }
+        else if (request.Type?.ToLower() == "guide")
+        {
+            isAgency = false;
+        }
+        else
+        {
+            isAgency = agencyProfile != null;
+        }
 
         // Fetch profile reviews (Guide or Agency)
         var targetType = isAgency ? "Agency" : "Guide";

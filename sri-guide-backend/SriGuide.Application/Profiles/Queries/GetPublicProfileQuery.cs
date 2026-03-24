@@ -8,7 +8,7 @@ using SriGuide.Domain.Enums;
 
 namespace SriGuide.Application.Profiles.Queries;
 
-public record GetPublicProfileQuery(string IdOrSlug, Guid? CurrentUserId = null) : IRequest<PublicProfileDto>;
+public record GetPublicProfileQuery(string IdOrSlug, Guid? CurrentUserId = null, string? RequestedType = null) : IRequest<PublicProfileDto>;
 
 public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuery, PublicProfileDto>
 {
@@ -30,7 +30,22 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
 
         AgencyProfile? agencyProfile = user?.AgencyProfile;
         GuideProfile? guideProfile = user?.GuideProfile;
-        bool isAgency = user?.Role == UserRole.TravelAgency;
+        
+        // Determine if we should show Agency or Guide profile
+        bool isAgency;
+        if (request.RequestedType?.ToLower() == "agency")
+        {
+            isAgency = true;
+        }
+        else if (request.RequestedType?.ToLower() == "guide")
+        {
+            isAgency = false;
+        }
+        else
+        {
+            // Default to user role if no type requested
+            isAgency = user?.Role == UserRole.TravelAgency;
+        }
 
         if (user == null)
         {
@@ -43,7 +58,8 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
             if (agencyProfile != null)
             {
                 user = agencyProfile.User;
-                isAgency = true;
+                // If resolving by agency ID/Slug, we likely want the agency profile unless guide was specifically requested
+                isAgency = request.RequestedType?.ToLower() != "guide";
                 guideProfile = user?.GuideProfile;
             }
         }
@@ -175,6 +191,36 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
             );
         }).ToList();
 
+        LegacyGuideProfileDto? legacyGuideProfile = null;
+        if (isAgency && request.CurrentUserId.HasValue && request.CurrentUserId.Value == user.Id && guideProfile != null)
+        {
+            var guideReviews = await _context.Reviews
+                .Include(r => r.User)
+                .Where(r => r.TargetId == user.Id && r.TargetType == "Guide")
+                .ToListAsync(cancellationToken);
+            
+            var guideAvgRating = guideReviews.Any() ? Math.Round(guideReviews.Average(r => (double)r.Rating), 1) : 0.0;
+
+            legacyGuideProfile = new LegacyGuideProfileDto(
+                guideProfile.Bio,
+                guideAvgRating,
+                guideReviews.Count,
+                guideProfile.Specialties ?? new List<string>(),
+                guideProfile.OperatingAreas ?? new List<string>(),
+                guideReviews.Select(r => new ReviewDto(
+                    r.Id,
+                    r.User?.FullName ?? "Traveler",
+                    r.User?.ProfileImageUrl != null && !r.User.ProfileImageUrl.StartsWith("/") && !r.User.ProfileImageUrl.StartsWith("http") 
+                        ? "/" + r.User.ProfileImageUrl 
+                        : r.User?.ProfileImageUrl,
+                    (double)r.Rating,
+                    r.Comment ?? string.Empty,
+                    r.CreatedAt,
+                    r.TargetType
+                )).ToList()
+            );
+        }
+
         return new PublicProfileDto(
             user.Id,
             isAgency ? agencyProfile!.CompanyName : user.FullName,
@@ -183,9 +229,9 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
                 ? "/" + user.ProfileImageUrl 
                 : user.ProfileImageUrl,
             isAgency ? agencyProfile!.Bio : guideProfile!.Bio,
-            isAgency ? new List<string>() : (guideProfile!.Specialties ?? new List<string>()),
-            isAgency ? new List<string>() : (guideProfile!.OperatingAreas ?? new List<string>()),
-            isAgency ? new List<string>() : (guideProfile!.Languages ?? new List<string>()),
+            isAgency ? (agencyProfile!.Specialties ?? new List<string>()) : (guideProfile!.Specialties ?? new List<string>()),
+            isAgency ? (agencyProfile!.OperatingRegions ?? new List<string>()) : (guideProfile!.OperatingAreas ?? new List<string>()),
+            isAgency ? (agencyProfile!.Languages ?? new List<string>()) : (guideProfile!.Languages ?? new List<string>()),
             isAgency ? 0 : (guideProfile!.DailyRate ?? 0),
             isAgency ? 0 : (guideProfile!.HourlyRate ?? 0),
             isAgency ? false : guideProfile!.ContactForPrice,
@@ -204,7 +250,8 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
             agencyTours,
             recentTrips,
             agencyGuides,
-            isAgency ? "Agency" : "Guide"
+            isAgency ? "Agency" : "Guide",
+            legacyGuideProfile
         );
     }
 }

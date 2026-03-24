@@ -30,7 +30,28 @@ public record PublicProfileDto(
     List<PublicTripDto> AgencyTours,
     List<PublicTripDto> RecentTrips,
     List<SriGuide.Application.Agencies.DTOs.AgencyGuideDto>? Guides = null,
-    string Role = "Guide"
+    string Role = "Guide",
+    LegacyGuideProfileDto? LegacyGuideProfile = null
+);
+
+public record LegacyGuideProfileDto(
+    string Bio,
+    double Rating,
+    int ReviewCount,
+    List<string> Specialties,
+    List<string> OperatingAreas,
+    List<ReviewDto> Reviews
+);
+
+public record ReviewDto(
+    Guid Id,
+    string ReviewerName,
+    string? ReviewerImageUrl,
+    double Rating,
+    string Comment,
+    DateTime CreatedAt,
+    string TargetType,
+    string? TripTitle = null
 );
 
 public record PublicTripDto(

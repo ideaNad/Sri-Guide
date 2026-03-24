@@ -24,6 +24,7 @@ interface Guide {
     status: string;
     tripCount: number;
     profileImageUrl?: string;
+    isOwner: boolean;
 }
 
 interface PaginatedResult<T> {
@@ -168,13 +169,15 @@ export default function AgencyGuidesPage() {
                         transition={{ delay: i * 0.05 }}
                         className="bg-white rounded-[2rem] p-5 border border-gray-100 shadow-sm hover:shadow-xl transition-all group flex flex-col relative overflow-hidden"
                     >
-                        <button 
-                            onClick={() => handleRemove(guide.userId, guide.status === 'Approval Pending')}
-                            className="absolute top-4 right-4 p-2 text-gray-300 hover:text-rose-500 transition-colors z-20 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-transparent hover:border-rose-100"
-                            title={guide.status === 'Approval Pending' ? 'Cancel Request' : 'Remove from Agency'}
-                        >
-                            {guide.status === 'Approval Pending' ? <X size={14} /> : <Trash2 size={14} />}
-                        </button>
+                        {!guide.isOwner && (
+                            <button 
+                                onClick={() => handleRemove(guide.userId, guide.status === 'Approval Pending')}
+                                className="absolute top-4 right-4 p-2 text-gray-300 hover:text-rose-500 transition-colors z-20 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-transparent hover:border-rose-100"
+                                title={guide.status === 'Approval Pending' ? 'Cancel Request' : 'Remove from Agency'}
+                            >
+                                {guide.status === 'Approval Pending' ? <X size={14} /> : <Trash2 size={14} />}
+                            </button>
+                        )}
  
                         <div className="flex items-center gap-4 mb-5 relative z-10">
                             <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg group-hover:rotate-3 transition-transform">

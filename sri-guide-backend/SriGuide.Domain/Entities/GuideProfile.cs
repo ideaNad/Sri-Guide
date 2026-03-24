@@ -9,7 +9,7 @@ public class GuideProfile : BaseEntity
     public User? User { get; set; }
 
     public string Bio { get; set; } = string.Empty;
-    public List<string> Languages { get; set; } = new();
+    public List<string>? Languages { get; set; } = new();
     public string? LicenseNumber { get; set; }
     public List<string>? Specialties { get; set; } = new();
     public List<string>? OperatingAreas { get; set; } = new();

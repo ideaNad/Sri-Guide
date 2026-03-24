@@ -41,9 +41,9 @@ public class ReviewController : ControllerBase
 
     [HttpGet("guide/{id}")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetGuideReviewsPublic(Guid id)
+    public async Task<IActionResult> GetGuideReviewsPublic(Guid id, [FromQuery] string? type = null)
     {
-        var result = await _mediator.Send(new SriGuide.Application.Reviews.Queries.GetGuideReviewsQuery(id));
+        var result = await _mediator.Send(new SriGuide.Application.Reviews.Queries.GetGuideReviewsQuery(id, type));
         return Ok(result);
     }
 

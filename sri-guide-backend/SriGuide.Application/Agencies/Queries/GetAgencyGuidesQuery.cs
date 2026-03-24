@@ -49,7 +49,8 @@ public class GetAgencyGuidesQueryHandler : IRequestHandler<GetAgencyGuidesQuery,
             Location = g.OperatingAreas?.FirstOrDefault() ?? "Sri Lanka",
             Status = g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted ? "Active" : "Approval Pending",
             TripCount = g.Trips.Count,
-            ProfileImageUrl = g.User?.ProfileImageUrl
+            ProfileImageUrl = g.User?.ProfileImageUrl,
+            IsOwner = g.UserId == agency.UserId
         }).ToList();
 
         var count = allGuides.Count;

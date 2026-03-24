@@ -31,13 +31,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function Page({ params }: Props) {
+export default async function Page({ 
+  params, 
+  searchParams 
+}: { 
+  params: Promise<{ slug: string }>, 
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }> 
+}) {
   const { slug } = await params;
+  const { type } = await searchParams;
   
   // Optional: Prefetch data on server
   let initialData: PublicProfile | undefined = undefined;
   try {
-      const response = await apiClient.get<PublicProfile>(`/profile/public/${slug}`);
+      const response = await apiClient.get<PublicProfile>(`/profile/public/${slug}${type ? `?type=${type}` : ''}`);
       initialData = response.data;
   } catch (e) {}
 

@@ -43,6 +43,13 @@ public class GuideAgencyManagementHandler :
             .FirstOrDefaultAsync(g => g.UserId == request.GuideId || g.Id == request.GuideId, cancellationToken);
 
         if (guide == null) return false;
+        
+        var agency = await _context.AgencyProfiles
+            .FirstOrDefaultAsync(a => a.Id == request.AgencyId, cancellationToken);
+        if (agency == null) return false;
+
+        // Cannot remove the agency owner from the roster
+        if (guide.UserId == agency.UserId) return false;
 
         // Verify the guide belongs to this agency
         if (guide.AgencyId != request.AgencyId) return false;

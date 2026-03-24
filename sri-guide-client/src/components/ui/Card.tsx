@@ -256,11 +256,14 @@ const Card: React.FC<CardProps> = ({
                 )}
                 
                 {isProfile && (
-                    <div className="mt-6 pt-5 border-t border-gray-50">
-                        <div className="flex items-center text-sm font-bold text-primary group-hover:gap-3 gap-2 transition-all">
+                    <div className="mt-6 pt-5 border-t border-gray-50 relative z-20">
+                        <Link 
+                            href={`${profileLink}${profileLink.includes('?') ? '&' : '?'}full=true`}
+                            className="flex items-center text-sm font-bold text-primary group-hover:gap-3 gap-2 transition-all w-fit"
+                        >
                             <span>View Full Profile</span>
                             <ArrowRight size={16} />
-                        </div>
+                        </Link>
                     </div>
                 )}
             </div>

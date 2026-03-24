@@ -90,6 +90,22 @@ export interface PublicProfile {
         status: string;
         tripCount: number;
     }[];
+    legacyGuideProfile?: {
+        bio: string;
+        rating: number;
+        reviewCount: number;
+        specialties: string[];
+        operatingAreas: string[];
+        reviews: {
+            id: string;
+            reviewerName: string;
+            reviewerImageUrl: string | null;
+            rating: number;
+            comment: string;
+            createdAt: string;
+            targetType: string;
+        }[];
+    };
 }
 
 import { useShare } from "@/hooks/useShare";
@@ -111,6 +127,10 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
     const [reviewComment, setReviewComment] = useState("");
     const [submittingReview, setSubmittingReview] = useState(false);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    
+    // Tab State for Agency Owners with Legacy Guide Profiles
+    const showGuideTab = isAgencyPath && profile?.legacyGuideProfile && user?.id === profile.id && searchParams.get('full') === 'true';
+    const [activeTab, setActiveTab] = useState<'agency' | 'guide'>('agency');
 
     const handleToggleLike = async (id: string, type: string) => {
         if (!user) { setIsAuthModalOpen(true); return; }
@@ -137,8 +157,8 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
     const fetchReviews = async () => {
         if (!profile?.id) return;
         try {
-            // Using Slug/ID here
-            const response = await apiClient.get<Review[]>(`/review/guide/${profile.id}`);
+            const type = searchParams.get('type') || 'guide';
+            const response = await apiClient.get<Review[]>(`/review/guide/${profile.id}?type=${type}`);
             setReviews(response.data || []);
         } catch (error) {
             console.error("Failed to fetch public reviews", error);
@@ -479,11 +499,33 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
                 </div>
             </div>
 
+            {/* TAB SWITCHER (For Agency Owners) */}
+            {showGuideTab && (
+                <div className="bg-white border-b border-gray-100 sticky top-0 z-30 shadow-sm">
+                    <div className="container mx-auto px-4 max-w-6xl">
+                        <div className="flex justify-center -mb-px">
+                            <button
+                                onClick={() => setActiveTab('agency')}
+                                className={`px-8 py-5 text-xs font-black uppercase tracking-[0.2em] transition-all border-b-2 ${activeTab === 'agency' ? 'border-primary text-primary' : 'border-transparent text-gray-400 hover:text-secondary'}`}
+                            >
+                                Agency Profile
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('guide')}
+                                className={`px-8 py-5 text-xs font-black uppercase tracking-[0.2em] transition-all border-b-2 ${activeTab === 'guide' ? 'border-primary text-primary' : 'border-transparent text-gray-400 hover:text-secondary'}`}
+                            >
+                                My Guide Profile
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="max-w-6xl mx-auto px-4 pt-20">
 
 
-                 {/* 3. PORTFOLIO: SIGNATURE TOURS (AGENCY ONLY) */}
-                {isAgencyPath && (
+                 {/* 3. PORTFOLIO: SIGNATURE TOURS (AGENCY ONLY OR Agency Tab) */}
+                {isAgencyPath && activeTab === 'agency' && (
                     <div className="mb-24">
                         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-6 pb-6 border-b border-gray-100">
                             <div>
@@ -518,6 +560,93 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
                                 <p className="text-gray-500 text-sm font-bold uppercase tracking-widest">Check back soon for curated experiences by {profile.fullName}</p>
                             </div>
                         )}
+                    </div>
+                )}
+
+                {/* GUIDE SPECIFIC DETAILS (Guide Tab Only) */}
+                {activeTab === 'guide' && profile.legacyGuideProfile && (
+                    <div className="mb-24 space-y-24">
+                        {/* Guide About */}
+                        <div className="bg-gray-50 rounded-[3rem] p-8 md:p-16 border border-gray-100">
+                            <div className="max-w-3xl">
+                                <h3 className="text-xs font-bold tracking-widest text-primary uppercase mb-6">About the Guide</h3>
+                                <div className="text-xl text-gray-700 leading-relaxed font-medium mb-12 italic">
+                                    "{profile.legacyGuideProfile.bio}"
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                    <div>
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Guide Specialties</h4>
+                                        <div className="flex flex-wrap gap-2">
+                                            {profile.legacyGuideProfile.specialties.map((s, i) => (
+                                                <span key={i} className="bg-white px-4 py-2 rounded-xl border border-gray-100 text-sm font-bold text-secondary shadow-sm">{s}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Primary Regions</h4>
+                                        <div className="space-y-2">
+                                            {profile.legacyGuideProfile.operatingAreas.map((loc, i) => (
+                                                <div key={i} className="flex items-center gap-3 text-sm font-bold text-secondary">
+                                                    <MapPin size={16} className="text-primary" />
+                                                    {loc}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Guide Rating Summary */}
+                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-center bg-primary text-white p-12 rounded-[3rem] shadow-xl shadow-primary/20">
+                            <div className="lg:col-span-1 text-center lg:text-left">
+                                <h3 className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2">Guide Rating</h3>
+                                <div className="flex items-baseline justify-center lg:justify-start gap-2">
+                                    <span className="text-6xl font-black">{profile.legacyGuideProfile.rating.toFixed(1)}</span>
+                                    <span className="text-xl font-bold opacity-40">/5</span>
+                                </div>
+                            </div>
+                            <div className="lg:col-span-2 flex justify-center lg:justify-start">
+                                <div className="flex gap-1.5 text-highlight">
+                                    {[1, 2, 3, 4, 5].map(s => (
+                                        <Star key={s} size={24} className={s <= Math.round(profile.legacyGuideProfile!.rating) ? 'fill-current' : 'opacity-20'} />
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="lg:col-span-1 text-center lg:text-right">
+                                <p className="text-sm font-bold uppercase tracking-widest">{profile.legacyGuideProfile.reviewCount} Reviews</p>
+                                <p className="text-[10px] opacity-60 uppercase font-black tracking-tighter">Verified Guide History</p>
+                            </div>
+                        </div>
+
+                        {/* Guide Reviews */}
+                        <div>
+                            <div className="flex items-center justify-between mb-12 pb-6 border-b border-gray-100">
+                                <h2 className="text-3xl font-bold text-gray-900">Guide Feedback</h2>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {profile.legacyGuideProfile.reviews.map(review => (
+                                    <div key={review.id} className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+                                        <div className="flex text-highlight gap-1 mb-4">
+                                            {[1, 2, 3, 4, 5].map(s => (
+                                                <Star key={s} size={14} className={s <= review.rating ? 'fill-current' : 'opacity-20'} />
+                                            ))}
+                                        </div>
+                                        <p className="text-gray-600 font-medium italic mb-6 leading-relaxed">"{review.comment}"</p>
+                                        <div className="flex items-center gap-4 pt-4 border-t border-gray-50">
+                                             <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-black text-primary overflow-hidden">
+                                                {review.reviewerImageUrl ? <img src={review.reviewerImageUrl} className="w-full h-full object-cover" /> : review.reviewerName.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-bold text-gray-900">{review.reviewerName}</p>
+                                                <p className="text-[10px] text-gray-400 font-medium">{new Date(review.createdAt).toLocaleDateString()}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 )}
 
@@ -595,12 +724,13 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
                     </div>
                 )}
 
-                {/* 4. RECENT FEEDBACK */}
-                <div className="bg-primary/5 p-8 md:p-16 mb-24 relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-secondary to-highlight" />
+                {/* 4. RECENT FEEDBACK (Agency Tab Only) */}
+                {activeTab === 'agency' && (
+                    <div className="bg-primary/5 p-8 md:p-16 mb-24 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-secondary to-highlight" />
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 relative z-10">
-                        {/* Rating Summary */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 relative z-10">
+                            {/* Rating Summary */}
                         {profile?.totalReviews > 0 && (
                             <div className="lg:col-span-1">
                                 <h3 className="text-xs font-bold tracking-widest text-primary uppercase mb-3">Social Proof</h3>
@@ -754,13 +884,14 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
                                     )}
                                 </div>
                                 
-                                {/* Fade Effects */}
-                                <div className="absolute left-0 top-0 bottom-8 w-12 bg-gradient-to-r from-primary/5 to-transparent pointer-events-none hidden md:block" />
-                                <div className="absolute right-0 top-0 bottom-8 w-12 bg-gradient-to-l from-primary/5 to-transparent pointer-events-none hidden md:block" />
+                                    {/* Fade Effects */}
+                                    <div className="absolute left-0 top-0 bottom-8 w-12 bg-gradient-to-r from-primary/5 to-transparent pointer-events-none hidden md:block" />
+                                    <div className="absolute right-0 top-0 bottom-8 w-12 bg-gradient-to-l from-primary/5 to-transparent pointer-events-none hidden md:block" />
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                )}
 
 
             </div>

@@ -58,6 +58,10 @@ export interface AgencyProfile {
     linkedinLink?: string;
     isVerified: boolean;
     verificationStatus: "None" | "Pending" | "Approved" | "Rejected";
+    companyAddress?: string;
+    specialties?: string[];
+    languages?: string[];
+    operatingRegions?: string[];
 }
 
 export interface Profile extends User {

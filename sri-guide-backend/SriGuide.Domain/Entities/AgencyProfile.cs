@@ -15,7 +15,12 @@ public class AgencyProfile : BaseEntity
     public string? RegistrationNumber { get; set; }
     public string? Phone { get; set; }
     public string? WhatsApp { get; set; }
+    public string? CompanyAddress { get; set; }
 
+    public List<string>? Specialties { get; set; } = new();
+    public List<string>? Languages { get; set; } = new();
+    public List<string>? OperatingRegions { get; set; } = new();
+    
     // Social Links
     public string? YouTubeLink { get; set; }
     public string? TikTokLink { get; set; }

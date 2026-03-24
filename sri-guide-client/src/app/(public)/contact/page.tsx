@@ -51,7 +51,7 @@ const ContactPage = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
                         {/* Contact Information */}
                         <div className="space-y-8">
-                            <div className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-sm relative overflow-hidden group">
+                        <div className="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] border border-gray-100 shadow-sm relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl -z-10 group-hover:bg-primary/10 transition-colors" />
                                 <h3 className="text-2xl font-black text-gray-900 mb-6 italic tracking-tight">Contact Information</h3>
 
@@ -62,7 +62,7 @@ const ContactPage = () => {
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Email Us</p>
-                                            <a href="mailto:sriguidecontact@gmail.com" className="text-lg font-bold text-gray-900 hover:text-primary transition-colors">
+                                            <a href="mailto:sriguidecontact@gmail.com" className="text-base sm:text-lg font-bold text-gray-900 hover:text-primary transition-colors break-words">
                                                 sriguidecontact@gmail.com
                                             </a>
                                         </div>
@@ -90,7 +90,7 @@ const ContactPage = () => {
                                 </div>
                             </div>
 
-                            <div className="bg-gray-900 text-white p-10 rounded-[3rem] shadow-2xl relative overflow-hidden group">
+                            <div className="bg-gray-900 text-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] shadow-2xl relative overflow-hidden group">
                                 <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/20 blur-3xl group-hover:scale-150 transition-transform duration-1000" />
                                 <h3 className="text-2xl font-black mb-4 italic tracking-tight uppercase">Need 24/7 Support?</h3>
                                 <p className="text-gray-400 text-sm font-medium mb-8 leading-relaxed italic">Our dedicated team is ready to assist you at any time with your bookings or inquiries.</p>
@@ -123,7 +123,7 @@ const ContactPage = () => {
                         </div>
 
                         {/* Contact Form */}
-                        <div className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-xl lg:sticky lg:top-32">
+                        <div className="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] border border-gray-100 shadow-xl lg:sticky lg:top-32">
                             <AnimatePresence mode="wait">
                                 {submitted ? (
                                     <motion.div

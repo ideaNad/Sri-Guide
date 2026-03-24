@@ -68,12 +68,12 @@ public class ProfileController : ControllerBase
 
     [HttpGet("public/{id}")]
     [AllowAnonymous]
-    public async Task<ActionResult<PublicProfileDto>> GetDetailedPublicProfile(string id)
+    public async Task<ActionResult<PublicProfileDto>> GetDetailedPublicProfile(string id, [FromQuery] string? type = null)
     {
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         Guid? userIdObj = !string.IsNullOrEmpty(currentUserId) ? Guid.Parse(currentUserId) : null;
         
-        var result = await _mediator.Send(new GetPublicProfileQuery(id, userIdObj));
+        var result = await _mediator.Send(new GetPublicProfileQuery(id, userIdObj, type));
         return Ok(result);
     }
 
@@ -97,7 +97,7 @@ public class ProfileController : ControllerBase
     }
 
     [HttpPost("update-guide")]
-    [Authorize(Roles = "Guide")]
+    [Authorize(Roles = "Guide,TravelAgency")]
     public async Task<ActionResult<bool>> UpdateGuideProfile([FromBody] UpdateGuideProfileCommand command)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

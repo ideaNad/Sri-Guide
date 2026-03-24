@@ -233,7 +233,7 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
                     "Sri Lanka",
                     avgRating,
                     reviewCount,
-                    g.User!.Role == UserRole.TravelAgency ? "agency" : "guide",
+                    "guide",
                     g.Languages.ToArray(),
                     g.User.Email,
                     g.User.Email,

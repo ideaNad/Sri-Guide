@@ -11,4 +11,5 @@ public class AgencyGuideDto
     public string Status { get; set; } = string.Empty;
     public int TripCount { get; set; }
     public string? ProfileImageUrl { get; set; }
+    public bool IsOwner { get; set; }
 }

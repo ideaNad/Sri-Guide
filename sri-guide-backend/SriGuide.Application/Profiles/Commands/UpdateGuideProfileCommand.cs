@@ -21,7 +21,9 @@ public record UpdateGuideProfileCommand(
     string? FacebookLink,
     string? InstagramLink,
     string? TwitterLink,
-    string? LinkedinLink
+    string? LinkedinLink,
+    string? RegistrationNumber = null,
+    string? LicenseExpirationDate = null
 ) : IRequest<bool>;
 
 public class UpdateGuideProfileCommandHandler : IRequestHandler<UpdateGuideProfileCommand, bool>
@@ -42,7 +44,8 @@ public class UpdateGuideProfileCommandHandler : IRequestHandler<UpdateGuideProfi
         {
             // If they are a guide but no profile, create it
             var user = await _context.Users.FindAsync(new object[] { request.UserId }, cancellationToken);
-            if (user == null || user.Role != UserRole.Guide) throw new Exception("Guide not found or user is not a guide");
+            if (user == null || (user.Role != UserRole.Guide && user.Role != UserRole.TravelAgency)) 
+                throw new Exception("Guide not found or user is not a guide/agency owner");
 
             guideProfile = new SriGuide.Domain.Entities.GuideProfile { UserId = request.UserId };
             _context.GuideProfiles.Add(guideProfile);
@@ -63,6 +66,14 @@ public class UpdateGuideProfileCommandHandler : IRequestHandler<UpdateGuideProfi
         guideProfile.InstagramLink = request.InstagramLink ?? guideProfile.InstagramLink;
         guideProfile.TwitterLink = request.TwitterLink ?? guideProfile.TwitterLink;
         guideProfile.LinkedinLink = request.LinkedinLink ?? guideProfile.LinkedinLink;
+        guideProfile.RegistrationNumber = request.RegistrationNumber ?? guideProfile.RegistrationNumber;
+        if (!string.IsNullOrEmpty(request.LicenseExpirationDate))
+        {
+            if (DateTime.TryParse(request.LicenseExpirationDate, out var date))
+            {
+                guideProfile.LicenseExpirationDate = DateTime.SpecifyKind(date, DateTimeKind.Utc);
+            }
+        }
 
         await _context.SaveChangesAsync(cancellationToken);
         return true;

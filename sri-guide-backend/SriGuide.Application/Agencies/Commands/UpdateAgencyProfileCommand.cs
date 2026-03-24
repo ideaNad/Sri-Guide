@@ -8,15 +8,19 @@ namespace SriGuide.Application.Agencies.Commands;
 public record UpdateAgencyProfileCommand(
     Guid UserId,
     string CompanyName,
-    string? Bio,
-    string? Phone,
-    string? WhatsApp,
-    string? FacebookLink,
-    string? InstagramLink,
-    string? LinkedinLink,
-    string? TikTokLink,
-    string? TwitterLink,
-    string? YouTubeLink
+    string? Bio = null,
+    string? Phone = null,
+    string? WhatsApp = null,
+    string? CompanyAddress = null,
+    List<string>? Specialties = null,
+    List<string>? Languages = null,
+    List<string>? OperatingRegions = null,
+    string? FacebookLink = null,
+    string? InstagramLink = null,
+    string? LinkedinLink = null,
+    string? TikTokLink = null,
+    string? TwitterLink = null,
+    string? YouTubeLink = null
 ) : IRequest<bool>;
 
 public class UpdateAgencyProfileCommandHandler : IRequestHandler<UpdateAgencyProfileCommand, bool>
@@ -35,17 +39,25 @@ public class UpdateAgencyProfileCommandHandler : IRequestHandler<UpdateAgencyPro
 
         if (agency == null) throw new Exception("Agency profile not found");
 
-        agency.CompanyName = request.CompanyName;
-        agency.Slug = SlugHelper.GenerateSlug(request.CompanyName);
-        agency.Bio = request.Bio;
-        agency.Phone = request.Phone;
-        agency.WhatsApp = request.WhatsApp;
-        agency.FacebookLink = request.FacebookLink;
-        agency.InstagramLink = request.InstagramLink;
-        agency.LinkedinLink = request.LinkedinLink;
-        agency.TikTokLink = request.TikTokLink;
-        agency.TwitterLink = request.TwitterLink;
-        agency.YouTubeLink = request.YouTubeLink;
+        agency.CompanyName = request.CompanyName ?? agency.CompanyName;
+        agency.Slug = !string.IsNullOrEmpty(request.CompanyName) ? SlugHelper.GenerateSlug(request.CompanyName) : agency.Slug;
+        
+        agency.Bio = request.Bio ?? agency.Bio;
+        agency.Phone = request.Phone ?? agency.Phone;
+        agency.WhatsApp = request.WhatsApp ?? agency.WhatsApp;
+        agency.CompanyAddress = request.CompanyAddress ?? agency.CompanyAddress;
+        
+        if (request.Specialties != null) agency.Specialties = request.Specialties;
+        if (request.Languages != null) agency.Languages = request.Languages;
+        if (request.OperatingRegions != null) agency.OperatingRegions = request.OperatingRegions;
+        
+        agency.FacebookLink = request.FacebookLink ?? agency.FacebookLink;
+        agency.InstagramLink = request.InstagramLink ?? agency.InstagramLink;
+        agency.LinkedinLink = request.LinkedinLink ?? agency.LinkedinLink;
+        agency.TikTokLink = request.TikTokLink ?? agency.TikTokLink;
+        agency.TwitterLink = request.TwitterLink ?? agency.TwitterLink;
+        agency.YouTubeLink = request.YouTubeLink ?? agency.YouTubeLink;
+        
         agency.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);
