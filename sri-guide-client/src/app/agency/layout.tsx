@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    LayoutDashboard, Briefcase, Map, Users,
+    LayoutDashboard, Briefcase, Map, Users, Star, User,
     Building2, LogOut, Menu, X, Compass, Bell, Plus,
     X as CloseIcon, HelpCircle, AlertCircle
 } from "lucide-react";
@@ -116,9 +116,36 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
                     );
                 })}
 
+                <p className="text-[10px] font-black text-teal-600 uppercase tracking-[0.3em] px-4 mt-8 mb-4">Reviews & Feedback</p>
+                {[
+                    { name: "Agency Reviews", href: "/agency/reviews", icon: <Star size={20} /> },
+                    { name: "Owner Reviews", href: "/agency/owner-reviews", icon: <User size={20} /> }
+                ].map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setSidebarOpen(false)}
+                            className={`flex items-center justify-between px-6 py-4 rounded-2xl transition-all duration-300 group ${
+                                isActive
+                                    ? "bg-gray-900 text-white shadow-xl shadow-gray-900/20"
+                                    : "text-gray-500 hover:bg-teal-50 hover:text-teal-700 font-bold"
+                            }`}
+                        >
+                            <div className="flex items-center gap-4">
+                                <span className={isActive ? "text-teal-400" : "text-gray-400 group-hover:text-teal-600 transition-colors"}>
+                                    {item.icon}
+                                </span>
+                                <span className="text-sm tracking-wide">{item.name}</span>
+                            </div>
+                        </Link>
+                    );
+                })}
+
                 <button
                     onClick={() => { setIsFeedbackOpen(true); setSidebarOpen(false); }}
-                    className="w-full flex items-center justify-between px-6 py-4 rounded-2xl text-gray-500 hover:bg-teal-50 hover:text-teal-700 transition-all duration-300 group font-bold"
+                    className="w-full flex items-center justify-between px-6 py-4 rounded-2xl text-gray-500 hover:bg-teal-50 hover:text-teal-700 transition-all duration-300 group font-bold mt-4"
                 >
                     <div className="flex items-center gap-4">
                         <span className="text-gray-400 group-hover:text-teal-600 transition-colors">

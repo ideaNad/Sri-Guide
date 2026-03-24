@@ -12,6 +12,7 @@ export interface User {
     onboardingCompleted?: boolean;
     interests?: string[];
     budget?: string;
+    slug?: string;
     travelDuration?: string;
     preferredLocation?: string;
 }
@@ -62,6 +63,7 @@ export interface AgencyProfile {
     specialties?: string[];
     languages?: string[];
     operatingRegions?: string[];
+    slug?: string;
 }
 
 export interface Profile extends User {

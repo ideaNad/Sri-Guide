@@ -170,7 +170,8 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
         const fetchProfile = async () => {
             if (initialData) return;
             try {
-                const response = await apiClient.get(`/profile/public/${slug}`);
+                const requestedType = searchParams.get('type');
+                const response = await apiClient.get(`/profile/public/${slug}${requestedType ? `?type=${requestedType}` : ''}`);
                 setProfile(response.data as PublicProfile);
             } catch (error) {
                 console.error("Failed to fetch public profile", error);

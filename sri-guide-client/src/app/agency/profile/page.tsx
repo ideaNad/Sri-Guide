@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/services/api-client";
 import { useAuth } from "@/providers/AuthContext";
 import { useToast } from "@/hooks/useToast";
+import Link from "next/link";
 import { Profile, AgencyProfile, GuideProfile } from "@/types";
 
 const XIcon = ({ size }: { size?: number }) => (
@@ -246,15 +247,17 @@ export default function AgencyProfilePage() {
                         </button>
                     </div>
                 </div>
-                
-                <button 
-                    onClick={activeTab === "agency" ? handleSaveAgency : handleSaveOwner}
-                    disabled={saving}
-                    className="group bg-gray-900 text-white px-10 py-5 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.3em] hover:bg-teal-600 transition-all shadow-2xl shadow-gray-900/20 flex items-center gap-4 active:scale-95 disabled:opacity-50"
-                >
-                    {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} className="group-hover:rotate-12 transition-transform" />}
-                    {saving ? "Saving..." : "Secure Update"}
-                </button>
+
+                <div className="flex items-center gap-4">
+                    <Link 
+                        href={`/profile/${profile.agencyProfile?.slug || profile.agencyProfile?.id}?type=${activeTab === 'agency' ? 'agency' : 'guide'}`}
+                        target="_blank"
+                        className="group flex items-center gap-3 px-6 py-4 rounded-2xl bg-white border border-gray-100 text-gray-500 hover:text-teal-600 hover:border-teal-100 transition-all font-bold text-xs uppercase tracking-widest shadow-sm hover:shadow-md"
+                    >
+                        <Globe size={16} className="group-hover:rotate-12 transition-transform" />
+                        View Public Profile
+                    </Link>
+                </div>
             </div>
 
             <AnimatePresence>
@@ -853,6 +856,20 @@ export default function AgencyProfilePage() {
                             ? "Your agency is fully verified. Your profile displays the verification badge and ranks higher in discovery results."
                             : "Your agency verification is currently pending. Once verified, you'll receive a badge and increased visibility."}
                     </p>
+                </div>
+            </div>
+
+            {/* Bottom Save Bar */}
+            <div className="sticky bottom-8 left-0 right-0 z-40 px-4 pointer-events-none">
+                <div className="max-w-4xl mx-auto flex justify-end pointer-events-auto">
+                    <button 
+                        onClick={activeTab === "agency" ? handleSaveAgency : handleSaveOwner}
+                        disabled={saving}
+                        className="group bg-gray-900 text-white px-12 py-6 rounded-[2.5rem] font-black text-xs uppercase tracking-[0.3em] hover:bg-teal-600 transition-all shadow-2xl flex items-center gap-4 active:scale-95 disabled:opacity-50 ring-4 ring-white"
+                    >
+                        {saving ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} className="group-hover:rotate-12 transition-transform" />}
+                        {saving ? "Saving Changes..." : "Secure Update Profile"}
+                    </button>
                 </div>
             </div>
         </div>

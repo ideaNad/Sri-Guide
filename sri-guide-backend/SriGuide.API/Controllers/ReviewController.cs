@@ -29,13 +29,13 @@ public class ReviewController : ControllerBase
     }
 
     [HttpGet("guide-reviews")]
-    [Authorize(Roles = "Guide")]
-    public async Task<IActionResult> GetGuideReviews()
+    [Authorize(Roles = "Guide,TravelAgency")]
+    public async Task<IActionResult> GetGuideReviews([FromQuery] string? type = null)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null) return Unauthorized();
 
-        var result = await _mediator.Send(new SriGuide.Application.Reviews.Queries.GetGuideReviewsQuery(Guid.Parse(userId)));
+        var result = await _mediator.Send(new SriGuide.Application.Reviews.Queries.GetGuideReviewsQuery(Guid.Parse(userId), type));
         return Ok(result);
     }
 
