@@ -64,4 +64,22 @@ public class AdminController : ControllerBase
         var result = await _mediator.Send(new GetAdminStatsQuery());
         return Ok(result);
     }
+    
+    [HttpDelete("agency/{id}")]
+    public async Task<ActionResult<bool>> DeleteAgency(Guid id)
+    {
+        return await _mediator.Send(new DeleteAgencyCommand(id));
+    }
+
+    [HttpDelete("guide/{id}")]
+    public async Task<ActionResult<bool>> DeleteGuide(Guid id)
+    {
+        return await _mediator.Send(new DeleteGuideCommand(id));
+    }
+
+    [HttpDelete("user/{id}")]
+    public async Task<ActionResult<bool>> DeleteUser(Guid id)
+    {
+        return await _mediator.Send(new DeleteUserCommand(id));
+    }
 }

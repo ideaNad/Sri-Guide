@@ -26,15 +26,24 @@ public class DeleteTourCommandHandler : IRequestHandler<DeleteTourCommand, bool>
 
         var guideUserIds = agency.Guides.Select(g => (Guid?)g.UserId).ToList();
 
-        // Ensure the trip belongs to this agency OR one of its accepted guides
-        var trip = await _context.Trips
-            .FirstOrDefaultAsync(t => t.Id == request.TripId && 
-                                     (t.AgencyId == agency.Id || (t.GuideId.HasValue && guideUserIds.Contains(t.GuideId.Value))), 
+        // Ensure the tour belongs to this agency
+        var tour = await _context.Tours
+            .FirstOrDefaultAsync(t => t.Id == request.TripId && t.AgencyId == agency.Id, 
                                      cancellationToken);
 
-        if (trip == null) return false;
+        if (tour == null) return false;
 
-        _context.Trips.Remove(trip);
+        // Manually delete reviews (since they don't have a direct FK)
+        var reviews = await _context.Reviews
+            .Where(r => r.TargetId == tour.Id && r.TargetType == "Tour")
+            .ToListAsync(cancellationToken);
+        
+        if (reviews.Any())
+        {
+            _context.Reviews.RemoveRange(reviews);
+        }
+
+        _context.Tours.Remove(tour);
         await _context.SaveChangesAsync(cancellationToken);
 
         return true;

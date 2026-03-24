@@ -5,7 +5,7 @@ import { useAuth } from "@/providers/AuthContext";
 import { useRouter } from "next/navigation";
 import { 
     CheckCircle2, XCircle, Clock, Search, 
-    Filter, LayoutDashboard, Building2, User, Eye
+    Filter, LayoutDashboard, Building2, User, Eye, Trash2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/services/api-client";
@@ -53,6 +53,23 @@ const AdminUpgradesPage = () => {
             setUpgrades(upgrades.filter(u => u.id !== id));
         } catch (error) {
             console.error(`Error during ${action}:`, error);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const handleDeleteAgency = async (id: string, companyName: string) => {
+        if (!window.confirm(`Are you sure you want to delete the agency profile for ${companyName}? This will remove all their tours and content, but keep the user account.`)) {
+            return;
+        }
+
+        setActionLoading(id);
+        try {
+            await apiClient.delete(`/admin/agency/${id}`);
+            setUpgrades(upgrades.filter(u => u.id !== id));
+        } catch (error) {
+            console.error("Error deleting agency:", error);
+            alert("Failed to delete agency profile.");
         } finally {
             setActionLoading(null);
         }
@@ -133,8 +150,17 @@ const AdminUpgradesPage = () => {
                                         disabled={!!actionLoading}
                                         onClick={() => handleAction(upgrade.id, "reject")}
                                         className="p-3 rounded-2xl border border-gray-50 text-gray-400 hover:text-rose-500 hover:bg-rose-50 hover:border-rose-100 transition-all opacity-0 group-hover:opacity-100"
+                                        title="Reject Upgrade"
                                     >
                                         <XCircle size={22} />
+                                    </button>
+                                    <button 
+                                        disabled={!!actionLoading}
+                                        onClick={() => handleDeleteAgency(upgrade.id, upgrade.companyName)}
+                                        className="p-3 rounded-2xl border border-gray-50 text-gray-400 hover:text-rose-500 hover:bg-rose-50 hover:border-rose-100 transition-all opacity-0 group-hover:opacity-100"
+                                        title="Delete Agency Profile"
+                                    >
+                                        <Trash2 size={22} />
                                     </button>
                                     <button
                                         disabled={!!actionLoading}

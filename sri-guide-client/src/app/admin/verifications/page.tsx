@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { 
     CheckCircle2, XCircle, Clock, Search, 
     Filter, ShieldCheck, User, Building2, 
-    Eye, MoreVertical, Check, X
+    Eye, MoreVertical, Check, X, Trash2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/services/api-client";
@@ -53,6 +53,23 @@ const AdminVerificationsPage = () => {
             setRequests(requests.filter(r => r.id !== id));
         } catch (error) {
             console.error(`Error during ${action}:`, error);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const handleDeleteGuide = async (id: string, fullName: string) => {
+        if (!window.confirm(`Are you sure you want to delete the guide profile for ${fullName}? This will remove all their trips and content, but keep the user account.`)) {
+            return;
+        }
+
+        setActionLoading(id);
+        try {
+            await apiClient.delete(`/admin/guide/${id}`);
+            setRequests(requests.filter(r => r.id !== id));
+        } catch (error) {
+            console.error("Error deleting guide:", error);
+            alert("Failed to delete guide profile.");
         } finally {
             setActionLoading(null);
         }
@@ -173,8 +190,17 @@ const AdminVerificationsPage = () => {
                                                     disabled={!!actionLoading}
                                                     onClick={() => handleAction(req.id, "approve")}
                                                     className="p-2 text-green-500 hover:bg-green-50 rounded-lg transition-all"
+                                                    title="Approve Verification"
                                                 >
                                                     <Check size={18} />
+                                                </button>
+                                                <button 
+                                                    disabled={!!actionLoading}
+                                                    onClick={() => handleDeleteGuide(req.id, req.fullName)}
+                                                    className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                                                    title="Delete Guide Profile"
+                                                >
+                                                    <Trash2 size={18} />
                                                 </button>
                                             </div>
                                         </td>

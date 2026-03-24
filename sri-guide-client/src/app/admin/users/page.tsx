@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { 
-    Users, Search, User, ChevronLeft, ChevronRight
+    Users, Search, User, ChevronLeft, ChevronRight, Trash2
 } from "lucide-react";
 import { motion } from "framer-motion";
 import apiClient from "@/services/api-client";
@@ -72,6 +72,20 @@ const UserDirectoryPage = () => {
         fetchUsers();
     };
 
+    const handleDeleteUser = async (user: AdminUser) => {
+        if (!window.confirm(`Are you sure you want to delete ${user.fullName}? This will remove all their data, including profiles, tours, and bookings.`)) {
+            return;
+        }
+
+        try {
+            await apiClient.delete(`/admin/user/${user.id}`);
+            fetchUsers();
+        } catch (error) {
+            console.error("Error deleting user:", error);
+            alert("Failed to delete user. Please try again.");
+        }
+    };
+
     const totalPages = data ? Math.ceil(data.totalCount / pageSize) : 0;
 
     const getRoleBadge = (role: string) => {
@@ -136,6 +150,7 @@ const UserDirectoryPage = () => {
                             <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#A5A3AE]">Role</th>
                             <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#A5A3AE]">Status</th>
                             <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#A5A3AE]">Joined</th>
+                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#A5A3AE] text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-[#DBDADE]/30">
@@ -190,6 +205,18 @@ const UserDirectoryPage = () => {
                                     <span className="text-[11px] text-[#A5A3AE] font-medium">
                                         {new Date(u.createdAt).toLocaleDateString()}
                                     </span>
+                                </td>
+                                <td className="px-6 py-4 text-right">
+                                    <button 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteUser(u);
+                                        }}
+                                        className="p-2 text-[#A5A3AE] hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                                        title="Delete User"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
                                 </td>
                             </motion.tr>
                         ))}
