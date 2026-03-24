@@ -255,7 +255,7 @@ const UpgradePage = () => {
                                         <input 
                                             required
                                             type="tel"
-                                            placeholder="+94 11 234 5678"
+                                            placeholder="+94 76 414 9630"
                                             className="w-full bg-gray-50 border border-transparent focus:border-secondary/20 rounded-2xl py-4 pl-12 pr-4 outline-none transition-all text-sm font-bold"
                                             value={formData.phone}
                                             onChange={e => setFormData({...formData, phone: e.target.value})}

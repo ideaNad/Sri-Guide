@@ -46,7 +46,7 @@ export default function DashboardLayout({
                     <Menu size={24} />
                 </button>
                 
-                <main className="flex-1 p-4 md:p-8 lg:p-10 max-w-[1600px] w-full mx-auto">
+                <main className="flex-1 pt-20 pb-4 px-4 md:pt-24 md:pb-8 md:px-8 lg:p-10 max-w-[1600px] w-full mx-auto">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={pathname}

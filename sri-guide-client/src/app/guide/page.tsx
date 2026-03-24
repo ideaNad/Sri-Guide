@@ -116,7 +116,7 @@ export default function GuideDashboardPage() {
     }
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500 pt-12 md:pt-0">
+        <div className="space-y-8 animate-in fade-in duration-500">
             {/* Welcome */}
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div className="flex items-center gap-6 text-left">

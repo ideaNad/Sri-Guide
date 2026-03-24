@@ -8,9 +8,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     LayoutDashboard, User, Star, TrendingUp,
     ChevronRight, LogOut, Menu, X, Compass, Bell, ShieldCheck, 
-    X as CloseIcon, HelpCircle, AlertCircle
+    X as CloseIcon, HelpCircle, AlertCircle, MessageSquare
 } from "lucide-react";
 import apiClient from "@/services/api-client";
+import FeedbackModal from "@/features/feedback/components/FeedbackModal";
 import { HelpDrawer } from "@/components/help/HelpDrawer";
 
 const GUIDE_NAV = [
@@ -28,6 +29,8 @@ export default function GuideLayout({ children }: { children: React.ReactNode })
     const router = useRouter();
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
     const [livePhotoUrl, setLivePhotoUrl] = useState<string | null>(null);
 
     useEffect(() => {
@@ -59,11 +62,10 @@ export default function GuideLayout({ children }: { children: React.ReactNode })
     }
 
 const SidebarContent = ({ pathname, setSidebarOpen, logout, user, photoUrl }: { pathname: string, setSidebarOpen: (open: boolean) => void, logout: () => void, user: any, photoUrl: string | null }) => {
-    const [isHelpOpen, setIsHelpOpen] = useState(false);
 
     return (
-        <div className="flex flex-col h-full bg-white border-r border-gray-100">
-            <div className="sticky top-0 bg-white z-10 px-8 py-10 border-b border-gray-50 flex items-center justify-between mb-4">
+        <div className="flex flex-col h-full bg-white border-r border-gray-100 overflow-y-auto overflow-x-hidden">
+            <div className="sticky top-0 bg-white z-10 px-8 py-5 lg:py-10 border-b border-gray-50 flex items-center justify-between mb-4">
                 <Link href="/" className="relative flex items-center h-20 md:h-24 z-10 px-1" onClick={() => setSidebarOpen(false)}>
                     <img
                         src="/logo.svg"
@@ -117,6 +119,16 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user, photoUrl }: { 
                         </Link>
                     );
                 })}
+
+                <button
+                    onClick={() => { setIsFeedbackOpen(true); setSidebarOpen(false); }}
+                    className="w-full flex items-center gap-3 px-6 py-4 rounded-2xl text-gray-500 hover:bg-gray-50 hover:text-primary transition-all group font-bold text-sm"
+                >
+                    <span className="text-gray-400 group-hover:text-primary transition-colors">
+                        <MessageSquare size={20} />
+                    </span>
+                    <span>System Feedback</span>
+                </button>
             </nav>
 
             <div className="p-6 mt-auto border-t border-gray-50 bg-white space-y-2">
@@ -140,7 +152,14 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user, photoUrl }: { 
                     <span>Logout</span>
                 </button>
             </div>
+        </div>
+    );
+};
 
+    return (
+        <div className="flex min-h-screen bg-gray-50/50">
+            <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
+            
             <HelpDrawer 
                 open={isHelpOpen}
                 onOpenChange={setIsHelpOpen}
@@ -152,12 +171,6 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user, photoUrl }: { 
                     { title: "Communicating with Tourists", description: "Best practices for a great traveler experience.", category: 'guide' },
                 ]}
             />
-        </div>
-    );
-};
-
-    return (
-        <div className="flex min-h-screen bg-gray-50/50">
             {/* Desktop Sidebar */}
             <aside className="hidden lg:block w-80 fixed inset-y-0 left-0 z-30">
                 <SidebarContent pathname={pathname} setSidebarOpen={setSidebarOpen} logout={logout} user={user} photoUrl={livePhotoUrl} />
@@ -194,7 +207,7 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user, photoUrl }: { 
                     <Menu size={24} />
                 </button>
 
-                <main className="flex-1 p-6 lg:p-12 max-w-6xl mx-auto w-full">
+                <main className="flex-1 pt-20 pb-6 px-6 lg:p-12 max-w-6xl mx-auto w-full">
                     {children}
                 </main>
             </div>

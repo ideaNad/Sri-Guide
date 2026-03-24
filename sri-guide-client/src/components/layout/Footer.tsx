@@ -4,7 +4,7 @@ import { Facebook, Instagram, Youtube, Mail, MapPin, Phone } from "lucide-react"
 
 const XIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em">
-        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
     </svg>
 );
 
@@ -29,9 +29,9 @@ const Footer = () => {
                         <div className="flex space-x-4">
                             {[
                                 { Icon: Facebook, href: "https://www.facebook.com/share/1L2EokQwo5/" },
-                                { Icon: Instagram, href: "https://instagram.com/SriGuide" },
-                                { Icon: XIcon, href: "https://x.com/SriGuide" },
-                                { Icon: Youtube, href: "https://www.youtube.com/@SriGuide" }
+                                // { Icon: Instagram, href: "https://instagram.com/SriGuide" },
+                                // { Icon: XIcon, href: "https://x.com/SriGuide" },
+                                // { Icon: Youtube, href: "https://www.youtube.com/@SriGuide" }
                             ].map((social, idx) => (
                                 <a
                                     key={idx}
@@ -50,10 +50,16 @@ const Footer = () => {
                     <div>
                         <h3 className="text-white font-bold text-lg mb-6">Quick Links</h3>
                         <ul className="space-y-4">
-                            {["About Us", "Our Tours", "Local Guides", "Travel Blog", "Contact Us"].map((item) => (
-                                <li key={item}>
-                                    <Link href="#" className="hover:text-highlight transition-colors text-sm">
-                                        {item}
+                            {[
+                                // { name: "About Us", href: "#" },
+                                { name: "Our Tours", href: "/tours" },
+                                { name: "Local Guides", href: "/guides" },
+                                // { name: "Travel Blog", href: "#" },
+                                { name: "Contact Us", href: "/contact" }
+                            ].map((item) => (
+                                <li key={item.name}>
+                                    <Link href={item.href} className="hover:text-highlight transition-colors text-sm">
+                                        {item.name}
                                     </Link>
                                 </li>
                             ))}
@@ -64,10 +70,16 @@ const Footer = () => {
                     <div>
                         <h3 className="text-white font-bold text-lg mb-6">Categories</h3>
                         <ul className="space-y-4">
-                            {["Beach Vacations", "Cultural Heritage", "Wild Safari", "Hill Country", "Adventure Depot"].map((item) => (
-                                <li key={item}>
-                                    <Link href="#" className="hover:text-highlight transition-colors text-sm">
-                                        {item}
+                            {[
+                                { name: "Beach Vacations", category: "Beach" },
+                                { name: "Cultural Heritage", category: "Culture" },
+                                { name: "Wild Safari", category: "Wild Life" },
+                                { name: "Hill Country", category: "Hiking" },
+                                { name: "Adventure Depot", category: "Adventure" }
+                            ].map((item) => (
+                                <li key={item.name}>
+                                    <Link href={`/tours?category=${encodeURIComponent(item.category)}`} className="hover:text-highlight transition-colors text-sm">
+                                        {item.name}
                                     </Link>
                                 </li>
                             ))}
@@ -80,15 +92,15 @@ const Footer = () => {
                         <ul className="space-y-4">
                             <li className="flex items-start space-x-3 text-sm">
                                 <MapPin className="w-5 h-5 text-primary flex-shrink-0" />
-                                <span>123 Galle Road, Colombo 03, Sri Lanka</span>
+                                <span>Kaluthara South, Sri Lanka, 12000</span>
                             </li>
                             <li className="flex items-center space-x-3 text-sm">
                                 <Phone className="w-5 h-5 text-primary flex-shrink-0" />
-                                <span>+94 11 234 5678</span>
+                                <span>+94 76 414 9630</span>
                             </li>
                             <li className="flex items-center space-x-3 text-sm">
                                 <Mail className="w-5 h-5 text-primary flex-shrink-0" />
-                                <span>hello@sriguide.com</span>
+                                <span>sriguidecontact@gmail.com</span>
                             </li>
                         </ul>
                     </div>
@@ -99,7 +111,7 @@ const Footer = () => {
 
                     <div className="flex space-x-6 uppercase tracking-widest text-[10px]">
                         <Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
-                        <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>
+                        <Link href="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link>
                         <Link href="/privacy-policy" className="hover:text-white transition-colors">Cookies Policy</Link>
                     </div>
                 </div>

@@ -7,7 +7,7 @@ import apiClient from "@/services/api-client";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Filter, SlidersHorizontal, Search, MapPin, Calendar, Users, Loader2, Compass } from "lucide-react";
+import { Filter, SlidersHorizontal, Search, MapPin, Calendar, Users, Loader2, Compass, Star } from "lucide-react";
 
 interface Tour {
     id: string;
@@ -27,24 +27,35 @@ interface Tour {
 }
 const ToursPageContent = () => {
     const searchParams = useSearchParams();
-    
+
     const [tours, setTours] = useState<Tour[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeCategory, setActiveCategory] = useState("All");
+    const [activeCategory, setActiveCategory] = useState(searchParams.get("category") || "All");
+    const [activeLocation, setActiveLocation] = useState(searchParams.get("location") || "All");
+    const [minRating, setMinRating] = useState(parseInt(searchParams.get("minRating") || "0"));
+    const [showAllCategories, setShowAllCategories] = useState(false);
+    const [showAllLocations, setShowAllLocations] = useState(false);
     const [searchQuery, setSearchQuery] = useState(searchParams.get("query") || "");
-    const [priceRange, setPriceRange] = useState(500);
+    const [priceRange, setPriceRange] = useState(2000); 
 
     const [sortBy, setSortBy] = useState("Most Popular");
     const [pageNumber, setPageNumber] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
 
+    // Sync from searchParams when they change (e.g. clicking footer while on page)
     useEffect(() => {
+        const category = searchParams.get("category");
+        const location = searchParams.get("location");
         const query = searchParams.get("query");
-        if (query) {
-            setSearchQuery(query);
-            setPageNumber(1);
-        }
+        const rating = searchParams.get("minRating");
+
+        if (category !== null) setActiveCategory(category);
+        if (location !== null) setActiveLocation(location);
+        if (query !== null) setSearchQuery(query);
+        if (rating !== null) setMinRating(parseInt(rating));
+        
+        setPageNumber(1);
     }, [searchParams]);
 
     const fetchTours = async () => {
@@ -56,10 +67,12 @@ const ToursPageContent = () => {
                 pageSize: "12",
                 query: searchQuery,
                 category: activeCategory === "All" ? "" : activeCategory,
+                location: activeLocation === "All" ? "" : activeLocation,
+                minRating: minRating > 0 ? minRating.toString() : "",
                 maxPrice: priceRange.toString(),
                 sortBy: sortBy,
             });
-            
+
 
 
             const response = await apiClient.get<{ items: Tour[], totalCount: number, totalPages: number }>("/discovery", { params });
@@ -78,7 +91,7 @@ const ToursPageContent = () => {
             fetchTours();
         }, 300); // Debounce search
         return () => clearTimeout(timer);
-    }, [pageNumber, activeCategory, priceRange, sortBy]);
+    }, [pageNumber, activeCategory, activeLocation, minRating, priceRange, sortBy]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -88,7 +101,8 @@ const ToursPageContent = () => {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const categories = ["All", "Adventure", "Culture", "Wild Life", "Beach", "Hiking"];
+    const categories = ["All", "Adventure", "Culture", "Wild Life", "Beach", "Hiking", "Religious", "Festival", "Photography", "Honeymoon", "Yoga & Wellness"];
+    const locations = ["All", "Colombo", "Galle", "Kandy", "Ella", "Sigiriya", "Nuwara Eliya", "Arugam Bay", "Mirissa", "Jaffna", "Bentota", "Trincomalee", "Polonnaruwa", "Anuradhapura", "Yala", "Udawalawe"];
 
     return (
         <div className="pt-24 pb-20 min-h-screen bg-gray-50/50">
@@ -113,9 +127,9 @@ const ToursPageContent = () => {
                                 className="w-full pl-14 pr-6 py-4 bg-white border border-gray-100 rounded-full focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-medium text-sm shadow-md"
                             />
                         </div>
-                        <button className="bg-primary text-white p-4 rounded-full hover:bg-secondary transition-all shadow-md">
+                        {/* <button className="bg-primary text-white p-4 rounded-full hover:bg-secondary transition-all shadow-md">
                             <SlidersHorizontal className="w-5 h-5" />
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </div>
@@ -134,7 +148,7 @@ const ToursPageContent = () => {
                                 <div>
                                     <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Categories</h4>
                                     <div className="flex flex-wrap gap-2">
-                                        {categories.map(cat => (
+                                        {(showAllCategories ? categories : categories.slice(0, 6)).map(cat => (
                                             <button
                                                 key={cat}
                                                 onClick={() => setActiveCategory(cat)}
@@ -145,21 +159,74 @@ const ToursPageContent = () => {
                                             </button>
                                         ))}
                                     </div>
+                                    {categories.length > 6 && (
+                                        <button
+                                            onClick={() => setShowAllCategories(!showAllCategories)}
+                                            className="mt-3 text-[10px] font-bold text-primary hover:underline uppercase tracking-wider"
+                                        >
+                                            {showAllCategories ? "Show Less" : "See More"}
+                                        </button>
+                                    )}
                                 </div>
 
                                 <div>
                                     <h4 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-4">Price Range</h4>
-                                    <input 
-                                        type="range" 
+                                    <input
+                                        type="range"
                                         min="10"
                                         max="2000"
                                         value={priceRange}
                                         onChange={(e) => setPriceRange(parseInt(e.target.value))}
-                                        className="w-full accent-primary" 
+                                        className="w-full accent-primary"
                                     />
                                     <div className="flex justify-between mt-2 text-xs font-bold text-gray-500">
                                         <span>$10</span>
                                         <span>${priceRange}</span>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Location</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {(showAllLocations ? locations : locations.slice(0, 6)).map(loc => (
+                                            <button
+                                                key={loc}
+                                                onClick={() => setActiveLocation(loc)}
+                                                className={`px-4 py-2 text-xs font-bold rounded-full transition-all ${activeLocation === loc ? "bg-primary text-white shadow-sm" : "bg-gray-50 text-gray-500 hover:bg-primary/10 hover:text-primary"
+                                                    }`}
+                                            >
+                                                {loc}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {locations.length > 6 && (
+                                        <button
+                                            onClick={() => setShowAllLocations(!showAllLocations)}
+                                            className="mt-3 text-[10px] font-bold text-primary hover:underline uppercase tracking-wider"
+                                        >
+                                            {showAllLocations ? "Show Less" : "See More"}
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Reviews</h4>
+                                    <div className="space-y-2">
+                                        {[
+                                            { label: "Any Rating", value: 0 },
+                                            { label: "4+ Stars", value: 4 },
+                                            { label: "3+ Stars", value: 3 }
+                                        ].map((rating) => (
+                                            <button
+                                                key={rating.value}
+                                                onClick={() => setMinRating(rating.value)}
+                                                className={`w-full flex items-center justify-between px-4 py-2 text-xs font-bold rounded-xl transition-all ${minRating === rating.value ? "bg-primary text-white shadow-sm" : "bg-gray-50 text-gray-500 hover:bg-primary/10 hover:text-primary"
+                                                    }`}
+                                            >
+                                                <span>{rating.label}</span>
+                                                {rating.value > 0 && <Star size={12} fill="currentColor" />}
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
 
@@ -188,7 +255,7 @@ const ToursPageContent = () => {
                             </p>
                             <div className="flex items-center space-x-2 text-sm">
                                 <span className="text-gray-400">Sort by:</span>
-                                <select 
+                                <select
                                     value={sortBy}
                                     onChange={(e) => setSortBy(e.target.value)}
                                     className="bg-transparent font-bold text-gray-900 outline-none cursor-pointer"
@@ -213,7 +280,7 @@ const ToursPageContent = () => {
                                         animate={{ opacity: 1, scale: 1 }}
                                         transition={{ duration: 0.4 }}
                                     >
-                                        <Card 
+                                        <Card
                                             id={tour.id}
                                             slug={tour.slug}
                                             title={tour.title}
@@ -243,11 +310,10 @@ const ToursPageContent = () => {
                                     <button
                                         key={i}
                                         onClick={() => setPageNumber(i + 1)}
-                                        className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold text-sm shadow-sm transition-all ${
-                                            pageNumber === i + 1 
-                                            ? "bg-primary text-white shadow-md" 
-                                            : "bg-white border border-gray-100 text-gray-500 hover:border-primary hover:text-primary"
-                                        }`}
+                                        className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold text-sm shadow-sm transition-all ${pageNumber === i + 1
+                                                ? "bg-primary text-white shadow-md"
+                                                : "bg-white border border-gray-100 text-gray-500 hover:border-primary hover:text-primary"
+                                            }`}
                                     >
                                         {i + 1}
                                     </button>

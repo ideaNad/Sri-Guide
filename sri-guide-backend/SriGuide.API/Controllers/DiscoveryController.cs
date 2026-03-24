@@ -23,29 +23,6 @@ public class DiscoveryController : ControllerBase
         _context = context;
     }
 
-    [HttpPost("update-slugs")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> UpdateSlugs()
-    {
-        var users = await _context.Users.Where(u => u.Slug == null).ToListAsync();
-        foreach (var u in users) u.Slug = SlugHelper.GenerateSlug(u.FullName);
-
-        var tours = await _context.Tours.Where(t => t.Slug == null).ToListAsync();
-        foreach (var t in tours) t.Slug = SlugHelper.GenerateSlug(t.Title);
-
-        var trips = await _context.Trips.Where(t => t.Slug == null).ToListAsync();
-        foreach (var t in trips) t.Slug = SlugHelper.GenerateSlug(t.Title);
-
-        var places = await _context.PopularPlaces.Where(p => p.Slug == null).ToListAsync();
-        foreach (var p in places) p.Slug = SlugHelper.GenerateSlug(p.Title);
-
-        var agencies = await _context.AgencyProfiles.Where(a => a.Slug == null).ToListAsync();
-        foreach (var a in agencies) a.Slug = SlugHelper.GenerateSlug(a.CompanyName);
-
-        await _context.SaveChangesAsync(CancellationToken.None);
-        return Ok("Slugs updated");
-    }
-
     [HttpGet("all-slugs")]
     public async Task<ActionResult<AllSlugsDto>> GetAllSlugs()
     {
@@ -63,8 +40,10 @@ public class DiscoveryController : ControllerBase
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 12,
         [FromQuery] string? category = null,
+        [FromQuery] string? location = null,
         [FromQuery] decimal? minPrice = null,
         [FromQuery] decimal? maxPrice = null,
+        [FromQuery] decimal? minRating = null,
         [FromQuery] string? duration = null,
         [FromQuery] string? sortBy = null)
     {
@@ -77,8 +56,10 @@ public class DiscoveryController : ControllerBase
             pageNumber, 
             pageSize, 
             category, 
+            location,
             minPrice, 
             maxPrice, 
+            minRating,
             duration, 
             sortBy));
         return Ok(result);

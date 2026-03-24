@@ -38,8 +38,10 @@ public record GetDiscoveryQuery(
     int PageNumber = 1,
     int PageSize = 10,
     string? Category = null,
+    string? Location = null,
     decimal? MinPrice = null,
     decimal? MaxPrice = null,
+    decimal? MinRating = null,
     string? Duration = null,
     string? SortBy = null
 ) : IRequest<PaginatedResult<DiscoveryItemDto>>;
@@ -72,7 +74,8 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
 
             if (!string.IsNullOrEmpty(request.Category) && request.Category != "All")
             {
-                tourQuery = tourQuery.Where(t => t.Category != null && t.Category.Contains(request.Category));
+                var searchCategory = request.Category.ToLower();
+                tourQuery = tourQuery.Where(t => t.Category != null && t.Category.ToLower().Contains(searchCategory));
             }
 
             if (request.MinPrice.HasValue)
@@ -105,11 +108,27 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
                 }
             }
 
+            if (!string.IsNullOrEmpty(request.Location) && request.Location != "All")
+            {
+                var searchLocation = request.Location.ToLower();
+                tourQuery = tourQuery.Where(t => t.Location != null && t.Location.ToLower().Contains(searchLocation));
+            }
+
+            if (request.MinRating.HasValue)
+            {
+                tourQuery = tourQuery.Where(t => _context.Reviews
+                    .Where(r => r.TargetType == "Tour" && r.TargetId == t.Id)
+                    .Any() && _context.Reviews
+                    .Where(r => r.TargetType == "Tour" && r.TargetId == t.Id)
+                    .Average(r => (double)r.Rating) >= (double)request.MinRating.Value);
+            }
+
             // Sorting
             tourQuery = request.SortBy switch
             {
                 "Price: Low to High" => tourQuery.OrderBy(t => t.Price),
                 "Price: High to Low" => tourQuery.OrderByDescending(t => t.Price),
+                "Most Popular" => tourQuery.OrderByDescending(t => t.Likes.Count),
                 _ => tourQuery.OrderByDescending(t => t.CreatedAt)
             };
 

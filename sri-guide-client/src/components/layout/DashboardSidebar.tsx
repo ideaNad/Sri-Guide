@@ -29,15 +29,14 @@ const DASHBOARD_LINKS = [
 export default function DashboardSidebar({ isOpen, setIsOpen }: DashboardSidebarProps) {
     const pathname = usePathname();
     const { user, logout } = useAuth();
+    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
 
     const SidebarContent = () => {
-        const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
-        const [isHelpOpen, setIsHelpOpen] = useState(false);
-
         return (
-            <div className="flex flex-col h-full bg-white border-r border-gray-100 relative shadow-sm">
+            <div className="flex flex-col h-full bg-white border-r border-gray-100 relative shadow-sm overflow-y-auto overflow-x-hidden">
                 {/* Header */}
-                <div className="sticky top-0 bg-white z-10 px-8 py-10 border-b border-gray-50 flex items-center justify-between mb-4">
+                <div className="sticky top-0 bg-white z-10 px-8 py-5 lg:py-10 border-b border-gray-50 flex items-center justify-between mb-4">
                     <Link href="/" className="relative flex items-center h-20 md:h-24 z-10 px-1">
                         <img
                             src="/logo.svg"
@@ -129,26 +128,25 @@ export default function DashboardSidebar({ isOpen, setIsOpen }: DashboardSidebar
                         <span>Logout</span>
                     </button>
                 </div>
-
-                <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
-                
-                <HelpDrawer 
-                    open={isHelpOpen}
-                    onOpenChange={setIsHelpOpen}
-                    title="Dashboard Help"
-                    description="Need help with your account or finding tours? Check out our resources."
-                    items={[
-                        { title: "Manage Profile", description: "Learn how to update your personal info.", category: 'tourist' },
-                        { title: "Saved Tours", description: "How to save and find your favorite experiences.", category: 'tourist' },
-                        { title: "Contact Support", description: "Reach out to us for any technical issues.", category: 'tourist' },
-                    ]}
-                />
             </div>
         );
     };
 
     return (
         <>
+            <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
+            
+            <HelpDrawer 
+                open={isHelpOpen}
+                onOpenChange={setIsHelpOpen}
+                title="Dashboard Help"
+                description="Need help with your account or finding tours? Check out our resources."
+                items={[
+                    { title: "Manage Profile", description: "Learn how to update your personal info.", category: 'tourist' },
+                    { title: "Saved Tours", description: "How to save and find your favorite experiences.", category: 'tourist' },
+                    { title: "Contact Support", description: "Reach out to us for any technical issues.", category: 'tourist' },
+                ]}
+            />
             {/* Desktop Sidebar */}
             <aside className="hidden lg:block fixed inset-y-0 left-0 z-30 shadow-sm border-r border-gray-100 w-80">
                 <SidebarContent />

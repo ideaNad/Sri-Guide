@@ -28,6 +28,8 @@ export default function AgencyLayout({ children }: { children: React.ReactNode }
     const router = useRouter();
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
 
     useEffect(() => {
         if (!loading) {
@@ -46,15 +48,12 @@ export default function AgencyLayout({ children }: { children: React.ReactNode }
     }
 
 const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: string, setSidebarOpen: (open: boolean) => void, logout: () => void, user: any }) => {
-    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
-    const [isHelpOpen, setIsHelpOpen] = useState(false);
-
     return (
-        <div className="flex flex-col h-full bg-white border-r border-gray-100 relative">
+        <div className="flex flex-col h-full bg-white border-r border-gray-100 relative overflow-y-auto overflow-x-hidden">
             {/* Background Accent */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50/50 blur-3xl rounded-full -mr-16 -mt-16 -z-10" />
             
-                <div className="sticky top-0 bg-white z-10 px-8 py-10 border-b border-gray-50 flex items-center justify-between mb-4">
+                <div className="sticky top-0 bg-white z-10 px-8 py-5 lg:py-10 border-b border-gray-50 flex items-center justify-between mb-4">
                     <Link href="/" className="relative flex items-center h-20 md:h-24 z-10 px-1" onClick={() => setSidebarOpen(false)}>
                         <img
                             src="/logo.svg"
@@ -118,7 +117,7 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
                 })}
 
                 <button
-                    onClick={() => setIsFeedbackOpen(true)}
+                    onClick={() => { setIsFeedbackOpen(true); setSidebarOpen(false); }}
                     className="w-full flex items-center justify-between px-6 py-4 rounded-2xl text-gray-500 hover:bg-teal-50 hover:text-teal-700 transition-all duration-300 group font-bold"
                 >
                     <div className="flex items-center gap-4">
@@ -151,7 +150,12 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
                     <span>Logout</span>
                 </button>
             </div>
+        </div>
+    );
+};
 
+    return (
+        <div className="flex min-h-screen bg-white">
             <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
             
             <HelpDrawer 
@@ -165,12 +169,6 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
                     { title: "Dashboard Analytics", description: "Understand your performance metrics.", category: 'agency' },
                 ]}
             />
-        </div>
-    );
-};
-
-    return (
-        <div className="flex min-h-screen bg-white">
             {/* Desktop Sidebar */}
             <aside className="hidden lg:block w-80 fixed inset-y-0 left-0 z-30">
                 <SidebarContent pathname={pathname} setSidebarOpen={setSidebarOpen} logout={logout} user={user} />
@@ -207,7 +205,7 @@ const SidebarContent = ({ pathname, setSidebarOpen, logout, user }: { pathname: 
                     <Menu size={24} />
                 </button>
 
-                <main className="flex-1 p-6 lg:p-12 w-full">
+                <main className="flex-1 pt-20 pb-6 px-6 lg:p-12 w-full">
                     {children}
                 </main>
             </div>

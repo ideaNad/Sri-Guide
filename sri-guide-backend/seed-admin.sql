@@ -3,7 +3,7 @@
 
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM "Users" WHERE "Email" = 'admin@sriguide.lk') THEN
+    IF NOT EXISTS (SELECT 1 FROM "Users" WHERE "Email" = 'admin@sriguide.com') THEN
         INSERT INTO "Users" (
             "Id", 
             "FullName", 
@@ -16,7 +16,7 @@ BEGIN
         VALUES (
             gen_random_uuid(), 
             'System Administrator', 
-            'admin@sriguide.lk', 
+            'admin@sriguide.com', 
             '$2a$11$qjkBudDyagzsx3OCIaC.p.uB3WyVAgmoe.UwKqZDLmxrfAvm3zCEC', 
             6, -- Admin Role
             true, 

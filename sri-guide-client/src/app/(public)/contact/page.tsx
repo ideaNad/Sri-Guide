@@ -2,7 +2,7 @@
 
 import React from "react";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { Mail, Phone, MapPin, Send, MessageCircle, Clock, ChevronRight, CheckCircle2, Loader2 } from "lucide-react";
+import { Mail, Phone, MapPin, Send, MessageCircle, Clock, ChevronRight, CheckCircle2, Loader2, Facebook } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/services/api-client";
 
@@ -84,7 +84,7 @@ const ContactPage = () => {
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Office</p>
-                                            <p className="text-lg font-bold text-gray-900">123 Galle Road, Colombo 03, Sri Lanka</p>
+                                            <p className="text-lg font-bold text-gray-900">Kaluthara South, Sri Lanka, 12000</p>
                                         </div>
                                     </div>
                                 </div>
@@ -92,12 +92,33 @@ const ContactPage = () => {
 
                             <div className="bg-gray-900 text-white p-10 rounded-[3rem] shadow-2xl relative overflow-hidden group">
                                 <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/20 blur-3xl group-hover:scale-150 transition-transform duration-1000" />
-                                <h3 className="text-2xl font-black mb-4 italic tracking-tight">Need 24/7 Support?</h3>
+                                <h3 className="text-2xl font-black mb-4 italic tracking-tight uppercase">Need 24/7 Support?</h3>
                                 <p className="text-gray-400 text-sm font-medium mb-8 leading-relaxed italic">Our dedicated team is ready to assist you at any time with your bookings or inquiries.</p>
-                                {/* <button className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white hover:text-gray-900 transition-all flex items-center gap-3 relative z-10">
-                                    <MessageCircle size={16} />
-                                    <span>Chat with us on WhatsApp</span>
-                                </button> */}
+                                
+                                <div className="flex flex-col sm:flex-row gap-4 relative z-10">
+                                    <a 
+                                        href="https://wa.me/94764149630" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="flex-1"
+                                    >
+                                        <button className="w-full bg-green-600 text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white hover:text-green-600 transition-all flex items-center justify-center gap-3">
+                                            <MessageCircle size={18} />
+                                            <span>WhatsApp</span>
+                                        </button>
+                                    </a>
+                                    <a 
+                                        href="https://www.facebook.com/share/1L2EokQwo5/" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="flex-1"
+                                    >
+                                        <button className="w-full bg-blue-600 text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white hover:text-blue-600 transition-all flex items-center justify-center gap-3">
+                                            <Facebook size={18} />
+                                            <span>Facebook</span>
+                                        </button>
+                                    </a>
+                                </div>
                             </div>
                         </div>
 
