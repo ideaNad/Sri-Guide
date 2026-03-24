@@ -8,10 +8,10 @@ import AuthModal from "@/features/auth/components/AuthModal";
 import Link from "next/link";
 
 const images = [
-    "/hero-0.png",
-    "/hero-10.jpg",
-    "/Hero-7.jpg",
-    "/hero-11.png",
+    "/hero-8.webp",
+    "/hero-2.png",
+    "/hero-5.webp",
+    "/hero-12.webp",
 ];
 
 const HeroSection = () => {

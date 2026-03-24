@@ -35,9 +35,9 @@ const CookieConsent = () => {
                     initial={{ opacity: 0, y: 50, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 50, scale: 0.95 }}
-                    className="fixed bottom-6 left-6 right-6 md:left-auto md:right-8 md:max-w-md z-[100]"
+                    className="fixed bottom-6 left-6 right-6 md:left-auto md:right-8 md:max-w-md z-[100] pointer-events-none"
                 >
-                    <div className="bg-white/90 backdrop-blur-xl border border-gray-200 shadow-2xl rounded-3xl p-6 md:p-8 overflow-hidden relative">
+                    <div className="bg-white/90 backdrop-blur-xl border border-gray-200 shadow-2xl rounded-3xl p-6 md:p-8 overflow-hidden relative pointer-events-auto">
                         {/* Decorative background element */}
                         <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
                         

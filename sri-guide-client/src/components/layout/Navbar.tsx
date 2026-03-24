@@ -56,7 +56,7 @@ const Navbar = () => {
                     key={link.name}
                     href={link.href}
                     className={mobile
-                        ? "text-3xl font-black text-black hover:text-primary transition-colors uppercase tracking-tight"
+                        ? "text-xl font-bold text-black hover:text-primary transition-colors uppercase tracking-tight"
                         : `px-6 py-2.5 text-[13px] font-bold ${textColor} hover:bg-black/5 rounded-full transition-all flex items-center`
                     }
                     onClick={() => mobile && setIsMobileMenuOpen(false)}
@@ -185,34 +185,37 @@ const Navbar = () => {
                             initial={{ opacity: 0, y: -20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
-                            className="fixed top-0 left-0 w-full h-screen bg-white lg:hidden py-12 px-6 flex flex-col items-center justify-center space-y-10 z-[60]"
+                            className="fixed top-0 left-0 w-full h-screen bg-white lg:hidden pt-28 pb-12 px-8 flex flex-col items-center justify-start space-y-8 z-[60] overflow-y-auto"
                         >
                             {/* Logo inside Mobile Menu */}
-                            <Link href="/" className="absolute top-8 left-6" onClick={() => setIsMobileMenuOpen(false)}>
-                                <img
-                                    src="/logo.svg"
-                                    alt="SRIGuide Logo"
-                                    className="h-40 w-auto object-contain"
-                                />
-                            </Link>
+                            <div className="absolute top-8 left-6 right-6 flex items-center justify-between z-20">
+                                <Link href="/" className="relative h-10 w-40 flex items-center" onClick={() => setIsMobileMenuOpen(false)}>
+                                    <img
+                                        id="navbar-logo-mobile"
+                                        src="/logo.svg"
+                                        alt="SRIGuide Logo"
+                                        className="absolute left-0 h-40 w-auto transition-all duration-500 object-contain max-w-none opacity-100 top-1/2 -translate-y-1/2"
+                                    />
+                                </Link>
 
-                            <div className="absolute top-8 right-24 flex items-center gap-4">
-                                <button
-                                    onClick={() => { setIsHelpOpen(true); setIsMobileMenuOpen(false); }}
-                                    className="p-3 bg-gray-100 rounded-full text-gray-600"
-                                >
-                                    <HelpCircle size={24} />
-                                </button>
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => { setIsHelpOpen(true); setIsMobileMenuOpen(false); }}
+                                        className="p-3 bg-gray-100 rounded-full text-gray-600 hover:bg-gray-200 transition-colors shadow-sm"
+                                        title="Help Center"
+                                    >
+                                        <HelpCircle size={22} />
+                                    </button>
+                                    <button
+                                        className="text-black p-3 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors shadow-sm"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    >
+                                        <X size={22} />
+                                    </button>
+                                </div>
                             </div>
 
-                            <button
-                                className="absolute top-8 right-8 text-black p-2 bg-gray-100 rounded-full"
-                                onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                                <X className="w-8 h-8" />
-                            </button>
-
-                            <div className="flex flex-col items-center space-y-8">
+                            <div className="flex flex-col items-center space-y-6 py-4">
                                 <NavItems mobile textColor={textColor} navLinks={navLinks} setIsMobileMenuOpen={setIsMobileMenuOpen} />
                             </div>
 
@@ -238,7 +241,7 @@ const Navbar = () => {
                                         </div>
                                         <Link
                                             href={getDashboardHref()}
-                                            className="w-full block text-center py-5 bg-gray-100 text-black rounded-full text-lg font-black uppercase tracking-widest"
+                                            className="w-full block text-center py-4 bg-gray-100 text-black rounded-full text-base font-black uppercase tracking-widest shadow-sm hover:bg-gray-200 transition-all"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
                                             Dashboard
@@ -246,7 +249,7 @@ const Navbar = () => {
                                         {user.role === "Admin" && (
                                             <Link
                                                 href="/admin/users"
-                                                className="w-full block text-center py-5 bg-secondary/10 text-secondary rounded-full text-lg font-black uppercase tracking-widest"
+                                                className="w-full block text-center py-4 bg-secondary/10 text-secondary rounded-full text-base font-black uppercase tracking-widest hover:bg-secondary/20 transition-all"
                                                 onClick={() => setIsMobileMenuOpen(false)}
                                             >
                                                 Admin Panel
@@ -254,7 +257,7 @@ const Navbar = () => {
                                         )}
                                         <button
                                             onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                                            className="w-full py-5 bg-rose-50 text-rose-500 rounded-full text-lg font-black uppercase tracking-widest"
+                                            className="w-full py-4 bg-rose-50 text-rose-500 rounded-full text-base font-black uppercase tracking-widest hover:bg-rose-100 transition-all"
                                         >
                                             Logout
                                         </button>
