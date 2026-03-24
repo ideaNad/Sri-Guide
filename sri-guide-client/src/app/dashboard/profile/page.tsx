@@ -135,11 +135,6 @@ export default function ProfilePage() {
                                 </div>
                             </div>
                         </label>
-                        {profile?.isVerified && (
-                            <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white p-1.5 rounded-full border-4 border-white shadow-lg z-10">
-                                <ShieldCheck size={16} />
-                            </div>
-                        )}
                     </div>
 
                     <h2 className="text-2xl font-black text-gray-900 mb-1">{user.fullName}</h2>
@@ -149,10 +144,6 @@ export default function ProfilePage() {
                         <div className="flex items-center gap-3 text-sm font-medium text-gray-600 bg-gray-50 px-4 py-3 rounded-2xl overflow-hidden">
                             <Mail size={16} className="text-primary/70 shrink-0" />
                             <span className="truncate">{user.email}</span>
-                        </div>
-                        <div className="flex items-center gap-3 text-sm font-medium text-gray-600 bg-gray-50 px-4 py-3 rounded-2xl">
-                            <ShieldCheck size={16} className={`text-emerald-500 ${!profile?.isVerified && 'grayscale opacity-30'}`} />
-                            <span>{profile?.isVerified ? "Verified Account" : "Unverified Account"}</span>
                         </div>
                     </div>
 

@@ -18,6 +18,7 @@ import Link from "next/link";
 import apiClient from "@/services/api-client";
 import { useAuth } from "@/providers/AuthContext";
 import AuthModal from "@/features/auth/components/AuthModal";
+import GuideDiscoveryCard from "@/components/ui/GuideDiscoveryCard";
 
 interface DiscoveryItem {
   id: string;
@@ -385,53 +386,8 @@ export default function Home() {
               </div>
             ) : guides.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {guides.map((guide) => (
-                  <Link
-                    href={`/profile/${guide.slug || guide.id}`}
-                    key={guide.id}
-                  >
-                    <motion.div
-                      whileHover={{ y: -10 }}
-                      className="group bg-white p-8 rounded-3xl border border-gray-100 flex flex-col items-center text-center shadow-lg hover:shadow-xl transition-all duration-300 h-full"
-                    >
-                      <div className="w-24 h-24 rounded-full overflow-hidden mb-6 border-4 border-gray-50 group-hover:border-primary/20 transition-all shadow-md">
-                        <img
-                          src={getImageUrl(guide.image)}
-                          alt={guide.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                      </div>
-                      <h4 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors mb-2">{guide.title}</h4>
-                      
-                      {guide.rating > 0 && (
-                        <div className="flex items-center justify-center gap-1.5 mb-3 bg-blue-50/80 px-2.5 py-1 rounded-full border border-blue-100 group-hover:bg-blue-100/50 transition-colors w-fit mx-auto">
-                          <div className="flex items-center gap-0.5">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                size={10}
-                                fill={i < Math.floor(guide.rating) ? "currentColor" : "none"}
-                                className={i < Math.floor(guide.rating) ? "text-yellow-500" : "text-yellow-200"}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-[10px] font-black text-blue-700 ml-0.5">{guide.rating.toFixed(1)}</span>
-                          <span className="text-[9px] font-bold text-blue-600/60 ml-0.5 transition-opacity">({guide.reviews})</span>
-                        </div>
-                      )}
-
-                      <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-4 opacity-60 italic">{guide.subtitle || "Local Guide"}</p>
-
-                      <div className="flex items-center gap-2 text-gray-400 mb-6">
-                        <MapPin size={14} className="text-primary/40" />
-                        <span className="text-[11px] font-bold uppercase tracking-wider">{guide.location}</span>
-                      </div>
-
-                      <div className="mt-auto pt-6 border-t border-gray-50 w-full">
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 group-hover:text-primary transition-colors">View Profile &rarr;</span>
-                      </div>
-                    </motion.div>
-                  </Link>
+                {guides.map((guide, idx) => (
+                  <GuideDiscoveryCard key={guide.id} guide={guide} idx={idx} />
                 ))}
               </div>
             ) : (
