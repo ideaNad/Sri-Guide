@@ -16,6 +16,9 @@ interface LikedItem {
     location: string;
     images: string[];
     type: "tour" | "adventure" | "event";
+    likeCount?: number;
+    averageRating?: number;
+    reviewCount?: number;
 }
 
 export default function SavedToursPage() {
@@ -53,7 +56,10 @@ export default function SavedToursPage() {
                     description: e.shortDescription,
                     location: e.locationName,
                     images: e.galleryImages || [],
-                    type: "event" as const
+                    type: "event" as const,
+                    likeCount: e.likeCount,
+                    averageRating: e.averageRating,
+                    reviewCount: e.reviewCount
                 }));
             } catch (err) {
                 console.error("Failed to fetch liked events", err);
@@ -129,6 +135,9 @@ export default function SavedToursPage() {
                             subtitle={item.description}
                             tags={[]}
                             isLiked={true}
+                            likeCount={item.likeCount}
+                            rating={item.averageRating}
+                            reviews={item.reviewCount}
                             onToggleLike={handleToggleLike}
                         />
                     ))}

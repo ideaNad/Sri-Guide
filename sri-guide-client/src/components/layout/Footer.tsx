@@ -53,6 +53,7 @@ const Footer = () => {
                             {[
                                 // { name: "About Us", href: "#" },
                                 { name: "Our Tours", href: "/tours" },
+                                { name: "Events", href: "/events" },
                                 { name: "Local Guides", href: "/guides" },
                                 // { name: "Travel Blog", href: "#" },
                                 { name: "Contact Us", href: "/contact" }

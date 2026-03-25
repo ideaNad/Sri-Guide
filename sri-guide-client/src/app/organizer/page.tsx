@@ -2,13 +2,21 @@
 
 import * as React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Users, Star, Plus, MapPin, Clock, ArrowRight, User } from 'lucide-react';
+import { Calendar, Users, Star, Plus, MapPin, Clock, ArrowRight, User, Heart } from 'lucide-react';
 import Link from 'next/link';
 import apiClient from '@/services/api-client';
 
 export default function OrganizerDashboard() {
   const [stats, setStats] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
+  
+  const getImageUrl = (url?: string) => {
+    if (!url || url.trim() === "") return "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&q=80&w=800";
+    if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url;
+    const baseUrl = apiClient.defaults.baseURL?.split('/api')[0] || 'http://localhost:5070';
+    const cleanPath = url.startsWith('/') ? url : `/${url}`;
+    return `${baseUrl}${cleanPath.replace(/\\/g, '/')}`;
+  };
 
   React.useEffect(() => {
     const fetchStats = async () => {
@@ -86,13 +94,29 @@ export default function OrganizerDashboard() {
             <div className="space-y-4">
               {stats.recentEvents.map((event: any) => (
                 <div key={event.id} className="flex items-center gap-4 p-4 hover:bg-slate-50 transition-colors rounded-2xl border border-slate-50">
-                  <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0">
-                    <img src={event.coverImage || '/placeholder.png'} alt="" className="w-full h-full object-cover" />
+                  <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-100">
+                    <img src={getImageUrl(event.coverImage)} alt="" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-slate-900 truncate">{event.title}</p>
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{new Date(event.startDate).toLocaleDateString()}</p>
                   </div>
+                  
+                  <div className="hidden sm:flex items-center gap-3 pr-4">
+                      {event.averageRating > 0 && (
+                          <div className="flex items-center gap-1 text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100">
+                              <Star size={10} fill="currentColor" />
+                              {event.averageRating.toFixed(1)}
+                          </div>
+                      )}
+                      {event.likeCount > 0 && (
+                          <div className="flex items-center gap-1 text-[10px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-100">
+                              <Heart size={10} fill="currentColor" />
+                              {event.likeCount}
+                          </div>
+                      )}
+                  </div>
+
                   <ArrowRight size={16} className="text-slate-300" />
                 </div>
               ))}

@@ -89,80 +89,83 @@ export default function Home() {
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
+  const fetchTopGuides = React.useCallback(async () => {
+    try {
+      const response = await apiClient.get<PaginatedResult<DiscoveryItem>>("/discovery?type=guide");
+      setGuides((response.data.items || []).slice(0, 3));
+    } catch (error) {
+      console.error("Failed to fetch top guides", error);
+    } finally {
+      setLoadingGuides(false);
+    }
+  }, []);
+
+  const fetchTopAgencies = React.useCallback(async () => {
+    try {
+      const response = await apiClient.get<PaginatedResult<DiscoveryItem>>("/discovery?type=agency");
+      setAgencies((response.data.items || []).slice(0, 3));
+    } catch (error) {
+      console.error("Failed to fetch top agencies", error);
+    } finally {
+      setLoadingAgencies(false);
+    }
+  }, []);
+
+  const fetchRecentTrips = React.useCallback(async () => {
+    try {
+      const url = user ? `/discovery/recent-trips?UserId=${user.id}` : "/discovery/recent-trips";
+      const response = await apiClient.get<RecentTrip[]>(url);
+      setTrips(response.data);
+    } catch (error) {
+      console.error("Failed to fetch recent trips", error);
+    } finally {
+      setLoadingTrips(false);
+    }
+  }, [user]);
+
+  const fetchPopularTours = React.useCallback(async () => {
+    try {
+      const url = user ? `/discovery/popular-tours?UserId=${user.id}` : "/discovery/popular-tours";
+      const response = await apiClient.get<RecentTrip[]>(url);
+      setPopularTours(response.data);
+    } catch (error) {
+      console.error("Failed to fetch popular tours", error);
+    } finally {
+      setLoadingPopular(false);
+    }
+  }, [user]);
+
+  const fetchPopularPlaces = React.useCallback(async () => {
+    try {
+      const response = await apiClient.get<PopularPlace[]>("/places");
+      setPopularPlaces(response.data);
+    } catch (error) {
+      console.error("Failed to fetch popular places", error);
+    } finally {
+      setLoadingPlaces(false);
+    }
+  }, []);
+
+  const fetchFeaturedEvents = React.useCallback(async () => {
+    try {
+      const url = user ? `/events?isFeatured=true&UserId=${user.id}` : "/events?isFeatured=true";
+      const response = await apiClient.get(url);
+      setFeaturedEvents((response.data as any[]).slice(0, 3));
+    } catch (error) {
+      console.error("Failed to fetch featured events", error);
+    } finally {
+      setLoadingEvents(false);
+    }
+  }, [user]);
+
   useEffect(() => {
-    const fetchTopGuides = async () => {
-      try {
-        const response = await apiClient.get<PaginatedResult<DiscoveryItem>>("/discovery?type=guide");
-        setGuides((response.data.items || []).slice(0, 3));
-      } catch (error) {
-        console.error("Failed to fetch top guides", error);
-      } finally {
-        setLoadingGuides(false);
-      }
-    };
-
-    const fetchTopAgencies = async () => {
-      try {
-        const response = await apiClient.get<PaginatedResult<DiscoveryItem>>("/discovery?type=agency");
-        setAgencies((response.data.items || []).slice(0, 3));
-      } catch (error) {
-        console.error("Failed to fetch top agencies", error);
-      } finally {
-        setLoadingAgencies(false);
-      }
-    };
-
-    const fetchRecentTrips = async () => {
-      try {
-        const response = await apiClient.get<RecentTrip[]>("/discovery/recent-trips");
-        setTrips(response.data);
-      } catch (error) {
-        console.error("Failed to fetch recent trips", error);
-      } finally {
-        setLoadingTrips(false);
-      }
-    };
-
-    const fetchPopularTours = async () => {
-      try {
-        const response = await apiClient.get<RecentTrip[]>("/discovery/popular-tours");
-        setPopularTours(response.data);
-      } catch (error) {
-        console.error("Failed to fetch popular tours", error);
-      } finally {
-        setLoadingPopular(false);
-      }
-    };
-
-    const fetchPopularPlaces = async () => {
-      try {
-        const response = await apiClient.get<PopularPlace[]>("/places");
-        setPopularPlaces(response.data);
-      } catch (error) {
-        console.error("Failed to fetch popular places", error);
-      } finally {
-        setLoadingPlaces(false);
-      }
-    };
-
-    const fetchFeaturedEvents = async () => {
-      try {
-        const response = await apiClient.get("/events?isFeatured=true");
-        setFeaturedEvents((response.data as any[]).slice(0, 3));
-      } catch (error) {
-        console.error("Failed to fetch featured events", error);
-      } finally {
-        setLoadingEvents(false);
-      }
-    };
-
     fetchTopGuides();
     fetchTopAgencies();
     fetchRecentTrips();
     fetchPopularTours();
     fetchPopularPlaces();
     fetchFeaturedEvents();
-  }, []);
+  }, [fetchTopGuides, fetchTopAgencies, fetchRecentTrips, fetchPopularTours, fetchPopularPlaces, fetchFeaturedEvents]);
 
   const getImageUrl = (url?: string) => {
     if (!url || url.trim() === "") return "https://placehold.co/600x400?text=No+Image+Available";
@@ -178,12 +181,19 @@ export default function Home() {
       return;
     }
     try {
-      const endpoint = type === 'tour' ? `/tours/${id}/toggle-like` : `/trip/${id}/toggle-like`;
-      const response = await apiClient.post<{ liked: boolean }>(endpoint);
-      const { liked } = response.data;
+      let endpoint = '';
+      if (type === 'tour') endpoint = `/tours/${id}/toggle-like`;
+      else if (type === 'adventure') endpoint = `/trip/${id}/toggle-like`;
+      else if (type === 'event') endpoint = `/events/${id}/like`;
+      else endpoint = `/trip/${id}/toggle-like`;
 
-      setTrips(prev => prev.map(t => t.id === id ? { ...t, isLiked: liked, likeCount: liked ? t.likeCount + 1 : t.likeCount - 1 } : t));
-      setPopularTours(prev => prev.map(t => t.id === id ? { ...t, isLiked: liked, likeCount: liked ? t.likeCount + 1 : t.likeCount - 1 } : t));
+      const response = await apiClient.post<{ liked: boolean } | boolean>(endpoint);
+      // Backend returns boolean for events, object for trips/tours
+      const liked = typeof response.data === 'boolean' ? response.data : (response.data as any).liked;
+
+      setTrips(prev => prev.map(t => t.id === id ? { ...t, isLiked: liked, likeCount: liked ? (t.likeCount || 0) + 1 : (t.likeCount || 1) - 1 } : t));
+      setPopularTours(prev => prev.map(t => t.id === id ? { ...t, isLiked: liked, likeCount: liked ? (t.likeCount || 0) + 1 : (t.likeCount || 1) - 1 } : t));
+      setFeaturedEvents(prev => prev.map(e => e.id === id ? { ...e, isLiked: liked, likeCount: liked ? (e.likeCount || 0) + 1 : (e.likeCount || 1) - 1 } : e));
     } catch (error) {
       console.error("Failed to toggle like", error);
     }
@@ -416,41 +426,22 @@ export default function Home() {
                     whileInView="visible"
                     viewport={{ once: true }}
                     variants={itemVariants}
-                    className="group bg-white rounded-[2.5rem] border border-orange-100/50 overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500"
                   >
-                    <div className="aspect-[16/10] relative overflow-hidden">
-                      <img 
-                        src={getImageUrl(event.coverImage)} 
-                        alt={event.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      />
-                      <div className="absolute top-4 left-4">
-                        <span className="px-3 py-1 bg-white/90 backdrop-blur-md text-slate-900 text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">
-                          {event.categoryName}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-6">
-                      <div className="flex items-center gap-3 text-[10px] font-black text-orange-600 mb-3 uppercase tracking-widest">
-                        <Calendar className="w-4 h-4" />
-                        <span>{new Date(event.startDate).toLocaleDateString()}</span>
-                        <span className="text-slate-300">•</span>
-                        <MapPin className="w-4 h-4 text-rose-500" />
-                        <span className="text-slate-500">{event.locationName}</span>
-                      </div>
-                      <h3 className="text-xl font-black text-slate-900 mb-2 group-hover:text-orange-600 transition-colors line-clamp-1">
-                        {event.title}
-                      </h3>
-                      <p className="text-slate-500 text-sm font-medium line-clamp-2 mb-6">
-                        {event.shortDescription}
-                      </p>
-                      <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-                         <p className="font-black text-slate-900">{event.price === 0 ? 'FREE' : `Rs. ${event.price.toLocaleString()}`}</p>
-                         <Link href={`/events/${event.id}`} className="text-xs font-black uppercase tracking-widest text-orange-600 hover:underline">
-                           View Details
-                         </Link>
-                      </div>
-                    </div>
+                    <Card
+                      id={event.id}
+                      title={event.title}
+                      image={event.coverImage || ""}
+                      location={event.locationName}
+                      type="event"
+                      price={event.price}
+                      badge={event.categoryName}
+                      subtitle={event.eventType}
+                      likeCount={event.likeCount}
+                      isLiked={event.isLiked}
+                      rating={event.averageRating}
+                      reviews={event.reviewCount}
+                      onToggleLike={handleToggleLike}
+                    />
                   </motion.div>
                 ))
               ) : (

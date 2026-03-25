@@ -3,8 +3,8 @@
 import * as React from 'react';
 import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { 
-  Calendar, MapPin, Clock, Users, 
+import {
+  Calendar, MapPin, Clock, Users,
   ChevronLeft, Share2, Info, CheckCircle2,
   CalendarDays, Globe, DollarSign, ArrowRight,
   Loader2, AlertCircle, Phone, Instagram, Facebook, Star, Heart
@@ -108,23 +108,23 @@ export default function EventDetailPage() {
     <main className="min-h-screen bg-slate-50">
       {/* Hero Section */}
       <div className="relative h-[60vh] min-h-[500px] w-full overflow-hidden">
-        <img 
-          src={getImageUrl(event.coverImage)} 
+        <img
+          src={getImageUrl(event.coverImage)}
           alt={event.title}
           className="w-full h-full object-cover scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
-        
+
         <div className="absolute inset-0 flex flex-col justify-end pb-16">
           <div className="container mx-auto px-4 md:px-8">
-            <Link 
-              href="/events" 
+            <Link
+              href="/events"
               className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-8 group transition-all"
             >
               <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
               <span className="text-sm font-black uppercase tracking-widest">Back to Explore</span>
             </Link>
-            
+
             <div className="flex flex-wrap items-center gap-3 mb-6">
               <span className="px-4 py-1.5 bg-orange-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">
                 {event.categoryName}
@@ -133,11 +133,11 @@ export default function EventDetailPage() {
                 {event.eventType}
               </span>
             </div>
-            
+
             <h1 className="text-4xl md:text-7xl font-black text-white mb-6 italic uppercase tracking-tighter leading-none">
               {event.title}
             </h1>
-            
+
             <div className="flex flex-wrap items-center gap-8 text-white/90">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-white/10 rounded-xl">
@@ -169,14 +169,14 @@ export default function EventDetailPage() {
                 </div>
               )}
             </div>
-            
+
             <div className="absolute top-8 right-8 flex gap-3">
-               <button 
+              <button
                 onClick={handleToggleLike}
                 className={`p-4 rounded-2xl backdrop-blur-md transition-all active:scale-95 shadow-xl ${event.isLiked ? 'bg-rose-600 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
-               >
-                 <Heart size={24} className={event.isLiked ? 'fill-white' : ''} />
-               </button>
+              >
+                <Heart size={24} className={event.isLiked ? 'fill-white' : ''} />
+              </button>
             </div>
           </div>
         </div>
@@ -228,7 +228,7 @@ export default function EventDetailPage() {
                 <h3 className="text-xl font-black text-slate-900 mb-8 italic uppercase tracking-tight">Visual Moments</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {event.galleryImages.map((img: string, i: number) => (
-                    <motion.div 
+                    <motion.div
                       key={i}
                       whileHover={{ scale: 0.98 }}
                       className="aspect-square rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm"
@@ -239,7 +239,7 @@ export default function EventDetailPage() {
                 </div>
               </section>
             )}
-            
+
             {/* Reviews Section */}
             <section className="pt-8">
               <div className="flex items-center justify-between mb-10">
@@ -251,7 +251,7 @@ export default function EventDetailPage() {
                   <p className="text-slate-500 font-medium tracking-wide">Shared experiences from our community</p>
                 </div>
                 {(!user || user.role === 'Tourist') && (
-                  <button 
+                  <button
                     onClick={() => {
                       if (!user) { setIsAuthModalOpen(true); return; }
                       setIsReviewModalOpen(true);
@@ -270,7 +270,7 @@ export default function EventDetailPage() {
                   </div>
                 ) : reviews.length > 0 ? (
                   reviews.map((review) => (
-                    <motion.div 
+                    <motion.div
                       key={review.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -278,8 +278,8 @@ export default function EventDetailPage() {
                     >
                       <div className="flex items-start gap-5">
                         <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-slate-50 shadow-sm flex-shrink-0">
-                          <img 
-                            src={review.userProfileImageUrl || `https://ui-avatars.com/api/?name=${review.userFullName}&background=random&color=fff&bold=true`} 
+                          <img
+                            src={review.userProfileImageUrl || `https://ui-avatars.com/api/?name=${review.userFullName}&background=random&color=fff&bold=true`}
                             alt={review.userFullName}
                             className="w-full h-full object-cover"
                           />
@@ -293,11 +293,11 @@ export default function EventDetailPage() {
                               </p>
                             </div>
                             <div className="flex gap-0.5">
-                              {[1,2,3,4,5].map((s) => (
-                                <Star 
-                                  key={s} 
-                                  size={10} 
-                                  className={s <= review.rating ? "fill-amber-400 text-amber-400" : "text-slate-100"} 
+                              {[1, 2, 3, 4, 5].map((s) => (
+                                <Star
+                                  key={s}
+                                  size={10}
+                                  className={s <= review.rating ? "fill-amber-400 text-amber-400" : "text-slate-100"}
                                 />
                               ))}
                             </div>
@@ -353,10 +353,10 @@ export default function EventDetailPage() {
                 </div>
               </div>
 
-              <button className="w-full py-5 bg-orange-600 text-white font-black rounded-2xl flex items-center justify-center gap-3 uppercase tracking-widest shadow-xl shadow-orange-600/20 hover:bg-orange-700 transition-all active:scale-95">
+              {/* <button className="w-full py-5 bg-orange-600 text-white font-black rounded-2xl flex items-center justify-center gap-3 uppercase tracking-widest shadow-xl shadow-orange-600/20 hover:bg-orange-700 transition-all active:scale-95">
                 Join this Experience
                 <ArrowRight size={20} />
-              </button>
+              </button> */}
 
               <div className="pt-6 text-center">
                 <p className="text-xs font-medium text-slate-400">Hosted by</p>
@@ -372,31 +372,31 @@ export default function EventDetailPage() {
               </h4>
               <p className="text-white/60 text-sm font-medium mb-8">Share this unique community experience with your friends and family.</p>
               <div className="flex items-center gap-4">
-                 <button 
+                <button
                   onClick={() => share({ title: event.title, text: event.shortDescription, url: window.location.href })}
                   className="flex-1 p-3 bg-white/10 rounded-xl hover:bg-white/20 transition-colors flex items-center justify-center gap-2 group"
-                 >
-                   <Share2 size={18} className="group-hover:scale-110 transition-transform" />
-                 </button>
-                 <button 
+                >
+                  <Share2 size={18} className="group-hover:scale-110 transition-transform" />
+                </button>
+                {/* <button
                   onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank')}
                   className="flex-1 p-3 bg-white/10 rounded-xl hover:bg-white/20 transition-colors flex items-center justify-center gap-2 group"
-                 >
-                   <Facebook size={18} className="group-hover:scale-110 transition-transform" />
-                 </button>
-                 <button 
+                >
+                  <Facebook size={18} className="group-hover:scale-110 transition-transform" />
+                </button>
+                <button
                   onClick={() => window.open(`https://www.instagram.com/`, '_blank')}
                   className="flex-1 p-3 bg-white/10 rounded-xl hover:bg-white/20 transition-colors flex items-center justify-center gap-2 group"
-                 >
-                   <Instagram size={18} className="group-hover:scale-110 transition-transform" />
-                 </button>
+                >
+                  <Instagram size={18} className="group-hover:scale-110 transition-transform" />
+                </button> */}
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <AuthModal 
+      <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         onSuccess={(userData) => {
@@ -405,7 +405,7 @@ export default function EventDetailPage() {
         }}
       />
 
-      <ReviewModal 
+      <ReviewModal
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
         targetId={id}

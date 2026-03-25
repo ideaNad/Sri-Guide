@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, Filter, Search, Tag, X, SlidersHorizontal, ChevronDown, Clock, Users, Heart, Star } from 'lucide-react';
@@ -47,6 +49,7 @@ export default function EventsPage() {
       if (filters.categoryId) params.append('categoryId', filters.categoryId);
       if (filters.district) params.append('district', filters.district);
       if (filters.eventType) params.append('eventType', filters.eventType);
+      if (user) params.append('UserId', user.id);
       
       const { data } = await apiClient.get(`/events?${params.toString()}`);
       setEvents(data as Event[]);
@@ -55,19 +58,19 @@ export default function EventsPage() {
     } finally {
       setLoading(false);
     }
-  }, [filters, toast]);
+  }, [filters, toast, user]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = React.useCallback(async () => {
     try {
       const { data } = await apiClient.get('/event-categories');
       setCategories(data as any[]);
     } catch (error) {}
-  };
+  }, []);
 
   React.useEffect(() => {
     fetchEvents();
     fetchCategories();
-  }, [fetchEvents]);
+  }, [fetchEvents, fetchCategories]);
 
   const handleToggleLike = async (e: React.MouseEvent, eventId: string) => {
     e.preventDefault();
