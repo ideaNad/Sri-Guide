@@ -9,7 +9,7 @@ import Link from "next/link";
 
 const images = [
     "/hero-8.webp",
-    "/hero-2.png",
+    "/hero-20.webp",
     "/hero-5.webp",
     "/hero-12.webp",
 ];
