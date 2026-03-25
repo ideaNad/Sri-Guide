@@ -15,7 +15,7 @@ interface CardProps {
     reviews?: number;
     duration?: string;
     tags?: string[];
-    type?: "tour" | "adventure" | "guide" | "place" | "restaurant" | "vehicle" | "agency";
+    type?: "tour" | "adventure" | "guide" | "place" | "restaurant" | "vehicle" | "agency" | "event";
     subtitle?: string;
     phone?: string;
     email?: string;
@@ -69,6 +69,8 @@ const Card: React.FC<CardProps> = ({
                 return `/adventures/${identifier}`;
             case "place":
                 return `/places/${identifier}`;
+            case "event":
+                return `/events/${identifier}`;
             case "agency":
                 return `/profile/${identifier}?type=agency`;
             case "guide":
@@ -99,7 +101,7 @@ const Card: React.FC<CardProps> = ({
 
     return (
         <div className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-lg hover:shadow-2xl transition-all duration-500 relative flex flex-col h-full">
-            {(isProfile || type === "tour" || type === "adventure") && id && (
+            {(isProfile || type === "tour" || type === "adventure" || type === "event") && id && (
                 <Link href={profileLink} className="absolute inset-0 z-10" />
             )}
             
@@ -160,7 +162,7 @@ const Card: React.FC<CardProps> = ({
                     {title}
                 </h3>
 
-                {(type === "tour" || type === "agency" || type === "adventure") && rating !== undefined && rating > 0 && (
+                {(type === "tour" || type === "agency" || type === "adventure" || type === "event") && rating !== undefined && rating > 0 && (
                     <div className="flex items-center gap-1.5 mb-3 bg-blue-50/80 px-2.5 py-1 rounded-full border border-blue-100 w-fit group-hover:bg-blue-100/50 transition-colors">
                         <div className="flex items-center gap-0.5">
                             {[...Array(5)].map((_, i) => (

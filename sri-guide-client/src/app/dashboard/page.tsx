@@ -36,8 +36,13 @@ export default function DashboardPage() {
                 router.replace("/guide");
             } else if (user.role === "TravelAgency") {
                 router.replace("/agency");
+            } else if (user.role === "EventOrganizer") {
+                router.replace("/organizer");
             } else if (user.role === "Tourist") {
                 fetchStats();
+            } else {
+                // Fallback for any other roles
+                router.replace("/");
             }
         }
     }, [user, loading, router]);

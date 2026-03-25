@@ -16,6 +16,7 @@ import { useRouter } from 'next/navigation';
 import Joyride, { Step as JoyrideStep } from 'react-joyride';
 import { GuideFlow } from '@/components/onboarding/guide/GuideFlow';
 import { AgencyFlow } from '@/components/onboarding/agency/AgencyFlow';
+import { OrganizerFlow } from '@/components/onboarding/organizer/OrganizerFlow';
 import { useAuth } from '@/providers/AuthContext';
 import apiClient from '@/services/api-client';
 import { useToast } from '@/hooks/useToast';
@@ -40,24 +41,41 @@ export default function OnboardingPage() {
     preferredLocation,
     guideProfile,
     agencyProfile,
+    eventOrganizerProfile,
     updateData,
     updateGuideData,
-    updateAgencyData
+    updateAgencyData,
+    updateEventOrganizerData
   } = useOnboardingStore();
 
   // Redirect if onboarding already completed or user not logged in
   React.useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push('/');
-      } else if (user.onboardingCompleted) {
-        // Find correct dashboard based on role
-        if (user.role === 'Guide') router.push('/guide');
-        else if (user.role === 'TravelAgency') router.push('/agency');
+    if (!loading && user) {
+      // Sync store's userRole with user's backend role if not set
+      if (!userRole && user.role) {
+        const roleMapping: Record<string, any> = {
+          'Tourist': 'tourist',
+          'Guide': 'guide',
+          'TravelAgency': 'agency',
+          'EventOrganizer': 'eventOrganizer'
+        };
+        const mappedRole = roleMapping[user.role] || user.role.toLowerCase();
+        setUserRole(mappedRole as any);
+      }
+
+      if (user.onboardingCompleted) {
+        const role = user.role?.toLowerCase() || '';
+        if (role === 'guide') router.push('/guide');
+        else if (role === 'travelagency') router.push('/agency');
+        else if (role === 'eventorganizer') router.push('/organizer');
+        else if (role === 'admin') router.push('/admin');
         else router.push('/dashboard');
       }
     }
-  }, [user, loading, router]);
+    if (!loading && !user) {
+      router.push('/');
+    }
+  }, [user, loading, router, userRole, setUserRole]);
 
   if (loading || !user) return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -125,6 +143,21 @@ export default function OnboardingPage() {
           companyName: agencyProfile.agencyName,
           bio: `Business Type: ${agencyProfile.businessType}. Pricing: ${agencyProfile.pricingModel}`
         });
+      } else if (userRole === 'eventOrganizer') {
+        // Update basic user info
+        await apiClient.post('/profile/update-user', {
+          userId: user.id,
+          onboardingCompleted: true,
+          fullName: eventOrganizerProfile.organizationName || user.fullName
+        });
+
+        // Update organizer specific info
+        await apiClient.post('/profile/organizer/update', {
+          userId: user.id,
+          organizationName: eventOrganizerProfile.organizationName,
+          website: eventOrganizerProfile.website,
+          bio: eventOrganizerProfile.bio
+        });
       }
 
       // Refresh user data in context
@@ -137,6 +170,7 @@ export default function OnboardingPage() {
       // Navigate based on role
       if (userRole === 'guide') router.push('/guide');
       else if (userRole === 'agency') router.push('/agency');
+      else if (userRole === 'eventOrganizer') router.push('/organizer');
       else router.push('/dashboard');
 
     } catch (error) {
@@ -238,6 +272,28 @@ export default function OnboardingPage() {
     },
   ];
 
+  // Organizer Steps
+  const organizerSteps = [
+    {
+      id: 0,
+      title: "Organization",
+      description: "Tell us about your organization and website.",
+      component: <OrganizerFlow data={eventOrganizerProfile} setData={updateEventOrganizerData} step={0} />,
+    },
+    {
+      id: 1,
+      title: "About You",
+      description: "Let the community know what you do.",
+      component: <OrganizerFlow data={eventOrganizerProfile} setData={updateEventOrganizerData} step={1} />,
+    },
+    {
+      id: 2,
+      title: "Ready!",
+      description: "You're all set to host your first event.",
+      component: <OrganizerFlow data={eventOrganizerProfile} setData={updateEventOrganizerData} step={2} />,
+    },
+  ];
+
   // Logic to determine if current step is valid
   const isStepValid = () => {
     if (userRole === 'tourist') {
@@ -256,13 +312,18 @@ export default function OnboardingPage() {
         if (onboardingStep === 0) return agencyProfile.agencyName !== '';
         return true;
     }
+    if (userRole === 'eventOrganizer') {
+        // Simple validation for organizer
+        if (onboardingStep === 0) return eventOrganizerProfile.organizationName !== '';
+        return true;
+    }
     return true;
   };
 
   const getSteps = () => {
-    if (userRole === 'tourist') return touristSteps;
     if (userRole === 'guide') return guideSteps;
     if (userRole === 'agency') return agencySteps;
+    if (userRole === 'eventOrganizer') return organizerSteps;
     return [];
   };
 

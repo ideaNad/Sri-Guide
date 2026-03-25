@@ -13,7 +13,7 @@ import {
   VEHICLE_RENTALS
 } from "@/data/mock-data";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, Mail, Compass, ShieldCheck, Zap, Heart, MapPin, Loader2, Star } from "lucide-react";
+import { ArrowRight, CheckCircle2, Mail, Compass, ShieldCheck, Zap, Heart, MapPin, Loader2, Star, Calendar } from "lucide-react";
 import Link from "next/link";
 import apiClient from "@/services/api-client";
 import { useAuth } from "@/providers/AuthContext";
@@ -85,6 +85,8 @@ export default function Home() {
   const [loadingPopular, setLoadingPopular] = useState(true);
   const [popularPlaces, setPopularPlaces] = useState<PopularPlace[]>([]);
   const [loadingPlaces, setLoadingPlaces] = useState(true);
+  const [featuredEvents, setFeaturedEvents] = useState<any[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => {
@@ -143,19 +145,31 @@ export default function Home() {
       }
     };
 
+    const fetchFeaturedEvents = async () => {
+      try {
+        const response = await apiClient.get("/events?isFeatured=true");
+        setFeaturedEvents((response.data as any[]).slice(0, 3));
+      } catch (error) {
+        console.error("Failed to fetch featured events", error);
+      } finally {
+        setLoadingEvents(false);
+      }
+    };
+
     fetchTopGuides();
     fetchTopAgencies();
     fetchRecentTrips();
     fetchPopularTours();
     fetchPopularPlaces();
+    fetchFeaturedEvents();
   }, []);
 
   const getImageUrl = (url?: string) => {
     if (!url || url.trim() === "") return "https://placehold.co/600x400?text=No+Image+Available";
     if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url;
-    const baseUrl = apiClient.defaults.baseURL?.split('/api')[0];
+    const baseUrl = apiClient.defaults.baseURL?.split('/api')[0] || 'http://localhost:5070';
     const cleanPath = url.startsWith('/') ? url : `/${url}`;
-    return `${baseUrl}${cleanPath}`;
+    return `${baseUrl}${cleanPath.replace(/\\/g, '/')}`;
   };
 
   const handleToggleLike = async (id: string, type: string) => {
@@ -369,6 +383,81 @@ export default function Home() {
               ) : (
                 <div className="col-span-3 text-center py-20 text-gray-400 uppercase text-[10px] font-black tracking-widest">
                   No recent adventures shared yet
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Featured Events - Dynamic Community Content */}
+        <section className="py-24 bg-orange-50/30 overflow-hidden">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
+              <SectionHeader
+                badge="Community Events"
+                title="Upcoming Experiences"
+                subtitle="Join unique workshops, meetups, and festivals organized by locals."
+              />
+              <Link href="/events" className="mb-12 text-sm font-bold text-orange-600 flex items-center gap-2 group hover:text-orange-700 transition-colors">
+                Explore All Events <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {loadingEvents ? (
+                Array(3).fill(0).map((_, i) => (
+                  <div key={i} className="h-[450px] bg-white animate-pulse rounded-[2.5rem] border border-orange-100" />
+                ))
+              ) : featuredEvents.length > 0 ? (
+                featuredEvents.map((event, i) => (
+                  <motion.div
+                    key={event.id}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    variants={itemVariants}
+                    className="group bg-white rounded-[2.5rem] border border-orange-100/50 overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500"
+                  >
+                    <div className="aspect-[16/10] relative overflow-hidden">
+                      <img 
+                        src={getImageUrl(event.coverImage)} 
+                        alt={event.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
+                      <div className="absolute top-4 left-4">
+                        <span className="px-3 py-1 bg-white/90 backdrop-blur-md text-slate-900 text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">
+                          {event.categoryName}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <div className="flex items-center gap-3 text-[10px] font-black text-orange-600 mb-3 uppercase tracking-widest">
+                        <Calendar className="w-4 h-4" />
+                        <span>{new Date(event.startDate).toLocaleDateString()}</span>
+                        <span className="text-slate-300">•</span>
+                        <MapPin className="w-4 h-4 text-rose-500" />
+                        <span className="text-slate-500">{event.locationName}</span>
+                      </div>
+                      <h3 className="text-xl font-black text-slate-900 mb-2 group-hover:text-orange-600 transition-colors line-clamp-1">
+                        {event.title}
+                      </h3>
+                      <p className="text-slate-500 text-sm font-medium line-clamp-2 mb-6">
+                        {event.shortDescription}
+                      </p>
+                      <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                         <p className="font-black text-slate-900">{event.price === 0 ? 'FREE' : `Rs. ${event.price.toLocaleString()}`}</p>
+                         <Link href={`/events/${event.id}`} className="text-xs font-black uppercase tracking-widest text-orange-600 hover:underline">
+                           View Details
+                         </Link>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))
+              ) : (
+                <div className="col-span-3 text-center py-20 bg-white rounded-[2.5rem] border border-dashed border-orange-100">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                    No upcoming events featured yet
+                  </p>
                 </div>
               )}
             </div>

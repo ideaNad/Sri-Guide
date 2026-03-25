@@ -1,4 +1,4 @@
-export type UserRole = "Tourist" | "Guide" | "TravelAgency" | "Transport" | "Admin";
+export type UserRole = "Tourist" | "Guide" | "TravelAgency" | "Transport" | "EventOrganizer" | "Admin";
 
 export interface User {
     id: string;
@@ -15,6 +15,23 @@ export interface User {
     slug?: string;
     travelDuration?: string;
     preferredLocation?: string;
+    eventOrganizerProfile?: EventOrganizerProfile;
+}
+
+export interface EventOrganizerProfile {
+    organizationName: string;
+    website?: string;
+    bio?: string;
+    facebookLink?: string;
+    instagramLink?: string;
+    twitterLink?: string;
+    tikTokLink?: string;
+    youTubeLink?: string;
+    linkedinLink?: string;
+    languages?: string[];
+    specialties?: string[];
+    operatingAreas?: string[];
+    isVerified: boolean;
 }
 
 export interface GuideProfile {
@@ -84,4 +101,38 @@ export interface Tour {
     rating: number;
     guideId: string;
     guideName: string;
+}
+
+export interface EventCategory {
+    id: string;
+    name: string;
+    icon?: string;
+    isActive: boolean;
+}
+
+export interface Event {
+    id: string;
+    title: string;
+    shortDescription: string;
+    fullDescription: string;
+    categoryId: string;
+    category?: EventCategory;
+    organizerProfileId: string;
+    eventType: string;
+    startDate: string;
+    endDate: string;
+    startTime?: string;
+    endTime?: string;
+    locationName: string;
+    district?: string;
+    mapLocation?: string;
+    price: number;
+    currency: string;
+    maxParticipants: number;
+    coverImage?: string;
+    galleryImages?: string;
+    isPublished: boolean;
+    isCancelled: boolean;
+    createdAt: string;
+    updatedAt?: string;
 }

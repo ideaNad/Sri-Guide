@@ -8,5 +8,6 @@ public enum UserRole
     HotelOwner,
     RestaurantOwner,
     TravelAgency,
-    Admin
+    Admin,
+    EventOrganizer
 }

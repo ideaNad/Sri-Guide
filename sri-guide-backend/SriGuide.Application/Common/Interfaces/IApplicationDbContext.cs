@@ -22,5 +22,13 @@ public interface IApplicationDbContext
     DbSet<Inquiry> Inquiries { get; }
     DbSet<PopularPlace> PopularPlaces { get; }
     
+    DbSet<EventOrganizerProfile> EventOrganizerProfiles { get; }
+    DbSet<EventCategory> EventCategories { get; }
+    DbSet<EventCategoryField> EventCategoryFields { get; }
+    DbSet<Event> Events { get; }
+    DbSet<EventFieldValue> EventFieldValues { get; }
+    DbSet<EventLike> EventLikes { get; }
+    DbSet<EventReview> EventReviews { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

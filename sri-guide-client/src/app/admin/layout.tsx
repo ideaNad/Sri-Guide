@@ -27,6 +27,7 @@ const SIDEBAR_GROUPS = [
             { name: "Verifications", href: "/admin/verifications", icon: <UserCheck size={18} /> },
             { name: "Upgrade Requests", href: "/admin/upgrades", icon: <TrendingUp size={18} /> },
             { name: "Popular Places", href: "/admin/places", icon: <Globe size={18} /> },
+            { name: "Event Categories", href: "/admin/events/categories", icon: <LayoutGrid size={18} /> },
             { name: "System Feedbacks", href: "/admin/feedbacks", icon: <MessageSquare size={18} /> },
             { name: "Inquiries", href: "/admin/inquiries", icon: <Mail size={18} /> },
         ]

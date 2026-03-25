@@ -25,4 +25,5 @@ public class User : BaseEntity
 
     public GuideProfile? GuideProfile { get; set; }
     public AgencyProfile? AgencyProfile { get; set; }
+    public EventOrganizerProfile? EventOrganizerProfile { get; set; }
 }

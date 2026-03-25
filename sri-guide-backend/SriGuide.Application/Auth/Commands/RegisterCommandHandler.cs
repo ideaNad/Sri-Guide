@@ -61,6 +61,18 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
             await _context.SaveChangesAsync(cancellationToken);
             user.GuideProfile = profile;
         }
+        else if (user.Role == UserRole.EventOrganizer)
+        {
+            var profile = new EventOrganizerProfile 
+            { 
+                UserId = user.Id,
+                OrganizationName = user.FullName, // Default to full name
+                IsVerified = false
+            };
+            _context.EventOrganizerProfiles.Add(profile);
+            await _context.SaveChangesAsync(cancellationToken);
+            user.EventOrganizerProfile = profile;
+        }
 
         var token = _jwtService.GenerateToken(user);
 

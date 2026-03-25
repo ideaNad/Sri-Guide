@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-export type UserRole = 'tourist' | 'guide' | 'agency' | null;
+export type UserRole = 'tourist' | 'guide' | 'agency' | 'eventOrganizer' | null;
 
 interface OnboardingState {
   userRole: UserRole;
@@ -33,6 +33,13 @@ interface OnboardingState {
     businessType: string;
     pricingModel: string;
   };
+  
+  // Event Organizer Onboarding Data
+  eventOrganizerProfile: {
+    organizationName: string;
+    website: string;
+    bio: string;
+  };
 
   // Actions
   setUserRole: (role: UserRole) => void;
@@ -45,6 +52,7 @@ interface OnboardingState {
   updateData: (data: Partial<Pick<OnboardingState, 'interests' | 'budget' | 'travelDuration' | 'preferredLocation'>>) => void;
   updateGuideData: (data: Partial<OnboardingState['guideProfile']>) => void;
   updateAgencyData: (data: Partial<OnboardingState['agencyProfile']>) => void;
+  updateEventOrganizerData: (data: Partial<OnboardingState['eventOrganizerProfile']>) => void;
 }
 
 export const useOnboardingStore = create<OnboardingState>()(
@@ -72,6 +80,11 @@ export const useOnboardingStore = create<OnboardingState>()(
         registrationNumber: '',
         businessType: '',
         pricingModel: ''
+      },
+      eventOrganizerProfile: {
+        organizationName: '',
+        website: '',
+        bio: ''
       },
 
       setUserRole: (role) => set({ userRole: role }),
@@ -101,6 +114,11 @@ export const useOnboardingStore = create<OnboardingState>()(
           registrationNumber: '',
           businessType: '',
           pricingModel: ''
+        },
+        eventOrganizerProfile: {
+          organizationName: '',
+          website: '',
+          bio: ''
         }
       }),
       setTranslateDismissed: (dismissed) => set({ translateDismissed: dismissed }),
@@ -110,6 +128,9 @@ export const useOnboardingStore = create<OnboardingState>()(
       })),
       updateAgencyData: (data) => set((state) => ({ 
         agencyProfile: { ...state.agencyProfile, ...data } 
+      })),
+      updateEventOrganizerData: (data) => set((state) => ({ 
+        eventOrganizerProfile: { ...state.eventOrganizerProfile, ...data } 
       })),
     }),
     {

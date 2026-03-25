@@ -7,7 +7,7 @@ import { Heart, Compass, Loader2 } from "lucide-react";
 import apiClient from "@/services/api-client";
 import Card from "@/components/ui/Card";
 
-interface LikedTrip {
+interface LikedItem {
     id: string;
     title: string;
     primaryImageUrl: string | null;
@@ -15,14 +15,14 @@ interface LikedTrip {
     description: string;
     location: string;
     images: string[];
-    type: "tour" | "adventure";
+    type: "tour" | "adventure" | "event";
 }
 
 export default function SavedToursPage() {
     const { user, loading } = useAuth();
     const router = useRouter();
-    const [likedTrips, setLikedTrips] = useState<LikedTrip[]>([]);
-    const [tripsLoading, setTripsLoading] = useState(true);
+    const [savedItems, setSavedItems] = useState<LikedItem[]>([]);
+    const [itemsLoading, setItemsLoading] = useState(true);
 
     useEffect(() => {
         if (!loading) {
@@ -31,28 +31,52 @@ export default function SavedToursPage() {
             } else if (user.role !== "Tourist") {
                 router.replace("/dashboard");
             } else {
-                fetchLikedTrips();
+                fetchSavedItems();
             }
         }
     }, [user, loading, router]);
 
-    const fetchLikedTrips = async () => {
+    const fetchSavedItems = async () => {
         try {
-            const response = await apiClient.get<LikedTrip[]>("/trip/liked");
-            setLikedTrips(response.data);
+            // Fetch trips/tours
+            const tripsRes = await apiClient.get<LikedItem[]>("/trip/liked");
+            
+            // Fetch events
+            let events: LikedItem[] = [];
+            try {
+                const eventsRes = await apiClient.get<any[]>("/events/liked");
+                events = eventsRes.data.map(e => ({
+                    id: e.id,
+                    title: e.title,
+                    primaryImageUrl: e.coverImage,
+                    date: e.startDate,
+                    description: e.shortDescription,
+                    location: e.locationName,
+                    images: e.galleryImages || [],
+                    type: "event" as const
+                }));
+            } catch (err) {
+                console.error("Failed to fetch liked events", err);
+            }
+
+            setSavedItems([...tripsRes.data, ...events]);
         } catch (error) {
-            console.error("Failed to fetch liked trips", error);
+            console.error("Failed to fetch saved items", error);
         } finally {
-            setTripsLoading(false);
+            setItemsLoading(false);
         }
     };
 
     const handleToggleLike = async (id: string, type: string) => {
         try {
-            const endpoint = type === 'tour' ? `/tours/${id}/toggle-like` : `/trip/${id}/toggle-like`;
+            let endpoint = "";
+            if (type === 'tour') endpoint = `/tours/${id}/toggle-like`;
+            else if (type === 'event') endpoint = `/events/${id}/like`;
+            else endpoint = `/trip/${id}/toggle-like`;
+
             await apiClient.post(endpoint);
             // Since we are in the "Saved" page, toggling like always means removing it from the list
-            setLikedTrips(prev => prev.filter(t => t.id !== id));
+            setSavedItems(prev => prev.filter(t => t.id !== id));
         } catch (error) {
             console.error("Failed to toggle like", error);
         }
@@ -86,23 +110,23 @@ export default function SavedToursPage() {
                 </button>
             </div>
 
-            {tripsLoading ? (
+            {itemsLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                     {[1, 2, 3].map(i => (
                         <div key={i} className="h-96 bg-white rounded-3xl border border-gray-100 animate-pulse" />
                     ))}
                 </div>
-            ) : likedTrips.length > 0 ? (
+            ) : savedItems.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                    {likedTrips.map((trip) => (
+                    {savedItems.map((item) => (
                         <Card
-                            key={trip.id}
-                            id={trip.id}
-                            title={trip.title}
-                            image={trip.primaryImageUrl || "/images/placeholder-trip.jpg"}
-                            location={trip.location}
-                            type={trip.type}
-                            subtitle={trip.description}
+                            key={item.id}
+                            id={item.id}
+                            title={item.title}
+                            image={item.primaryImageUrl || "/images/placeholder-trip.jpg"}
+                            location={item.location}
+                            type={item.type}
+                            subtitle={item.description}
                             tags={[]}
                             isLiked={true}
                             onToggleLike={handleToggleLike}

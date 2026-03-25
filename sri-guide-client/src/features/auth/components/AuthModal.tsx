@@ -43,6 +43,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess, defau
     const roles = [
         { id: "Tourist", label: "Tourist", icon: <Compass size={20} />, description: "Find and book authentic experiences." },
         { id: "Guide", label: "Guide", icon: <Briefcase size={20} />, description: "Showcase your expertise to the world." },
+        { id: "EventOrganizer", label: "Organizer", icon: <CheckCircle2 size={20} />, description: "Create and manage events for the community." },
         // { id: "TravelAgency", label: "Agency", icon: <Building2 size={20} />, description: "Manage guides and large scale tours." },
         // { id: "VehicleOwner", label: "Transport", icon: <Car size={20} />, description: "Provide premium vehicle rentals." }
     ];

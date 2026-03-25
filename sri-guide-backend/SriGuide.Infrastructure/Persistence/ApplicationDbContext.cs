@@ -28,6 +28,14 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Inquiry> Inquiries => Set<Inquiry>();
     public DbSet<PopularPlace> PopularPlaces => Set<PopularPlace>();
 
+    public DbSet<EventOrganizerProfile> EventOrganizerProfiles => Set<EventOrganizerProfile>();
+    public DbSet<EventCategory> EventCategories => Set<EventCategory>();
+    public DbSet<EventCategoryField> EventCategoryFields => Set<EventCategoryField>();
+    public DbSet<Event> Events => Set<Event>();
+    public DbSet<EventFieldValue> EventFieldValues => Set<EventFieldValue>();
+    public DbSet<EventLike> EventLikes => Set<EventLike>();
+    public DbSet<EventReview> EventReviews => Set<EventReview>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
@@ -155,6 +163,69 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.Entity<PopularPlace>()
             .Property(p => p.Description)
             .IsRequired();
+
+        // EventOrganizerProfile relationship
+        modelBuilder.Entity<EventOrganizerProfile>()
+            .HasOne(e => e.User)
+            .WithOne(u => u.EventOrganizerProfile)
+            .HasForeignKey<EventOrganizerProfile>(e => e.UserId);
+
+        // EventCategory relationships
+        modelBuilder.Entity<EventCategory>()
+            .HasMany(c => c.CustomFields)
+            .WithOne(f => f.Category)
+            .HasForeignKey(f => f.CategoryId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Event>()
+            .HasOne(e => e.Category)
+            .WithMany(c => c.Events)
+            .HasForeignKey(e => e.CategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Event - Organizer relationship
+        modelBuilder.Entity<Event>()
+            .HasOne(e => e.OrganizerProfile)
+            .WithMany(o => o.Events)
+            .HasForeignKey(e => e.OrganizerProfileId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // EventFieldValue relationships
+        modelBuilder.Entity<EventFieldValue>()
+            .HasOne(v => v.Event)
+            .WithMany(e => e.FieldValues)
+            .HasForeignKey(v => v.EventId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<EventFieldValue>()
+            .HasOne(v => v.Field)
+            .WithMany()
+            .HasForeignKey(v => v.FieldId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // EventLike
+        modelBuilder.Entity<EventLike>()
+            .HasIndex(el => new { el.UserId, el.EventId })
+            .IsUnique();
+
+        modelBuilder.Entity<EventLike>()
+            .HasOne(el => el.Event)
+            .WithMany()
+            .HasForeignKey(el => el.EventId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // EventReview
+        modelBuilder.Entity<EventReview>()
+            .HasOne(er => er.Event)
+            .WithMany()
+            .HasForeignKey(er => er.EventId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<EventReview>()
+            .HasOne(er => er.User)
+            .WithMany()
+            .HasForeignKey(er => er.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         base.OnModelCreating(modelBuilder);
     }

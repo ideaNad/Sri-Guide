@@ -22,6 +22,7 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
             .Include(u => u.GuideProfile)
                 .ThenInclude(g => g!.Agency)
             .Include(u => u.AgencyProfile)
+            .Include(u => u.EventOrganizerProfile)
             .FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken);
             
         if (user == null) throw new Exception("User not found");
@@ -84,6 +85,21 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
                 agencyProfile.LinkedinLink,
                 agencyProfile.IsVerified,
                 agencyProfile.VerificationStatus
+            ) : null,
+            user.EventOrganizerProfile != null ? new EventOrganizerProfileDto(
+                user.EventOrganizerProfile.OrganizationName,
+                user.EventOrganizerProfile.Bio,
+                user.EventOrganizerProfile.Website,
+                user.EventOrganizerProfile.FacebookLink,
+                user.EventOrganizerProfile.InstagramLink,
+                user.EventOrganizerProfile.TwitterLink,
+                user.EventOrganizerProfile.TikTokLink,
+                user.EventOrganizerProfile.YouTubeLink,
+                user.EventOrganizerProfile.LinkedinLink,
+                user.EventOrganizerProfile.Languages,
+                user.EventOrganizerProfile.Specialties,
+                user.EventOrganizerProfile.OperatingAreas,
+                user.EventOrganizerProfile.IsVerified
             ) : null
         );
     }

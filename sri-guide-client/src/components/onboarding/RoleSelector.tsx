@@ -35,6 +35,13 @@ const roles: RoleOption[] = [
     icon: <Building2 className="w-8 h-8" />,
     color: 'bg-purple-50 text-purple-600 border-purple-200',
   },
+  {
+    id: 'eventOrganizer',
+    title: 'Organizer',
+    description: 'Create and manage events for the community.',
+    icon: <CheckCircle2 className="w-8 h-8" />,
+    color: 'bg-orange-50 text-orange-600 border-orange-200',
+  },
 ];
 
 interface RoleSelectorProps {
@@ -44,7 +51,7 @@ interface RoleSelectorProps {
 
 export function RoleSelector({ selectedRole, onSelect }: RoleSelectorProps) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
       {roles.map((role) => {
         const isSelected = selectedRole === role.id;
         return (

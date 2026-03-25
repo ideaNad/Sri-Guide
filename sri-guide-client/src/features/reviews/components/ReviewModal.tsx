@@ -27,13 +27,20 @@ export default function ReviewModal({ isOpen, onClose, targetId, targetType, tar
         setError(null);
 
         try {
-            await apiClient.post("/Review", {
-                targetId,
-                targetType,
-                rating,
-                comment,
-                userId: "00000000-0000-0000-0000-000000000000" // Backend will override this with current user ID
-            });
+            if (targetType === "Event") {
+                await apiClient.post(`/events/${targetId}/reviews`, {
+                    rating,
+                    comment
+                });
+            } else {
+                await apiClient.post("/Review", {
+                    targetId,
+                    targetType,
+                    rating,
+                    comment,
+                    userId: "00000000-0000-0000-0000-000000000000" // Backend will override this with current user ID
+                });
+            }
             onSuccess();
             onClose();
             setComment("");

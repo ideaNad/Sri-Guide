@@ -16,7 +16,24 @@ public record UserProfileDto(
     string? TravelDuration,
     string? PreferredLocation,
     GuideProfileDto? GuideProfile,
-    AgencyProfileDto? AgencyProfile
+    AgencyProfileDto? AgencyProfile,
+    EventOrganizerProfileDto? EventOrganizerProfile
+);
+
+public record EventOrganizerProfileDto(
+    string? OrganizationName,
+    string? Bio,
+    string? Website,
+    string? FacebookLink,
+    string? InstagramLink,
+    string? TwitterLink,
+    string? TikTokLink,
+    string? YouTubeLink,
+    string? LinkedinLink,
+    List<string>? Languages,
+    List<string>? Specialties,
+    List<string>? OperatingAreas,
+    bool IsVerified
 );
 
 public record GuideProfileDto(

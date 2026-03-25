@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using SriGuide.Application.Admin.Commands;
 using SriGuide.Application.Admin.Queries;
 using SriGuide.Application.Admin.DTOs;
+using SriGuide.Application.EventCategories.Commands.CreateCategory;
+using SriGuide.Application.EventCategories.Commands.UpdateCategory;
 
 namespace SriGuide.API.Controllers;
 
@@ -81,5 +83,18 @@ public class AdminController : ControllerBase
     public async Task<ActionResult<bool>> DeleteUser(Guid id)
     {
         return await _mediator.Send(new DeleteUserCommand(id));
+    }
+
+    [HttpPost("event-categories")]
+    public async Task<ActionResult<Guid>> CreateEventCategory([FromBody] CreateCategoryCommand command)
+    {
+        return await _mediator.Send(command);
+    }
+
+    [HttpPut("event-categories/{id}")]
+    public async Task<ActionResult<bool>> UpdateEventCategory(Guid id, [FromBody] UpdateCategoryCommand command)
+    {
+        if (id != command.Id) return BadRequest();
+        return await _mediator.Send(command);
     }
 }

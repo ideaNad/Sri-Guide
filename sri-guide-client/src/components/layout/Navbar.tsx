@@ -72,6 +72,7 @@ const Navbar = () => {
         if (user.role === "Admin") return "/admin";
         if (user.role === "Guide") return "/guide";
         if (user.role === "TravelAgency") return "/agency";
+        if (user.role === "EventOrganizer") return "/organizer";
         return "/dashboard";
     };
 
@@ -287,6 +288,7 @@ const Navbar = () => {
                     if (userData.role === "Admin") router.push("/admin");
                     else if (userData.role === "Guide") router.push("/guide");
                     else if (userData.role === "TravelAgency") router.push("/agency");
+                    else if (userData.role === "EventOrganizer") router.push("/organizer");
                     else router.push("/dashboard");
                 }}
             />
