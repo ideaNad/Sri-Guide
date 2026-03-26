@@ -6,12 +6,26 @@ import { useRouter } from 'next/navigation';
 import { 
     Car, Loader2, ArrowLeft, Check,
     Users, Luggage, Snowflake, Calendar,
-    Info, Star, Image as ImageIcon, Camera
+    Info, Star, Image as ImageIcon, Camera,
+    Plus, Shield, Zap
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import apiClient from '@/services/api-client';
 import { useToast } from '@/hooks/useToast';
 import Link from 'next/link';
+
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+        opacity: 1,
+        transition: { staggerChildren: 0.1 }
+    }
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+};
 
 export default function AddVehiclePage() {
     const { user, refreshUser } = useAuth();
@@ -21,6 +35,9 @@ export default function AddVehiclePage() {
     const [isUploading, setIsUploading] = useState(false);
     const [vehicleImageUrl, setVehicleImageUrl] = useState<string | null>(null);
     const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
+
+    const [passengerCapacity, setPassengerCapacity] = useState(4);
+    const [luggageCapacity, setLuggageCapacity] = useState(2);
 
     const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -58,8 +75,8 @@ export default function AddVehiclePage() {
             brand: formData.get('brand'),
             model: formData.get('model'),
             year: parseInt(formData.get('year') as string),
-            passengerCapacity: parseInt(formData.get('passengerCapacity') as string),
-            luggageCapacity: parseInt(formData.get('luggageCapacity') as string),
+            passengerCapacity: passengerCapacity,
+            luggageCapacity: luggageCapacity,
             hasAc: formData.get('hasAc') === 'on',
             isAvailable: formData.get('isAvailable') === 'on',
             driverIncluded: formData.get('driverIncluded') === 'on',
@@ -87,36 +104,55 @@ export default function AddVehiclePage() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8">
-            <header className="flex items-center gap-4">
-                <Link 
-                    href="/transport-dashboard/vehicles"
-                    className="p-3 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-gray-900 transition-all shadow-sm active:scale-95"
-                >
-                    <ArrowLeft size={20} />
-                </Link>
-                <div>
-                    <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tight">Add New Vehicle</h1>
-                    <p className="text-gray-500 font-medium">Add a new vehicle to your service fleet.</p>
+        <motion.div 
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            className="max-w-4xl mx-auto space-y-6 sm:space-y-8 px-2 sm:px-6 lg:px-8 py-4 sm:py-8"
+        >
+            <motion.header variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between px-2 sm:px-0">
+                <div className="flex items-center gap-3 sm:gap-4">
+                    <Link 
+                        href="/transport-dashboard/vehicles"
+                        className="p-3 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-blue-600 hover:border-blue-100 transition-all shadow-sm hover:shadow-md active:scale-95 group"
+                    >
+                        <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+                    </Link>
+                    <div>
+                        <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-900 uppercase tracking-tight">Add New Vehicle</h1>
+                        <p className="text-xs sm:text-sm lg:text-base text-gray-500 font-medium">Register a vehicle to your fleet.</p>
+                    </div>
                 </div>
-            </header>
+            </motion.header>
 
-            <form onSubmit={handleSubmit} className="space-y-8 pb-20">
-                <div className="bg-white p-6 md:p-10 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-8">
-                    {/* Vehicle Photo */}
+            <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 pb-20">
+                <motion.div variants={itemVariants} className="bg-white p-4 sm:p-6 md:p-10 rounded-[1.5rem] sm:rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/50 space-y-8 sm:space-y-12">
+                    {/* Vehicle Photo Section */}
                     <div className="space-y-6">
-                        <div className="flex items-center gap-2 border-b border-gray-50 pb-4">
-                            <ImageIcon size={18} className="text-blue-600" />
-                            <h2 className="text-sm font-black text-gray-900 uppercase tracking-[0.2em]">Vehicle Photo</h2>
+                        <div className="flex items-center justify-between border-b border-gray-50 pb-4">
+                            <div className="flex items-center gap-2">
+                                <div className="p-2 bg-blue-50 rounded-lg">
+                                    <ImageIcon size={18} className="text-blue-600" />
+                                </div>
+                                <h2 className="text-xs sm:text-sm font-black text-gray-900 uppercase tracking-[0.2em]">Vehicle Photo</h2>
+                            </div>
                         </div>
                         
-                        <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-100 rounded-[2rem] bg-gray-50/30 group hover:border-blue-200 transition-all">
-                            <div className="relative">
-                                <div className="w-64 h-36 rounded-2xl overflow-hidden bg-white border-4 border-white shadow-xl flex items-center justify-center">
+                        <div className="flex flex-col items-center justify-center p-4 sm:p-8 border-2 border-dashed border-gray-200 rounded-[1.5rem] sm:rounded-[2rem] bg-gray-50/50 group hover:border-blue-400 hover:bg-blue-50/30 transition-all duration-300">
+                            <div className="relative w-full flex flex-col items-center">
+                                <motion.div 
+                                    whileHover={{ scale: 1.01 }}
+                                    className="w-full max-w-lg aspect-video rounded-xl sm:rounded-2xl overflow-hidden bg-white border-4 sm:border-8 border-white shadow-2xl flex items-center justify-center"
+                                >
                                     {isUploading ? (
-                                        <div className="flex flex-col items-center gap-2">
-                                            <Loader2 size={32} className="animate-spin text-blue-600" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-blue-600">Uploading...</span>
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="relative">
+                                                <Loader2 size={32} className="sm:size-12 animate-spin text-blue-600" />
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                                                </div>
+                                            </div>
+                                            <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-blue-600">Uploading media...</span>
                                         </div>
                                     ) : (localPreviewUrl || vehicleImageUrl) ? (
                                         <img 
@@ -125,12 +161,17 @@ export default function AddVehiclePage() {
                                             className="w-full h-full object-cover"
                                         />
                                     ) : (
-                                        <div className="text-gray-300 flex flex-col items-center gap-2">
-                                            <Car size={48} />
-                                            <span className="text-[10px] font-black uppercase tracking-widest">No Photo</span>
+                                        <div className="text-gray-300 flex flex-col items-center gap-4">
+                                            <div className="p-4 sm:p-6 bg-gray-100 rounded-full">
+                                                <Car size={32} className="sm:size-12 text-gray-400" />
+                                            </div>
+                                            <div className="text-center">
+                                                <span className="block text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em]">No Media Selected</span>
+                                                <span className="text-[8px] sm:text-[9px] font-bold text-gray-400 lowercase">PNG, JPG or WebP</span>
+                                            </div>
                                         </div>
                                     )}
-                                </div>
+                                </motion.div>
                                 <input 
                                     type="file" 
                                     id="vehicle-photo" 
@@ -141,41 +182,53 @@ export default function AddVehiclePage() {
                                 />
                                 <label 
                                     htmlFor="vehicle-photo"
-                                    className="absolute -bottom-2 -right-2 p-3 bg-gray-900 text-white rounded-xl shadow-lg border-2 border-white cursor-pointer hover:bg-blue-600 transition-all hover:scale-110 active:scale-95"
+                                    className="mt-4 sm:absolute sm:-bottom-4 sm:left-1/2 sm:-translate-x-1/2 flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gray-900 text-white rounded-xl shadow-xl border-4 border-white cursor-pointer hover:bg-blue-600 transition-all hover:scale-105 active:scale-95 group"
                                 >
-                                    <Camera size={18} />
+                                    <Camera size={16} className="sm:size-18 group-hover:rotate-12 transition-transform" />
+                                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
+                                        {vehicleImageUrl ? 'Change Photo' : 'Upload Vehicle Photo'}
+                                    </span>
                                 </label>
                             </div>
-                            <p className="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 text-center">
-                                Upload a clear photo of your vehicle for customers to see.
+                            <p className="mt-6 sm:mt-10 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 text-center max-w-sm px-4">
+                                Recommendation: 16:9 Landscape photo for best visibility.
                             </p>
                         </div>
                     </div>
 
-                    {/* Basic Specs */}
-                    <div className="space-y-6">
+                    {/* Specifications Section */}
+                    <div className="space-y-8">
                         <div className="flex items-center gap-2 border-b border-gray-50 pb-4">
-                            <Info size={18} className="text-blue-600" />
-                            <h2 className="text-sm font-black text-gray-900 uppercase tracking-[0.2em]">Vehicle Specifications</h2>
+                            <div className="p-2 bg-indigo-50 rounded-lg">
+                                <Info size={18} className="text-indigo-600" />
+                            </div>
+                            <h2 className="text-xs sm:text-sm font-black text-gray-900 uppercase tracking-[0.2em]">Vehicle Specifications</h2>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-1">Vehicle Type</label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                            <div className="space-y-2 sm:space-y-3">
+                                <label className="flex items-center gap-2 text-[9px] sm:text-[10px] font-black text-indigo-600 uppercase tracking-widest px-1">
+                                    <Car size={12} />
+                                    Vehicle Type
+                                </label>
                                 <select 
                                     name="vehicleType" 
                                     required
-                                    className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
+                                    className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-gray-50 border border-gray-100 rounded-xl sm:rounded-2xl font-bold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none appearance-none hover:bg-white text-sm"
                                 >
-                                    <option value="car">Car</option>
-                                    <option value="van">Van</option>
-                                    <option value="bus">Bus</option>
+                                    <option value="car">Luxury Sedan / Car</option>
+                                    <option value="van">Passenger Van</option>
+                                    <option value="bus">Tourist Bus</option>
                                     <option value="tuk">Tuk Tuk</option>
-                                    <option value="jeep">Jeep</option>
+                                    <option value="jeep">4x4 Jeep / SUV</option>
                                 </select>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-1">Manufacture Year</label>
+                            
+                            <div className="space-y-2 sm:space-y-3">
+                                <label className="flex items-center gap-2 text-[9px] sm:text-[10px] font-black text-indigo-600 uppercase tracking-widest px-1">
+                                    <Calendar size={12} />
+                                    Manufacture Year
+                                </label>
                                 <input 
                                     type="number" 
                                     name="year" 
@@ -183,142 +236,183 @@ export default function AddVehiclePage() {
                                     min={2000}
                                     max={new Date().getFullYear() + 1}
                                     defaultValue={new Date().getFullYear()} 
-                                    placeholder="e.g. 2022"
-                                    className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
+                                    placeholder="2024"
+                                    className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-gray-50 border border-gray-100 rounded-xl sm:rounded-2xl font-bold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none hover:bg-white text-sm"
                                 />
                             </div>
-                        </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-1">Brand</label>
+                            <div className="space-y-2 sm:space-y-3 sm:col-span-2 lg:col-span-1">
+                                <label className="flex items-center gap-2 text-[9px] sm:text-[10px] font-black text-indigo-600 uppercase tracking-widest px-1">
+                                    <Shield size={12} />
+                                    Brand
+                                </label>
                                 <input 
                                     type="text" 
                                     name="brand" 
                                     required 
                                     placeholder="e.g. Toyota"
-                                    className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
+                                    className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-gray-50 border border-gray-100 rounded-xl sm:rounded-2xl font-bold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none hover:bg-white text-sm"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-1">Model</label>
+
+                            <div className="space-y-2 sm:space-y-3 sm:col-span-2">
+                                <label className="flex items-center gap-2 text-[9px] sm:text-[10px] font-black text-indigo-600 uppercase tracking-widest px-1">
+                                    <Zap size={12} />
+                                    Model Name
+                                </label>
                                 <input 
                                     type="text" 
                                     name="model" 
                                     required 
-                                    placeholder="e.g. Axio"
-                                    className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
+                                    placeholder="e.g. Land Cruiser Prado"
+                                    className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-gray-50 border border-gray-100 rounded-xl sm:rounded-2xl font-bold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none hover:bg-white text-sm"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    {/* Capacity & Features */}
-                    <div className="space-y-6">
+                    {/* Capacity Section */}
+                    <div className="space-y-8">
                         <div className="flex items-center gap-2 border-b border-gray-50 pb-4">
-                            <Users size={18} className="text-blue-600" />
-                            <h2 className="text-sm font-black text-gray-900 uppercase tracking-[0.2em]">Capacity & Features</h2>
+                            <div className="p-2 bg-emerald-50 rounded-lg">
+                                <Users size={18} className="text-emerald-600" />
+                            </div>
+                            <h2 className="text-xs sm:text-sm font-black text-gray-900 uppercase tracking-[0.2em]">Capacity Details</h2>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-1">Passenger Capacity</label>
-                                <div className="relative">
-                                    <Users className="absolute left-4 top-4 text-gray-400" size={20} />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
+                            <div className="space-y-2 sm:space-y-3">
+                                <label className="flex items-center gap-2 text-[9px] sm:text-[10px] font-black text-emerald-600 uppercase tracking-widest px-1">
+                                    <Users size={12} />
+                                    Passenger Slots
+                                </label>
+                                <div className="flex items-center bg-gray-50 border border-gray-100 rounded-xl sm:rounded-2xl overflow-hidden focus-within:ring-4 focus-within:ring-blue-500/10 focus-within:border-blue-500 transition-all group">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setPassengerCapacity(prev => Math.max(1, prev - 1))}
+                                        className="p-4 sm:p-5 hover:bg-gray-100 text-gray-500 transition-colors active:scale-95"
+                                    >
+                                        <div className="w-5 h-5 flex items-center justify-center font-bold text-lg select-none">−</div>
+                                    </button>
                                     <input 
                                         type="number" 
                                         name="passengerCapacity" 
                                         required 
                                         min={1}
                                         max={60}
-                                        defaultValue={4} 
-                                        className="w-full pl-12 pr-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
+                                        value={passengerCapacity} 
+                                        onChange={(e) => setPassengerCapacity(parseInt(e.target.value) || 1)}
+                                        className="flex-1 w-full bg-transparent text-center font-bold outline-none text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                     />
+                                    <button 
+                                        type="button"
+                                        onClick={() => setPassengerCapacity(prev => Math.min(60, prev + 1))}
+                                        className="p-4 sm:p-5 hover:bg-gray-100 text-gray-500 transition-colors active:scale-95"
+                                    >
+                                        <div className="w-5 h-5 flex items-center justify-center font-bold text-lg select-none">+</div>
+                                    </button>
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-1">Luggage Capacity (Bags)</label>
-                                <div className="relative">
-                                    <Luggage className="absolute left-4 top-4 text-gray-400" size={20} />
+                            <div className="space-y-2 sm:space-y-3">
+                                <label className="flex items-center gap-2 text-[9px] sm:text-[10px] font-black text-emerald-600 uppercase tracking-widest px-1">
+                                    <Luggage size={12} />
+                                    Luggage Capacity (Bags)
+                                </label>
+                                <div className="flex items-center bg-gray-50 border border-gray-100 rounded-xl sm:rounded-2xl overflow-hidden focus-within:ring-4 focus-within:ring-blue-500/10 focus-within:border-blue-500 transition-all group">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setLuggageCapacity(prev => Math.max(0, prev - 1))}
+                                        className="p-4 sm:p-5 hover:bg-gray-100 text-gray-500 transition-colors active:scale-95"
+                                    >
+                                        <div className="w-5 h-5 flex items-center justify-center font-bold text-lg select-none">−</div>
+                                    </button>
                                     <input 
                                         type="number" 
                                         name="luggageCapacity" 
                                         required 
                                         min={0}
                                         max={20}
-                                        defaultValue={2} 
-                                        className="w-full pl-12 pr-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
+                                        value={luggageCapacity} 
+                                        onChange={(e) => setLuggageCapacity(parseInt(e.target.value) || 0)}
+                                        className="flex-1 w-full bg-transparent text-center font-bold outline-none text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                     />
+                                    <button 
+                                        type="button"
+                                        onClick={() => setLuggageCapacity(prev => Math.min(20, prev + 1))}
+                                        className="p-4 sm:p-5 hover:bg-gray-100 text-gray-500 transition-colors active:scale-95"
+                                    >
+                                        <div className="w-5 h-5 flex items-center justify-center font-bold text-lg select-none">+</div>
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-6 border-b border-blue-100/30">
-                            <div className="p-6 bg-blue-50/50 rounded-[2rem] border border-blue-100/50">
-                                <label className="flex items-center gap-4 cursor-pointer select-none">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 pt-4">
+                            <div className="relative group p-4 sm:p-6 bg-blue-50/30 rounded-2xl sm:rounded-[2rem] border-2 border-blue-100/30 hover:border-blue-400 hover:bg-white transition-all duration-300">
+                                <label className="flex items-center gap-3 sm:gap-4 cursor-pointer select-none">
                                     <div className="relative">
                                         <input type="checkbox" name="hasAc" className="sr-only peer" />
-                                        <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600 transition-all"></div>
+                                        <div className="w-10 sm:w-12 h-5 sm:h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-[20px] sm:peer-checked:after:translate-x-[24px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2.5px] sm:after:top-[3px] after:left-[2.5px] sm:after:left-[3px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-[15px] sm:after:h-[18px] after:w-[15px] sm:after:w-[18px] after:transition-all peer-checked:bg-blue-600 transition-all"></div>
                                     </div>
-                                    <div>
-                                        <span className="block text-sm font-black text-gray-900 uppercase tracking-tight">Air Conditioning (A/C)</span>
-                                        <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Enable if the vehicle has climate control</span>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] sm:text-[11px] font-black text-gray-900 uppercase tracking-tight leading-tight">Air Condition</span>
+                                        <span className="text-[8px] sm:text-[9px] font-bold text-blue-600 uppercase tracking-widest leading-tight">Premium Comfort</span>
                                     </div>
                                 </label>
                             </div>
 
-                            <div className="p-6 bg-green-50/50 rounded-[2rem] border border-green-100/50">
-                                <label className="flex items-center gap-4 cursor-pointer select-none">
+                            <div className="relative group p-4 sm:p-6 bg-emerald-50/30 rounded-2xl sm:rounded-[2rem] border-2 border-emerald-100/30 hover:border-emerald-400 hover:bg-white transition-all duration-300">
+                                <label className="flex items-center gap-3 sm:gap-4 cursor-pointer select-none">
                                     <div className="relative">
                                         <input type="checkbox" name="isAvailable" defaultChecked className="sr-only peer" />
-                                        <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-green-600 transition-all"></div>
+                                        <div className="w-10 sm:w-12 h-5 sm:h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-[20px] sm:peer-checked:after:translate-x-[24px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2.5px] sm:after:top-[3px] after:left-[2.5px] sm:after:left-[3px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-[15px] sm:after:h-[18px] after:w-[15px] sm:after:w-[18px] after:transition-all peer-checked:bg-emerald-600 transition-all"></div>
                                     </div>
-                                    <div>
-                                        <span className="block text-sm font-black text-gray-900 uppercase tracking-tight">Instant Available</span>
-                                        <span className="text-[10px] font-bold text-green-600 uppercase tracking-widest">Active for bookings after adding</span>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] sm:text-[11px] font-black text-gray-900 uppercase tracking-tight leading-tight">Active Ready</span>
+                                        <span className="text-[8px] sm:text-[9px] font-bold text-emerald-600 uppercase tracking-widest leading-tight">Instant Booking</span>
                                     </div>
                                 </label>
                             </div>
 
-                            <div className="p-6 bg-purple-50/50 rounded-[2rem] border border-purple-100/50">
-                                <label className="flex items-center gap-4 cursor-pointer select-none">
+                            <div className="relative group p-4 sm:p-6 bg-purple-50/30 rounded-2xl sm:rounded-[2rem] border-2 border-purple-100/30 hover:border-purple-400 hover:bg-white transition-all duration-300">
+                                <label className="flex items-center gap-3 sm:gap-4 cursor-pointer select-none">
                                     <div className="relative">
                                         <input type="checkbox" name="driverIncluded" className="sr-only peer" />
-                                        <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-purple-600 transition-all"></div>
+                                        <div className="w-10 sm:w-12 h-5 sm:h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-[20px] sm:peer-checked:after:translate-x-[24px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2.5px] sm:after:top-[3px] after:left-[2.5px] sm:after:left-[3px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-[15px] sm:after:h-[18px] after:w-[15px] sm:after:w-[18px] after:transition-all peer-checked:bg-purple-600 transition-all"></div>
                                     </div>
-                                    <div>
-                                        <span className="block text-sm font-black text-gray-900 uppercase tracking-tight">Driver Included</span>
-                                        <span className="text-[10px] font-bold text-purple-600 uppercase tracking-widest">Toggle for driver-inclusive bookings</span>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] sm:text-[11px] font-black text-gray-900 uppercase tracking-tight leading-tight">Driver Incl.</span>
+                                        <span className="text-[8px] sm:text-[9px] font-bold text-purple-600 uppercase tracking-widest leading-tight">Full Service</span>
                                     </div>
                                 </label>
                             </div>
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
-                <div className="flex flex-col sm:flex-row gap-4">
+                <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-3 sm:gap-4 px-2 sm:px-0">
                     <Link 
                         href="/transport-dashboard/vehicles"
-                        className="flex-1 py-5 bg-white border border-gray-100 text-gray-400 rounded-2xl font-black uppercase tracking-widest text-center hover:text-gray-900 transition-all"
+                        className="flex-1 py-4 sm:py-5 bg-white border border-gray-100 text-gray-400 rounded-xl sm:rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] sm:text-[11px] text-center hover:text-gray-900 hover:border-gray-200 transition-all shadow-sm hover:shadow-md order-2 sm:order-1"
                     >
-                        Cancel
+                        Discard Changes
                     </Link>
                     <button 
                         type="submit" 
                         disabled={isSubmitting}
-                        className="flex-[2] py-5 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20 disabled:bg-gray-400 disabled:shadow-none active:scale-95"
+                        className="flex-[2] py-4 sm:py-5 bg-blue-600 text-white rounded-xl sm:rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] sm:text-[11px] flex items-center justify-center gap-3 hover:bg-blue-700 transition-all shadow-2xl shadow-blue-600/20 disabled:bg-gray-400 disabled:shadow-none active:scale-95 group order-1 sm:order-2"
                     >
                         {isSubmitting ? (
                             <Loader2 size={24} className="animate-spin" />
                         ) : (
                             <>
-                                <Check size={20} />
-                                <span>Register Vehicle</span>
+                                <Check size={20} className="group-hover:scale-110 transition-transform" />
+                                <span>Register New Vehicle</span>
                             </>
                         )}
                     </button>
-                </div>
+                </motion.div>
             </form>
-        </div>
+        </motion.div>
     );
 }
