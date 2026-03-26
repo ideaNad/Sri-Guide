@@ -49,6 +49,24 @@ export default function EditVehiclePage() {
     const [passengerCapacity, setPassengerCapacity] = useState(4);
     const [luggageCapacity, setLuggageCapacity] = useState(2);
 
+    const getImageUrl = (url?: string) => {
+        if (!url || typeof url !== 'string' || url.trim() === "") {
+            return null;
+        }
+        if (url.startsWith('http')) return url;
+        const normalizedPath = url.replace(/\\/g, '/');
+        const baseUrl = apiClient.defaults.baseURL?.replace('/api', '') || '';
+        const cleanPath = normalizedPath.startsWith('/') ? normalizedPath : `/${normalizedPath}`;
+        return `${baseUrl}${cleanPath}`;
+    };
+
+    const getInitials = (brand: string, model: string) => {
+        if (!brand && !model) return "VC";
+        const b = brand?.charAt(0).toUpperCase() || "";
+        const m = model?.charAt(0).toUpperCase() || "";
+        return `${b}${m}` || "VC";
+    };
+
     const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -234,18 +252,20 @@ export default function EditVehiclePage() {
                                         </div>
                                     ) : (localPreviewUrl || vehicleImageUrl) ? (
                                         <img 
-                                            src={(localPreviewUrl || (vehicleImageUrl?.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${vehicleImageUrl}` : vehicleImageUrl)) as string} 
+                                            src={localPreviewUrl || getImageUrl(vehicleImageUrl || undefined)!} 
                                             alt="Vehicle preview"
                                             className="w-full h-full object-cover"
                                         />
                                     ) : (
-                                        <div className="text-gray-300 flex flex-col items-center gap-4">
-                                            <div className="p-4 sm:p-6 bg-gray-100 rounded-full">
-                                                <Car size={32} className="sm:size-12 text-gray-400" />
+                                        <div className="text-blue-600/30 flex flex-col items-center gap-4">
+                                            <div className="w-24 h-24 bg-gray-50 border border-gray-100 rounded-3xl flex items-center justify-center shadow-sm group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-500 text-4xl font-black tracking-tighter">
+                                                {getInitials(
+                                                    (document.getElementsByName('brand')[0] as HTMLInputElement)?.value || vehicle.brand || "",
+                                                    (document.getElementsByName('model')[0] as HTMLInputElement)?.value || vehicle.model || ""
+                                                )}
                                             </div>
                                             <div className="text-center">
-                                                <span className="block text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em]">No Media Selected</span>
-                                                <span className="text-[8px] sm:text-[9px] font-bold text-gray-400 lowercase">PNG, JPG or WebP</span>
+                                                <span className="block text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em]">Preview Initials</span>
                                             </div>
                                         </div>
                                     )}

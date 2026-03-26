@@ -229,9 +229,9 @@ export default function TransportSearchPage() {
                 {/* Listing Area */}
                 <div className="lg:col-span-4 space-y-8 min-h-[60vh]">
                     {isLoading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {[1, 2, 3, 4].map((n) => (
-                                <div key={n} className="bg-white rounded-[2.5rem] h-[400px] animate-pulse border border-gray-100" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {[1, 2, 3, 4, 5, 6].map((n) => (
+                                <div key={n} className="bg-white rounded-[2.5rem] h-[360px] animate-pulse border border-gray-100" />
                             ))}
                         </div>
                     ) : filteredVehicles.length === 0 ? (
@@ -244,7 +244,7 @@ export default function TransportSearchPage() {
                         </div>
                     ) : (
                         <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                             {filteredVehicles.map((vehicle: any, idx: number) => (
                                 <VehicleDiscoveryCard 
                                     key={vehicle.id}

@@ -87,11 +87,21 @@ export default function VehicleDetailPage() {
     };
 
     const getImageUrl = (url?: string) => {
-        if (!url || url.trim() === "") return `https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&q=80&w=1200`;
+        if (!url || typeof url !== 'string' || url.trim() === "") {
+            return null;
+        }
         if (url.startsWith('http')) return url;
+        const normalizedPath = url.replace(/\\/g, '/');
         const baseUrl = apiClient.defaults.baseURL?.replace('/api', '') || '';
-        const cleanPath = url.startsWith('/') ? url : `/${url}`;
+        const cleanPath = normalizedPath.startsWith('/') ? normalizedPath : `/${normalizedPath}`;
         return `${baseUrl}${cleanPath}`;
+    };
+
+    const getInitials = (brand: string, model: string) => {
+        if (!brand && !model) return "VC";
+        const b = brand?.charAt(0).toUpperCase() || "";
+        const m = model?.charAt(0).toUpperCase() || "";
+        return `${b}${m}` || "VC";
     };
 
     if (isLoading) {
@@ -124,8 +134,8 @@ export default function VehicleDetailPage() {
                         <button
                             onClick={handleLike}
                             className={`p-3 rounded-2xl border transition-all active:scale-95 flex items-center gap-2 ${hasLiked
-                                    ? 'bg-rose-50 border-rose-100 text-rose-500 shadow-sm shadow-rose-500/10'
-                                    : 'bg-white border-gray-100 text-gray-400 hover:text-rose-500'
+                                ? 'bg-rose-50 border-rose-100 text-rose-500 shadow-sm shadow-rose-500/10'
+                                : 'bg-white border-gray-100 text-gray-400 hover:text-rose-500'
                                 }`}
                         >
                             <Heart size={20} className={hasLiked ? 'fill-current text-rose-500' : ''} />
@@ -151,12 +161,20 @@ export default function VehicleDetailPage() {
                         <div className="lg:col-span-2 space-y-10">
                             {/* Vehicle Hero */}
                             <section className="bg-white rounded-[3rem] overflow-hidden border border-gray-100 shadow-xl shadow-gray-200/20 group">
-                                <div className="aspect-[21/9] relative overflow-hidden">
-                                    <img
-                                        src={getImageUrl(vehicle.vehicleImageUrl)}
-                                        alt={`${vehicle.brand} ${vehicle.model}`}
-                                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                                    />
+                                <div className="aspect-[21/9] relative overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
+                                    {getImageUrl(vehicle.vehicleImageUrl) ? (
+                                        <img
+                                            src={getImageUrl(vehicle.vehicleImageUrl)!}
+                                            alt={`${vehicle.brand} ${vehicle.model}`}
+                                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                                        />
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center text-white/10">
+                                            <div className="w-40 h-40 rounded-[3rem] bg-white/5 backdrop-blur-xl border border-white/10 flex items-center justify-center text-7xl font-black tracking-tighter shadow-2xl group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-1000">
+                                                {getInitials(vehicle.brand, vehicle.model)}
+                                            </div>
+                                        </div>
+                                    )}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                                     <div className="absolute bottom-10 left-10 text-white">
@@ -252,7 +270,7 @@ export default function VehicleDetailPage() {
                                                 ))}
                                             </div>
                                         </div>
-                                        <button 
+                                        <button
                                             onClick={() => {
                                                 if (!user) setIsAuthModalOpen(true);
                                                 else if (user.role === 'Tourist') setIsReviewModalOpen(true);
@@ -329,7 +347,7 @@ export default function VehicleDetailPage() {
                                     <Link href={`/transport/${provider.id}`} className="block relative group">
                                         <div className="w-24 h-24 rounded-[2rem] overflow-hidden border-4 border-white/10 shadow-xl mb-4 group-hover:scale-105 transition-transform duration-500">
                                             <img
-                                                src={getImageUrl(provider.profileImageUrl)}
+                                                src={getImageUrl(provider.profileImageUrl) || `https://ui-avatars.com/api/?name=${encodeURIComponent(provider.businessName)}&background=random&color=fff`}
                                                 alt={provider.businessName}
                                                 className="w-full h-full object-cover"
                                             />

@@ -41,10 +41,17 @@ const VehicleDiscoveryCard: React.FC<VehicleDiscoveryCardProps> = ({ vehicle, pr
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
     const getImageUrl = (url?: string) => {
-        if (!url || url.trim() === "") return `https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&q=80&w=800`;
+        if (!url || typeof url !== 'string' || url.trim() === "") {
+            return null;
+        }
+        
         if (url.startsWith('http')) return url;
+        
+        // Normalize slashes (especially for Windows backends)
+        const normalizedPath = url.replace(/\\/g, '/');
         const baseUrl = apiClient.defaults.baseURL?.replace('/api', '') || '';
-        const cleanPath = url.startsWith('/') ? url : `/${url}`;
+        const cleanPath = normalizedPath.startsWith('/') ? normalizedPath : `/${normalizedPath}`;
+        
         return `${baseUrl}${cleanPath}`;
     };
 
@@ -69,6 +76,17 @@ const VehicleDiscoveryCard: React.FC<VehicleDiscoveryCardProps> = ({ vehicle, pr
         }
     };
 
+    // Use provided URL or check for fallbacks in the vehicle object
+    const actualImageUrl = vehicle.vehicleImageUrl || (vehicle as any).image || (vehicle as any).imageUrl;
+    const resolvedImageUrl = getImageUrl(actualImageUrl);
+
+    const getInitials = (brand: string, model: string) => {
+        if (!brand && !model) return "VC";
+        const b = brand?.charAt(0).toUpperCase() || "";
+        const m = model?.charAt(0).toUpperCase() || "";
+        return `${b}${m}` || "VC";
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -80,12 +98,20 @@ const VehicleDiscoveryCard: React.FC<VehicleDiscoveryCardProps> = ({ vehicle, pr
             <Link href={`/transport/vehicle/${vehicle.id}`} className="absolute inset-0 z-0" />
             
             {/* Image Section */}
-            <div className="relative h-64 overflow-hidden">
-                <img 
-                    src={getImageUrl(vehicle.vehicleImageUrl)} 
-                    alt={`${vehicle.brand} ${vehicle.model}`}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
+            <div className="relative h-48 sm:h-52 overflow-hidden bg-gradient-to-br from-gray-50 to-gray-200 flex items-center justify-center">
+                {resolvedImageUrl ? (
+                    <img 
+                        src={resolvedImageUrl} 
+                        alt={`${vehicle.brand} ${vehicle.model}`}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                ) : (
+                    <div className="flex flex-col items-center justify-center text-primary/40">
+                        <div className="w-20 h-20 rounded-3xl bg-white/50 backdrop-blur-sm border border-white/20 flex items-center justify-center text-3xl font-black tracking-tighter shadow-sm group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-500">
+                            {getInitials(vehicle.brand, vehicle.model)}
+                        </div>
+                    </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 
                 {/* Floating Badge */}
@@ -108,22 +134,22 @@ const VehicleDiscoveryCard: React.FC<VehicleDiscoveryCardProps> = ({ vehicle, pr
                 {/* Like Button */}
                 <button 
                     onClick={handleLike}
-                    className={`absolute top-6 right-6 w-10 h-10 rounded-full flex items-center justify-center transition-all z-10 ${
+                    className={`absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center transition-all z-10 ${
                         hasLiked ? 'bg-rose-500 text-white shadow-lg' : 'bg-white/90 backdrop-blur-md text-gray-400 hover:text-rose-500 hover:scale-110'
                     }`}
                 >
-                    <Heart size={18} className={hasLiked ? 'fill-current' : ''} />
+                    <Heart size={16} className={hasLiked ? 'fill-current' : ''} />
                 </button>
             </div>
 
             {/* Content Section */}
-            <div className="p-8 flex flex-col flex-1 relative z-10 pointer-events-none">
-                <div className="flex justify-between items-start mb-4">
+            <div className="p-5 sm:p-6 flex flex-col flex-1 relative z-10 pointer-events-none">
+                <div className="flex justify-between items-start mb-3">
                     <div className="pointer-events-auto">
-                        <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight group-hover:text-primary transition-colors">
+                        <h3 className="text-base sm:text-lg font-black text-gray-900 uppercase tracking-tight group-hover:text-primary transition-colors line-clamp-1">
                             {vehicle.brand} {vehicle.model}
                         </h3>
-                        <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mt-1">{vehicle.year}</p>
+                        <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-0.5">{vehicle.year}</p>
                     </div>
                     {vehicle.averageRating > 0 && (
                         <div className="flex items-center gap-1.5 bg-blue-50/80 px-2.5 py-1 rounded-full border border-blue-100 group-hover:bg-blue-100/50 transition-colors">
@@ -152,24 +178,24 @@ const VehicleDiscoveryCard: React.FC<VehicleDiscoveryCardProps> = ({ vehicle, pr
                 </div>
 
                 {/* Features */}
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                    <div className="flex items-center gap-3 text-gray-600">
-                        <div className="w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center">
-                            <Users size={14} className="text-primary" />
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                    <div className="flex items-center gap-2 text-gray-600">
+                        <div className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center">
+                            <Users size={12} className="text-primary" />
                         </div>
-                        <span className="text-xs font-bold">{vehicle.passengerCapacity} Seats</span>
+                        <span className="text-[11px] font-bold">{vehicle.passengerCapacity} Seats</span>
                     </div>
-                    <div className="flex items-center gap-3 text-gray-600">
-                        <div className="w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center">
-                            <Luggage size={14} className="text-primary" />
+                    <div className="flex items-center gap-2 text-gray-600">
+                        <div className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center">
+                            <Luggage size={12} className="text-primary" />
                         </div>
-                        <span className="text-xs font-bold">{vehicle.luggageCapacity} Bags</span>
+                        <span className="text-[11px] font-bold">{vehicle.luggageCapacity} Bags</span>
                     </div>
                 </div>
 
                 {/* Engagement Footer */}
-                <div className="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between">
-                    <div className="flex items-center gap-4 text-gray-400 text-[10px] font-black uppercase tracking-widest">
+                <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between">
+                    <div className="flex items-center gap-3 text-gray-400 text-[9px] font-black uppercase tracking-widest">
                         <span>{likeCount} Likes</span>
                         <span>{vehicle.reviewCount} Reviews</span>
                     </div>
