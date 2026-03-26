@@ -63,6 +63,9 @@ export default function VehicleManagement() {
         return `${b}${m}` || "VC";
     };
 
+    const profile = user?.transportProfile;
+    const isProfileComplete = !!profile?.businessName && !!profile?.district && !!profile?.province;
+
     return (
         <div className="space-y-8 max-w-7xl mx-auto">
             <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -70,14 +73,45 @@ export default function VehicleManagement() {
                     <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tight">My Vehicles</h1>
                     <p className="text-gray-500 mt-1 font-medium">Manage your fleet and vehicle details.</p>
                 </div>
-                <Link
-                    href="/transport-dashboard/vehicles/add"
-                    className="flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-tight hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 active:scale-95 text-sm"
-                >
-                    <Plus size={20} />
-                    <span>Add New Vehicle</span>
-                </Link>
+                {isProfileComplete ? (
+                    <Link
+                        href="/transport-dashboard/vehicles/add"
+                        className="flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-tight hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 active:scale-95 text-sm"
+                    >
+                        <Plus size={20} />
+                        <span>Add New Vehicle</span>
+                    </Link>
+                ) : (
+                    <div className="flex items-center gap-2 px-6 py-4 bg-gray-100 text-gray-400 rounded-2xl font-black uppercase tracking-tight cursor-not-allowed text-sm border border-gray-200" title="Complete your profile to add vehicles">
+                        <Plus size={20} />
+                        <span>Add New Vehicle</span>
+                    </div>
+                )}
             </header>
+
+            {!isProfileComplete && (
+                <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-orange-50 border border-orange-100 rounded-[2rem] p-6 flex flex-col md:flex-row items-center justify-between gap-6"
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-white rounded-xl text-orange-600 shadow-sm">
+                            <Plus size={24} className="rotate-45" />
+                        </div>
+                        <div>
+                            <p className="font-black text-gray-900 uppercase tracking-tight text-sm">Action Required: Profile Incomplete</p>
+                            <p className="text-gray-500 text-xs font-medium">You must set your Business Name and Location before you can add vehicles.</p>
+                        </div>
+                    </div>
+                    <Link 
+                        href="/transport-dashboard/settings"
+                        className="px-6 py-3 bg-orange-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-700 transition-all shadow-lg shadow-orange-600/20"
+                    >
+                        Complete Profile
+                    </Link>
+                </motion.div>
+            )}
 
             {vehicles.length === 0 ? (
                 <div className="bg-white border-2 border-dashed border-gray-100 rounded-[2.5rem] py-20 flex flex-col items-center justify-center text-center px-6">

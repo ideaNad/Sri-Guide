@@ -67,6 +67,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.UseMiddleware<SriGuide.API.Middleware.ExceptionMiddleware>();
 app.UseForwardedHeaders();
 
 // Configure the HTTP request pipeline.

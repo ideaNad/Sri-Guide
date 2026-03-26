@@ -7,7 +7,7 @@ import {
     Car, Loader2, ArrowLeft, Check,
     Users, Luggage, Snowflake, Calendar,
     Info, Star, Image as ImageIcon, Camera,
-    Plus, Shield, Zap
+    Plus, Shield, Zap, AlertCircle, Settings
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import apiClient from '@/services/api-client';
@@ -83,8 +83,18 @@ export default function AddVehiclePage() {
         }
     };
 
+    const profile = user?.transportProfile;
+    const isProfileComplete = !!profile?.businessName && !!profile?.district && !!profile?.province;
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        
+        if (!isProfileComplete) {
+            toast.error('Please complete your transport profile first');
+            router.push('/transport-dashboard/settings');
+            return;
+        }
+
         setIsSubmitting(true);
         const formData = new FormData(e.currentTarget);
         
@@ -120,6 +130,65 @@ export default function AddVehiclePage() {
             setIsSubmitting(false);
         }
     };
+
+    if (!isProfileComplete) {
+        return (
+            <motion.div 
+                initial="hidden"
+                animate="visible"
+                variants={containerVariants}
+                className="max-w-4xl mx-auto px-4 py-12"
+            >
+                <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl p-8 md:p-12 text-center space-y-8 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 blur-3xl rounded-full -mr-32 -mt-32" />
+                    
+                    <div className="relative z-10 space-y-6">
+                        <div className="w-24 h-24 bg-blue-50 rounded-3xl flex items-center justify-center text-blue-600 mx-auto mb-8 shadow-inner border border-blue-100/50">
+                            <AlertCircle size={48} />
+                        </div>
+                        
+                        <div className="space-y-4">
+                            <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tight italic">Profile Incomplete</h1>
+                            <p className="text-gray-500 font-medium max-w-md mx-auto leading-relaxed">
+                                To register vehicles, you must first complete your business profile with a <span className="text-blue-600 font-bold uppercase tracking-tight italic">Business Name</span> and <span className="text-blue-600 font-bold uppercase tracking-tight italic">Location Details</span>.
+                            </p>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+                            <Link 
+                                href="/transport-dashboard/settings"
+                                className="w-full sm:w-auto px-10 py-5 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-2xl shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-95 flex items-center justify-center gap-3"
+                            >
+                                <Settings size={18} />
+                                Complete Profile Now
+                            </Link>
+                            <Link 
+                                href="/transport-dashboard"
+                                className="w-full sm:w-auto px-10 py-5 bg-gray-50 text-gray-400 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] hover:bg-gray-100 hover:text-gray-900 transition-all active:scale-95"
+                            >
+                                Back to Dashboard
+                            </Link>
+                        </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-8 border-t border-gray-50">
+                        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-50/50 border border-gray-100/50">
+                            <div className="w-2 h-2 rounded-full bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.5)]" />
+                            <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Business Name</span>
+                        </div>
+                        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-50/50 border border-gray-100/50">
+                            <div className="w-2 h-2 rounded-full bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.5)]" />
+                            <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">District</span>
+                        </div>
+                        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-50/50 border border-gray-100/50">
+                            <div className="w-2 h-2 rounded-full bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.5)]" />
+                            <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Province</span>
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
+        );
+    }
 
     return (
         <motion.div 
