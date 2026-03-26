@@ -31,15 +31,20 @@ const Navbar = () => {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    const navLinks = [
+    const mainLinks = [
         { name: "Home", href: "/" },
         { name: "Tours", href: "/tours" },
         { name: "Events", href: "/events" },
+    ];
+
+    if (!user) {
+        mainLinks.push({ name: "Contact", href: "/contact" });
+    }
+
+    const exploreLinks = [
         { name: "Agencies", href: "/agencies" },
         { name: "Guides", href: "/guides" },
         { name: "Transport", href: "/transport" },
-        // { name: "Privacy", href: "/privacy-policy" },
-        { name: "Contact", href: "/contact" },
     ];
 
     // Navbar background and text color based on scroll
@@ -52,23 +57,95 @@ const Navbar = () => {
     const textColor = isScrolled || !isHomePage ? "text-black" : "text-white";
     const logoColor = isScrolled || !isHomePage ? "text-primary" : "text-white";
 
-    const NavItems = ({ mobile = false, textColor, navLinks, setIsMobileMenuOpen }: { mobile?: boolean, textColor: string, navLinks: any[], setIsMobileMenuOpen: (open: boolean) => void }) => (
-        <>
-            {navLinks.map((link) => (
-                <Link
-                    key={link.name}
-                    href={link.href}
-                    className={mobile
-                        ? "text-xl font-bold text-black hover:text-primary transition-colors uppercase tracking-tight"
-                        : `px-6 py-2.5 text-[13px] font-bold ${textColor} hover:bg-black/5 rounded-full transition-all flex items-center`
-                    }
-                    onClick={() => mobile && setIsMobileMenuOpen(false)}
-                >
-                    {link.name}
-                </Link>
-            ))}
-        </>
-    );
+    const NavItems = ({ mobile = false, textColor, setIsMobileMenuOpen }: { mobile?: boolean, textColor: string, setIsMobileMenuOpen: (open: boolean) => void }) => {
+        const [isExploreOpen, setIsExploreOpen] = useState(false);
+
+        return (
+            <>
+                {mainLinks.map((link) => (
+                    <Link
+                        key={link.name}
+                        href={link.href}
+                        className={mobile
+                            ? "text-xl font-bold text-black hover:text-primary transition-colors uppercase tracking-tight w-full text-center py-2"
+                            : `px-6 py-2.5 text-[13px] font-bold ${textColor} hover:bg-black/5 rounded-full transition-all flex items-center`
+                        }
+                        onClick={() => mobile && setIsMobileMenuOpen(false)}
+                    >
+                        {link.name}
+                    </Link>
+                ))}
+
+                {/* Explore More Dropdown */}
+                {mobile ? (
+                    <div className="w-full flex flex-col items-center">
+                        <button
+                            onClick={() => setIsExploreOpen(!isExploreOpen)}
+                            className="w-full flex items-center justify-center gap-2 text-xl font-bold text-black hover:text-primary transition-colors uppercase tracking-tight py-2"
+                        >
+                            <span>Explore More</span>
+                            <ChevronDown size={20} className={`transition-transform duration-300 ${isExploreOpen ? "rotate-180" : ""}`} />
+                        </button>
+                        <AnimatePresence>
+                            {isExploreOpen && (
+                                <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: "auto", opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    className="overflow-hidden flex flex-col items-center space-y-4 pt-4 pb-2 w-full"
+                                >
+                                    {exploreLinks.map((link) => (
+                                        <Link
+                                            key={link.name}
+                                            href={link.href}
+                                            className="text-lg font-bold text-gray-500 hover:text-primary transition-colors uppercase tracking-tight"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            {link.name}
+                                        </Link>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                ) : (
+                    <div
+                        className="relative group h-full flex items-center"
+                        onMouseEnter={() => setIsExploreOpen(true)}
+                        onMouseLeave={() => setIsExploreOpen(false)}
+                    >
+                        <button
+                            className={`px-6 py-2.5 text-[13px] font-bold ${textColor} hover:bg-black/5 rounded-full transition-all flex items-center gap-1.5`}
+                        >
+                            Explore More
+                            <ChevronDown size={14} className={`transition-transform duration-300 ${isExploreOpen ? "rotate-180" : ""}`} />
+                        </button>
+
+                        <AnimatePresence>
+                            {isExploreOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden"
+                                >
+                                    {exploreLinks.map((link) => (
+                                        <Link
+                                            key={link.name}
+                                            href={link.href}
+                                            className="block px-6 py-3 text-[13px] font-bold text-gray-700 hover:bg-primary/5 hover:text-primary transition-all"
+                                        >
+                                            {link.name}
+                                        </Link>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                )}
+            </>
+        );
+    };
 
     const getDashboardUrl = () => {
         return getDashboardHref(user?.role);
@@ -94,19 +171,11 @@ const Navbar = () => {
                     {/* Floating rounded menu only on home page & top */}
                     {!isScrolled && isHomePage ? (
                         <div className="hidden lg:flex items-center space-x-1 p-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 transition-all duration-500">
-                            {navLinks.map((link) => (
-                                <Link
-                                    key={link.name}
-                                    href={link.href}
-                                    className="px-6 py-2.5 text-[13px] font-bold text-white hover:bg-black/5 rounded-full transition-all flex items-center"
-                                >
-                                    {link.name}
-                                </Link>
-                            ))}
+                            <NavItems textColor="text-white" setIsMobileMenuOpen={setIsMobileMenuOpen} />
                         </div>
                     ) : (
                         <div className="hidden lg:flex items-center space-x-1">
-                            <NavItems textColor={textColor} navLinks={navLinks} setIsMobileMenuOpen={setIsMobileMenuOpen} />
+                            <NavItems textColor={textColor} setIsMobileMenuOpen={setIsMobileMenuOpen} />
                         </div>
                     )}
 
@@ -214,8 +283,8 @@ const Navbar = () => {
                                 </div>
                             </div>
 
-                            <div className="flex flex-col items-center space-y-6 py-4">
-                                <NavItems mobile textColor={textColor} navLinks={navLinks} setIsMobileMenuOpen={setIsMobileMenuOpen} />
+                            <div className="flex flex-col items-center space-y-6 py-4 w-full">
+                                <NavItems mobile textColor={textColor} setIsMobileMenuOpen={setIsMobileMenuOpen} />
                             </div>
 
                             <div className="w-full max-w-xs space-y-4">
