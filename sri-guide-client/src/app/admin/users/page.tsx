@@ -212,7 +212,7 @@ const UserDirectoryPage = () => {
                                             e.stopPropagation();
                                             handleDeleteUser(u);
                                         }}
-                                        className="p-2 text-[#A5A3AE] hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                                        className="p-2 text-[#A5A3AE] hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
                                         title="Delete User"
                                     >
                                         <Trash2 size={16} />

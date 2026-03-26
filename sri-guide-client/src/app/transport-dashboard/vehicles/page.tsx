@@ -133,7 +133,7 @@ export default function VehicleManagement() {
                                             </span>
                                         </p>
                                     </div>
-                                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
+                                    <div className="flex gap-2 ml-4">
                                         <Link 
                                             href={`/transport-dashboard/vehicles/edit/${vehicle.id}`}
                                             className="p-2.5 bg-gray-50 text-gray-600 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-colors"

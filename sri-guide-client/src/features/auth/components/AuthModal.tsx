@@ -42,11 +42,13 @@ const AuthModal: React.FC<AuthModalProps> = ({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [mounted, setMounted] = useState(false);
+    const [registrationStep, setRegistrationStep] = useState(0); // 0: Role, 1: Details
 
     React.useEffect(() => {
         setMounted(true);
         if (isOpen) {
             setIsLogin(defaultIsLogin);
+            setRegistrationStep(0); // Reset step when modal opens
         }
     }, [isOpen, defaultIsLogin]);
 
@@ -173,7 +175,10 @@ const AuthModal: React.FC<AuthModalProps> = ({
                                         {isLogin ? "Don't have an account?" : "Already have an account?"}
                                     </span>
                                     <button
-                                        onClick={() => setIsLogin(!isLogin)}
+                                        onClick={() => {
+                                            setIsLogin(!isLogin);
+                                            setRegistrationStep(0);
+                                        }}
                                         className="text-primary font-black uppercase tracking-widest hover:underline"
                                     >
                                         {isLogin ? "Create One" : "Login Now"}
@@ -182,136 +187,236 @@ const AuthModal: React.FC<AuthModalProps> = ({
                             </div>
 
                             <form onSubmit={handleSubmit} className="space-y-6">
-                                {!isLogin && (
-                                    <div className="space-y-6">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 flex items-center gap-2">
-                                                <User size={10} /> Full Name
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="fullName"
-                                                placeholder="John Doe"
-                                                required={!isLogin}
-                                                value={formData.fullName}
-                                                onChange={handleInputChange}
-                                                className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 flex items-center gap-2">
-                                                <ShieldCheck size={10} /> Choose Your Role
-                                            </label>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                {roles.map((r) => (
-                                                    <button
-                                                        key={r.id}
-                                                        type="button"
-                                                        onClick={() => setRole(r.id)}
-                                                        className={`p-4 rounded-2xl border-2 text-left transition-all relative group ${role === r.id
-                                                            ? "bg-primary/5 border-primary shadow-lg shadow-primary/5"
-                                                            : "bg-white border-gray-100 hover:border-gray-200"
-                                                            }`}
-                                                    >
-                                                        <div className="flex items-center gap-3 mb-1">
-                                                            <div className={`p-2 rounded-xl transition-colors ${role === r.id ? "bg-primary text-white" : "bg-gray-100 text-gray-500 group-hover:bg-gray-200"}`}>
-                                                                {r.icon}
-                                                            </div>
-                                                            <span className={`text-sm font-black uppercase tracking-widest ${role === r.id ? "text-primary" : "text-gray-900"}`}>
-                                                                {r.label}
-                                                            </span>
-                                                        </div>
-                                                        <p className={`text-[10px] font-medium leading-tight ${role === r.id ? "text-primary/70" : "text-gray-400"}`}>
-                                                            {r.description}
-                                                        </p>
-
-                                                        {role === r.id && (
-                                                            <motion.div
-                                                                layoutId="activeRole"
-                                                                className="absolute top-3 right-3 text-primary"
-                                                            >
-                                                                <CheckCircle2 size={16} fill="currentColor" className="text-white" />
-                                                            </motion.div>
-                                                        )}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 flex items-center gap-2">
-                                        <Mail size={10} /> Email Address
-                                    </label>
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        placeholder="hello@example.com"
-                                        required
-                                        value={formData.email}
-                                        onChange={handleInputChange}
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 flex items-center gap-2">
-                                        <Lock size={10} /> {isLogin ? "Password" : "Create Password"}
-                                    </label>
-                                    <input
-                                        type="password"
-                                        name="password"
-                                        placeholder={isLogin ? "••••••••" : "Min. 8 characters"}
-                                        required
-                                        value={formData.password}
-                                        onChange={handleInputChange}
-                                        className={`w-full bg-gray-50 border ${!isLogin && formData.password && formData.password.length < 8 ? 'border-rose-300 ring-rose-300' : 'border-gray-100'} rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700`}
-                                    />
-                                    {!isLogin && (
-                                        <p className={`text-[10px] ml-4 font-medium ${formData.password && formData.password.length < 8 ? 'text-rose-500' : 'text-gray-400'}`}>
-                                            Password must be at least 8 characters long.
-                                        </p>
-                                    )}
-                                </div>
-
-                                {!isLogin && (
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 flex items-center gap-2">
-                                            <Lock size={10} /> Confirm Password
-                                        </label>
-                                        <input
-                                            type="password"
-                                            name="confirmPassword"
-                                            placeholder="Retype password"
-                                            required={!isLogin}
-                                            value={formData.confirmPassword}
-                                            onChange={handleInputChange}
-                                            className={`w-full bg-gray-50 border ${formData.confirmPassword && formData.confirmPassword !== formData.password ? 'border-rose-300 ring-rose-300' : 'border-gray-100'} rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700`}
-                                        />
-                                        {formData.confirmPassword && formData.confirmPassword !== formData.password && (
-                                            <p className="text-[10px] ml-4 font-medium text-rose-500">
-                                                Passwords do not match.
-                                            </p>
-                                        )}
-                                    </div>
-                                )}
-
-                                {isLogin && (
-                                    <div className="flex justify-end pr-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                onClose();
-                                                window.location.href = "/forgot-password";
-                                            }}
-                                            className="text-[11px] font-bold text-gray-400 hover:text-primary uppercase tracking-widest transition-colors"
+                                <AnimatePresence mode="wait">
+                                    {isLogin ? (
+                                        <motion.div
+                                            key="login-form"
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -10 }}
+                                            className="space-y-6"
                                         >
-                                            Forgot Password?
-                                        </button>
-                                    </div>
-                                )}
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 flex items-center gap-2">
+                                                    <Mail size={10} /> Email Address
+                                                </label>
+                                                <input
+                                                    type="email"
+                                                    name="email"
+                                                    placeholder="hello@example.com"
+                                                    required
+                                                    value={formData.email}
+                                                    onChange={handleInputChange}
+                                                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 flex items-center gap-2">
+                                                    <Lock size={10} /> Password
+                                                </label>
+                                                <input
+                                                    type="password"
+                                                    name="password"
+                                                    placeholder="••••••••"
+                                                    required
+                                                    value={formData.password}
+                                                    onChange={handleInputChange}
+                                                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
+                                                />
+                                            </div>
+
+                                            <div className="flex justify-end pr-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        onClose();
+                                                        window.location.href = "/forgot-password";
+                                                    }}
+                                                    className="text-[11px] font-bold text-gray-400 hover:text-primary uppercase tracking-widest transition-colors"
+                                                >
+                                                    Forgot Password?
+                                                </button>
+                                            </div>
+
+                                            <button
+                                                type="submit"
+                                                disabled={loading}
+                                                className="w-full bg-gray-900 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-primary transition-all flex items-center justify-center gap-3 mt-8 active:scale-[0.98] disabled:opacity-50 group uppercase text-xs tracking-[0.2em]"
+                                            >
+                                                {loading ? (
+                                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                ) : (
+                                                    <>
+                                                        <span>Sign In Now</span>
+                                                        <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                                                    </>
+                                                )}
+                                            </button>
+                                        </motion.div>
+                                    ) : registrationStep === 0 ? (
+                                        <motion.div
+                                            key="register-step-0"
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}
+                                            className="space-y-6"
+                                        >
+                                            <div className="space-y-4">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 flex items-center gap-2">
+                                                    <ShieldCheck size={10} /> Choose Your Role
+                                                </label>
+                                                <div className="grid grid-cols-1 gap-4">
+                                                    {roles.map((r) => (
+                                                        <button
+                                                            key={r.id}
+                                                            type="button"
+                                                            onClick={() => setRole(r.id)}
+                                                            className={`p-6 rounded-[2rem] border-2 text-left transition-all relative group ${role === r.id
+                                                                ? "bg-primary/5 border-primary shadow-xl shadow-primary/10"
+                                                                : "bg-white border-gray-100 hover:border-gray-200"
+                                                                }`}
+                                                        >
+                                                            <div className="flex items-center gap-5">
+                                                                <div className={`p-4 rounded-2xl transition-all duration-500 ${role === r.id ? "bg-primary text-white scale-110 shadow-lg shadow-primary/20" : "bg-gray-100 text-gray-500 group-hover:bg-gray-200"}`}>
+                                                                    {React.cloneElement(r.icon as React.ReactElement<any>, { size: 28 })}
+                                                                </div>
+                                                                <div className="flex-1">
+                                                                    <span className={`text-base font-black uppercase tracking-widest block mb-1 ${role === r.id ? "text-primary" : "text-gray-900"}`}>
+                                                                        {r.label}
+                                                                    </span>
+                                                                    <p className={`text-xs font-medium leading-tight ${role === r.id ? "text-primary/70" : "text-gray-400"}`}>
+                                                                        {r.description}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+
+                                                            {role === r.id && (
+                                                                <motion.div
+                                                                    layoutId="activeRole"
+                                                                    className="absolute top-6 right-6 text-primary"
+                                                                >
+                                                                    <CheckCircle2 size={24} fill="currentColor" className="text-white" />
+                                                                </motion.div>
+                                                            )}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => setRegistrationStep(1)}
+                                                className="w-full bg-gray-900 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-primary transition-all flex items-center justify-center gap-3 mt-8 active:scale-[0.98] group uppercase text-xs tracking-[0.2em]"
+                                            >
+                                                <span>Continue</span>
+                                                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                                            </button>
+                                        </motion.div>
+                                    ) : (
+                                        <motion.div
+                                            key="register-step-1"
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}
+                                            className="space-y-6"
+                                        >
+                                            <div className="mb-4 p-4 bg-primary/5 rounded-2xl border border-primary/10 flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-primary text-white rounded-lg">
+                                                        {roles.find(r => r.id === role)?.icon}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-black text-primary uppercase tracking-widest leading-none mb-1">Role Selected</p>
+                                                        <p className="text-sm font-black text-gray-900 uppercase tracking-tight leading-none">{role}</p>
+                                                    </div>
+                                                </div>
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => setRegistrationStep(0)}
+                                                    className="text-[10px] font-black text-gray-400 hover:text-primary uppercase tracking-widest border-b border-transparent hover:border-primary transition-all"
+                                                >
+                                                    Change
+                                                </button>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 flex items-center gap-2">
+                                                    <User size={10} /> Full Name
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="fullName"
+                                                    placeholder="John Doe"
+                                                    required={!isLogin}
+                                                    value={formData.fullName}
+                                                    onChange={handleInputChange}
+                                                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 flex items-center gap-2">
+                                                    <Mail size={10} /> Email Address
+                                                </label>
+                                                <input
+                                                    type="email"
+                                                    name="email"
+                                                    placeholder="hello@example.com"
+                                                    required
+                                                    value={formData.email}
+                                                    onChange={handleInputChange}
+                                                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 flex items-center gap-2">
+                                                    <Lock size={10} /> Password
+                                                </label>
+                                                <input
+                                                    type="password"
+                                                    name="password"
+                                                    placeholder="Min. 8 characters"
+                                                    required={!isLogin}
+                                                    value={formData.password}
+                                                    onChange={handleInputChange}
+                                                    className={`w-full bg-gray-50 border ${!isLogin && formData.password && formData.password.length < 8 ? 'border-rose-300 ring-rose-300' : 'border-gray-100'} rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700`}
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 flex items-center gap-2">
+                                                    <Lock size={10} /> Confirm Password
+                                                </label>
+                                                <input
+                                                    type="password"
+                                                    name="confirmPassword"
+                                                    placeholder="Retype password"
+                                                    required={!isLogin}
+                                                    value={formData.confirmPassword}
+                                                    onChange={handleInputChange}
+                                                    className={`w-full bg-gray-50 border ${formData.confirmPassword && formData.confirmPassword !== formData.password ? 'border-rose-300 ring-rose-300' : 'border-gray-100'} rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-gray-700`}
+                                                />
+                                            </div>
+
+                                            <button
+                                                type="submit"
+                                                disabled={loading}
+                                                className="w-full bg-gray-900 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-primary transition-all flex items-center justify-center gap-3 mt-4 active:scale-[0.98] disabled:opacity-50 group uppercase text-xs tracking-[0.2em]"
+                                            >
+                                                {loading ? (
+                                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                ) : (
+                                                    <>
+                                                        <span>Create Account</span>
+                                                        <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                                                    </>
+                                                )}
+                                            </button>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
 
                                 {error && (
                                     <motion.div
@@ -322,21 +427,6 @@ const AuthModal: React.FC<AuthModalProps> = ({
                                         {error}
                                     </motion.div>
                                 )}
-
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="w-full bg-gray-900 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-primary transition-all flex items-center justify-center gap-3 mt-8 active:scale-[0.98] disabled:opacity-50 group uppercase text-xs tracking-[0.2em]"
-                                >
-                                    {loading ? (
-                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    ) : (
-                                        <>
-                                            <span>{isLogin ? "Sign In Now" : "Create Account"}</span>
-                                            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                                        </>
-                                    )}
-                                </button>
                             </form>
 
                             <p className="text-gray-400 text-[10px] text-center mt-10 font-medium leading-relaxed">

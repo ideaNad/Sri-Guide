@@ -34,6 +34,7 @@ const Navbar = () => {
     const mainLinks = [
         { name: "Home", href: "/" },
         { name: "Tours", href: "/tours" },
+        { name: "Guides", href: "/guides" },
         { name: "Events", href: "/events" },
     ];
 
@@ -43,7 +44,6 @@ const Navbar = () => {
 
     const exploreLinks = [
         { name: "Agencies", href: "/agencies" },
-        { name: "Guides", href: "/guides" },
         { name: "Transport", href: "/transport" },
     ];
 

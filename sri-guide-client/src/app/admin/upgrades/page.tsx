@@ -141,7 +141,7 @@ const AdminUpgradesPage = () => {
                                 <div className="flex items-center gap-3">
                                     <button
                                         onClick={() => router.push(`/profile/${upgrade.userId}`)}
-                                        className="p-3 rounded-2xl border border-gray-50 text-gray-400 hover:text-primary hover:bg-primary/5 hover:border-primary/10 transition-all opacity-0 group-hover:opacity-100"
+                                        className="p-3 rounded-2xl border border-gray-50 text-gray-400 hover:text-primary hover:bg-primary/5 hover:border-primary/10 transition-all"
                                         title="View Profile"
                                     >
                                         <Eye size={22} />
@@ -149,7 +149,7 @@ const AdminUpgradesPage = () => {
                                     <button
                                         disabled={!!actionLoading}
                                         onClick={() => handleAction(upgrade.id, "reject")}
-                                        className="p-3 rounded-2xl border border-gray-50 text-gray-400 hover:text-rose-500 hover:bg-rose-50 hover:border-rose-100 transition-all opacity-0 group-hover:opacity-100"
+                                        className="p-3 rounded-2xl border border-gray-50 text-gray-400 hover:text-rose-500 hover:bg-rose-50 hover:border-rose-100 transition-all"
                                         title="Reject Upgrade"
                                     >
                                         <XCircle size={22} />
@@ -157,7 +157,7 @@ const AdminUpgradesPage = () => {
                                     <button 
                                         disabled={!!actionLoading}
                                         onClick={() => handleDeleteAgency(upgrade.id, upgrade.companyName)}
-                                        className="p-3 rounded-2xl border border-gray-50 text-gray-400 hover:text-rose-500 hover:bg-rose-50 hover:border-rose-100 transition-all opacity-0 group-hover:opacity-100"
+                                        className="p-3 rounded-2xl border border-gray-50 text-gray-400 hover:text-rose-500 hover:bg-rose-50 hover:border-rose-100 transition-all"
                                         title="Delete Agency Profile"
                                     >
                                         <Trash2 size={22} />

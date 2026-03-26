@@ -20,6 +20,23 @@ import { motion, AnimatePresence } from 'framer-motion';
 import apiClient from '@/services/api-client';
 import { useToast } from '@/hooks/useToast';
 
+const SRI_LANKA_PROVINCES = [
+    "Central", "Eastern", "North Central", "Northern", 
+    "North Western", "Sabaragamuwa", "Southern", "Uva", "Western"
+];
+
+const PROVINCE_DISTRICTS: Record<string, string[]> = {
+    "Central": ["Kandy", "Matale", "Nuwara Eliya"],
+    "Eastern": ["Ampara", "Batticaloa", "Trincomalee"],
+    "North Central": ["Anuradhapura", "Polonnaruwa"],
+    "Northern": ["Jaffna", "Kilinochchi", "Mannar", "Mullaitivu", "Vavuniya"],
+    "North Western": ["Kurunegala", "Puttalam"],
+    "Sabaragamuwa": ["Kegalle", "Ratnapura"],
+    "Southern": ["Galle", "Hambantota", "Matara"],
+    "Uva": ["Badulla", "Moneragala"],
+    "Western": ["Colombo", "Gampaha", "Kalutara"]
+};
+
 export default function TransportProfileSettings() {
     const { user, refreshUser } = useAuth();
     const { toast } = useToast();
@@ -28,6 +45,8 @@ export default function TransportProfileSettings() {
     const [isUploading, setIsUploading] = useState(false);
     const [isLoading, setIsLoading] = useState(!profile);
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+    const [selectedProvince, setSelectedProvince] = useState(profile?.province?.replace(" Province", "") || '');
+    const [selectedDistrict, setSelectedDistrict] = useState(profile?.district || '');
 
     React.useEffect(() => {
         const loadProfile = async () => {
@@ -37,6 +56,13 @@ export default function TransportProfileSettings() {
         };
         loadProfile();
     }, []);
+
+    React.useEffect(() => {
+        if (profile) {
+            setSelectedProvince(profile.province?.replace(" Province", "") || '');
+            setSelectedDistrict(profile.district || '');
+        }
+    }, [profile]);
 
     const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -249,29 +275,38 @@ export default function TransportProfileSettings() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-1">District</label>
-                                <input 
-                                    type="text" 
-                                    name="district" 
+                                <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-1">Province</label>
+                                <select 
+                                    name="province" 
                                     required 
-                                    minLength={3}
-                                    defaultValue={profile?.district || ''} 
-                                    placeholder="e.g. Kandy"
+                                    value={selectedProvince}
+                                    onChange={(e) => {
+                                        setSelectedProvince(e.target.value);
+                                        setSelectedDistrict(''); // Reset district when province changes
+                                    }}
                                     className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
-                                />
+                                >
+                                    <option value="" disabled>Select Province</option>
+                                    {SRI_LANKA_PROVINCES.map(province => (
+                                        <option key={province} value={province}>{province}</option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-1">Province</label>
-                                <input 
-                                    type="text" 
-                                    name="province" 
+                                <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-1">District</label>
+                                <select 
+                                    name="district" 
                                     required 
-                                    minLength={3}
-                                    defaultValue={profile?.province || ''} 
-                                    placeholder="e.g. Central Province"
+                                    value={selectedDistrict}
+                                    onChange={(e) => setSelectedDistrict(e.target.value)}
                                     className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
-                                />
+                                >
+                                    <option value="" disabled>Select District</option>
+                                    {(selectedProvince && PROVINCE_DISTRICTS[selectedProvince] ? PROVINCE_DISTRICTS[selectedProvince] : []).map(district => (
+                                        <option key={district} value={district}>{district}</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
                     </div>

@@ -20,27 +20,21 @@ export default function AddVehiclePage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [vehicleImageUrl, setVehicleImageUrl] = useState<string | null>(null);
+    const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
 
     const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+
+        // Set local preview immediately
+        const localUrl = URL.createObjectURL(file);
+        setLocalPreviewUrl(localUrl);
 
         const formData = new FormData();
         formData.append("file", file);
 
         setIsUploading(true);
         try {
-            // Since we don't have a vehicle ID yet, we'll need a generic upload or change the flow.
-            // Actually, I'll change the CreateVehicle endpoint to accept the image URL.
-            // But I need to upload the file first.
-            // Let's use the profile upload endpoint for now or create a temp one?
-            // Actually, I'll use the profile photo upload endpoint and just store the URL, 
-            // the backend just saves it to /uploads/profiles, which is fine for now but not ideal.
-            // Better: I'll use the new endpoint AFTER vehicle creation? 
-            // No, user wants it in the form.
-            
-            // I'll add a generic upload endpoint or just use profile one for now.
-            // Wait, I'll add a generic upload endpoint to TransportController.
             const response = await apiClient.post<{ url: string }>("/profile/upload-photo", formData, {
                 headers: { "Content-Type": "multipart/form-data" }
             });
@@ -48,6 +42,7 @@ export default function AddVehiclePage() {
             toast.success("Vehicle photo uploaded!");
         } catch (error) {
             toast.error("Failed to upload vehicle photo.");
+            setLocalPreviewUrl(null); // Clear preview on failure
         } finally {
             setIsUploading(false);
         }
@@ -76,8 +71,16 @@ export default function AddVehiclePage() {
             toast.success('Vehicle added successfully');
             await refreshUser();
             router.push('/transport-dashboard/vehicles');
-        } catch (error) {
-            toast.error('Failed to add vehicle');
+        } catch (error: any) {
+            const responseData = error.response?.data;
+            const errorMessage = typeof responseData === 'string' ? responseData : (responseData?.message || responseData?.error || error.message || '');
+            
+            if (errorMessage.includes('Transport profile not found')) {
+                toast.error('Please complete your transport profile first');
+                router.push('/transport-dashboard/settings');
+            } else {
+                toast.error('Failed to add vehicle');
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -111,10 +114,13 @@ export default function AddVehiclePage() {
                             <div className="relative">
                                 <div className="w-64 h-36 rounded-2xl overflow-hidden bg-white border-4 border-white shadow-xl flex items-center justify-center">
                                     {isUploading ? (
-                                        <Loader2 size={32} className="animate-spin text-blue-600" />
-                                    ) : vehicleImageUrl ? (
+                                        <div className="flex flex-col items-center gap-2">
+                                            <Loader2 size={32} className="animate-spin text-blue-600" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-blue-600">Uploading...</span>
+                                        </div>
+                                    ) : (localPreviewUrl || vehicleImageUrl) ? (
                                         <img 
-                                            src={vehicleImageUrl.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${vehicleImageUrl}` : vehicleImageUrl} 
+                                            src={(localPreviewUrl || (vehicleImageUrl?.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${vehicleImageUrl}` : vehicleImageUrl)) as string} 
                                             alt="Vehicle preview"
                                             className="w-full h-full object-cover"
                                         />
