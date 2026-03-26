@@ -323,7 +323,7 @@ export default function EventDetailPage() {
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Participation Fee</p>
                   <p className="text-4xl font-black text-slate-900">
-                    {event.price === 0 ? 'FREE' : `Rs. ${event.price.toLocaleString()}`}
+                    {event.price === 0 ? 'FREE' : `USD- ${event.price.toLocaleString()}`}
                   </p>
                 </div>
                 <div className="w-16 h-16 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center">
@@ -403,6 +403,7 @@ export default function EventDetailPage() {
           login(userData);
           setIsAuthModalOpen(false);
         }}
+        redirectOnSuccess={false}
       />
 
       <ReviewModal

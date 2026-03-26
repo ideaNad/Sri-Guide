@@ -891,6 +891,57 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                     b.ToTable("TourLikes");
                 });
 
+            modelBuilder.Entity("SriGuide.Domain.Entities.TransportProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BusinessName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("District")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("boolean");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProfileImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Province")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("TransportProfiles");
+                });
+
             modelBuilder.Entity("SriGuide.Domain.Entities.Trip", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1073,6 +1124,122 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("SriGuide.Domain.Entities.Vehicle", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Brand")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("DriverIncluded")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("HasAc")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("LuggageCapacity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("PassengerCapacity")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TransportProfileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("VehicleImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("VehicleType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TransportProfileId");
+
+                    b.ToTable("Vehicles");
+                });
+
+            modelBuilder.Entity("SriGuide.Domain.Entities.VehicleLike", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("VehicleId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VehicleId");
+
+                    b.HasIndex("UserId", "VehicleId")
+                        .IsUnique();
+
+                    b.ToTable("VehicleLikes");
+                });
+
+            modelBuilder.Entity("SriGuide.Domain.Entities.VehicleReview", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("VehicleId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("VehicleId");
+
+                    b.ToTable("VehicleReviews");
                 });
 
             modelBuilder.Entity("SriGuide.Domain.Entities.AgencyProfile", b =>
@@ -1302,6 +1469,17 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SriGuide.Domain.Entities.TransportProfile", b =>
+                {
+                    b.HasOne("SriGuide.Domain.Entities.User", "User")
+                        .WithOne("TransportProfile")
+                        .HasForeignKey("SriGuide.Domain.Entities.TransportProfile", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("SriGuide.Domain.Entities.Trip", b =>
                 {
                     b.HasOne("SriGuide.Domain.Entities.AgencyProfile", "Agency")
@@ -1352,6 +1530,55 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SriGuide.Domain.Entities.Vehicle", b =>
+                {
+                    b.HasOne("SriGuide.Domain.Entities.TransportProfile", "TransportProfile")
+                        .WithMany("Vehicles")
+                        .HasForeignKey("TransportProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TransportProfile");
+                });
+
+            modelBuilder.Entity("SriGuide.Domain.Entities.VehicleLike", b =>
+                {
+                    b.HasOne("SriGuide.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SriGuide.Domain.Entities.Vehicle", "Vehicle")
+                        .WithMany("Likes")
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+
+                    b.Navigation("Vehicle");
+                });
+
+            modelBuilder.Entity("SriGuide.Domain.Entities.VehicleReview", b =>
+                {
+                    b.HasOne("SriGuide.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SriGuide.Domain.Entities.Vehicle", "Vehicle")
+                        .WithMany("Reviews")
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+
+                    b.Navigation("Vehicle");
+                });
+
             modelBuilder.Entity("SriGuide.Domain.Entities.AgencyProfile", b =>
                 {
                     b.Navigation("Guides");
@@ -1392,6 +1619,11 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                     b.Navigation("Likes");
                 });
 
+            modelBuilder.Entity("SriGuide.Domain.Entities.TransportProfile", b =>
+                {
+                    b.Navigation("Vehicles");
+                });
+
             modelBuilder.Entity("SriGuide.Domain.Entities.Trip", b =>
                 {
                     b.Navigation("Images");
@@ -1406,6 +1638,15 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                     b.Navigation("EventOrganizerProfile");
 
                     b.Navigation("GuideProfile");
+
+                    b.Navigation("TransportProfile");
+                });
+
+            modelBuilder.Entity("SriGuide.Domain.Entities.Vehicle", b =>
+                {
+                    b.Navigation("Likes");
+
+                    b.Navigation("Reviews");
                 });
 #pragma warning restore 612, 618
         }

@@ -23,6 +23,8 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
                 .ThenInclude(g => g!.Agency)
             .Include(u => u.AgencyProfile)
             .Include(u => u.EventOrganizerProfile)
+            .Include(u => u.TransportProfile)
+                .ThenInclude(t => t!.Vehicles)
             .FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken);
             
         if (user == null) throw new Exception("User not found");
@@ -100,6 +102,31 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
                 user.EventOrganizerProfile.Specialties,
                 user.EventOrganizerProfile.OperatingAreas,
                 user.EventOrganizerProfile.IsVerified
+            ) : null,
+            user.TransportProfile != null ? new TransportProfileDto(
+                user.TransportProfile.Id,
+                user.TransportProfile.BusinessName,
+                user.TransportProfile.Description,
+                user.TransportProfile.Phone,
+                user.TransportProfile.ProfileImageUrl,
+                user.TransportProfile.District,
+                user.TransportProfile.Province,
+                user.TransportProfile.Latitude,
+                user.TransportProfile.Longitude,
+                user.TransportProfile.IsAvailable,
+                user.TransportProfile.Vehicles.Select(v => new VehicleDto(
+                    v.Id,
+                    v.VehicleType,
+                    v.Brand,
+                    v.Model,
+                    v.Year,
+                    v.PassengerCapacity,
+                    v.LuggageCapacity,
+                    v.HasAc,
+                    v.VehicleImageUrl,
+                    v.IsAvailable,
+                    v.DriverIncluded
+                )).ToList()
             ) : null
         );
     }

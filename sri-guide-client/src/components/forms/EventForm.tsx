@@ -3,10 +3,10 @@
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Calendar, MapPin, DollarSign, Users, 
-  Image as ImageIcon, Plus, Trash2, Info, 
-  ChevronRight, ChevronLeft, Camera, Upload, 
+import {
+  Calendar, MapPin, DollarSign, Users,
+  Image as ImageIcon, Plus, Trash2, Info,
+  ChevronRight, ChevronLeft, Camera, Upload,
   Star, Globe, Clock, CheckCircle2, Loader2,
   X, Briefcase, AlertCircle
 } from 'lucide-react';
@@ -72,7 +72,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
 
   const categoryId = watch('categoryId');
 
-    React.useEffect(() => {
+  React.useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
@@ -144,7 +144,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
 
     const formData = new FormData();
     formData.append('file', file);
-    
+
     const uploadId = type === 'cover' ? 'cover' : `gallery-${galleryImages.length}`;
     setUploading(uploadId);
 
@@ -152,7 +152,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
       const { data } = await apiClient.post<{ url: string }>('/media/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      
+
       if (type === 'cover') {
         setCoverImage(data.url);
       } else {
@@ -240,11 +240,10 @@ export default function EventForm({ eventId }: { eventId?: string }) {
             initial={{ opacity: 0, y: -50, x: "-50%" }}
             animate={{ opacity: 1, y: 0, x: "-50%" }}
             exit={{ opacity: 0, y: -50, x: "-50%" }}
-            className={`fixed top-24 left-1/2 z-[100] p-5 rounded-3xl border shadow-2xl flex items-center gap-4 min-w-[320px] ${
-              message.type === "success"
-                ? "bg-emerald-50 border-emerald-100 text-emerald-700"
-                : "bg-rose-50 border-rose-100 text-rose-700"
-            }`}
+            className={`fixed top-24 left-1/2 z-[100] p-5 rounded-3xl border shadow-2xl flex items-center gap-4 min-w-[320px] ${message.type === "success"
+              ? "bg-emerald-50 border-emerald-100 text-emerald-700"
+              : "bg-rose-50 border-rose-100 text-rose-700"
+              }`}
           >
             {message.type === "success" ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
             <p className="font-bold text-sm flex-1">{message.text}</p>
@@ -260,18 +259,16 @@ export default function EventForm({ eventId }: { eventId?: string }) {
         <div className="absolute top-0 left-0 h-1 bg-orange-500 transition-all duration-500" style={{ width: `${(currentStep / STEPS.length) * 100}%` }} />
         {STEPS.map((step) => (
           <div key={step.id} className="flex flex-col items-center gap-2 z-10">
-            <div 
-              className={`w-10 h-10 rounded-xl flex items-center justify-center font-black transition-all ${
-                currentStep >= step.id 
-                  ? 'bg-slate-900 text-white shadow-lg shadow-slate-200' 
-                  : 'bg-slate-50 text-slate-300'
-              }`}
+            <div
+              className={`w-10 h-10 rounded-xl flex items-center justify-center font-black transition-all ${currentStep >= step.id
+                ? 'bg-slate-900 text-white shadow-lg shadow-slate-200'
+                : 'bg-slate-50 text-slate-300'
+                }`}
             >
               {currentStep > step.id ? <CheckCircle2 size={18} /> : step.id}
             </div>
-            <span className={`text-[10px] font-black uppercase tracking-widest hidden md:block ${
-              currentStep === step.id ? 'text-slate-900' : 'text-slate-400'
-            }`}>
+            <span className={`text-[10px] font-black uppercase tracking-widest hidden md:block ${currentStep === step.id ? 'text-slate-900' : 'text-slate-400'
+              }`}>
               {step.name}
             </span>
           </div>
@@ -303,7 +300,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Event Title</label>
-                    <input 
+                    <input
                       {...register('title', { required: 'Title is required' })}
                       className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all font-bold text-slate-700"
                       placeholder="Give it a catchy name..."
@@ -314,7 +311,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Category</label>
-                      <select 
+                      <select
                         {...register('categoryId', { required: 'Category is required' })}
                         className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all font-bold text-slate-700 appearance-none"
                       >
@@ -324,7 +321,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Event Type</label>
-                      <select 
+                      <select
                         {...register('eventType')}
                         className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all font-bold text-slate-700 appearance-none"
                       >
@@ -337,7 +334,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
 
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Short Teaser</label>
-                    <input 
+                    <input
                       {...register('shortDescription', { required: 'Short description is required' })}
                       className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all font-bold text-slate-700"
                       placeholder="Summarize the experience in one line..."
@@ -361,7 +358,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Full Description</label>
-                  <textarea 
+                  <textarea
                     {...register('fullDescription', { required: 'Full description is required' })}
                     rows={12}
                     className="w-full bg-slate-50 border border-slate-100 rounded-[2rem] p-8 outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all font-bold text-slate-700 resize-none leading-relaxed"
@@ -446,7 +443,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   <div className="space-y-4 p-8 bg-slate-50 rounded-[2rem] border border-slate-100">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                      <DollarSign size={10} /> Price (LKR)
+                      <DollarSign size={10} /> Price (USD)
                     </label>
                     <input type="number" {...register('price', { required: true, min: 0 })} className="w-full bg-transparent text-5xl font-black outline-none text-slate-900" />
                   </div>
@@ -560,21 +557,21 @@ export default function EventForm({ eventId }: { eventId?: string }) {
 
         <div className="mt-12 flex justify-between items-center bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm">
           <button type="button" onClick={prevStep} disabled={currentStep === 1 || submitting} className={`px-8 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${currentStep === 1 ? 'opacity-0' : 'bg-slate-50 text-slate-400 hove:bg-slate-100'}`}>Back</button>
-          
+
           {currentStep < STEPS.length ? (
-            <button 
+            <button
               key="continue-button"
-              type="button" 
-              onClick={nextStep} 
+              type="button"
+              onClick={nextStep}
               className="px-10 py-4 bg-slate-900 text-white rounded-2xl font-black flex items-center gap-2 uppercase text-[10px] tracking-widest hover:bg-orange-600 transition-all shadow-lg active:scale-95"
             >
               Continue <ChevronRight size={16} />
             </button>
           ) : (
-            <button 
+            <button
               key="submit-button"
-              type="submit" 
-              disabled={submitting} 
+              type="submit"
+              disabled={submitting}
               className="px-12 py-4 bg-orange-600 text-white rounded-2xl font-black flex items-center gap-2 uppercase text-[10px] tracking-widest hover:bg-orange-700 transition-all shadow-lg active:scale-95 disabled:opacity-50"
             >
               {submitting ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}

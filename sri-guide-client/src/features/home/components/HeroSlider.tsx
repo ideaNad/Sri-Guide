@@ -144,6 +144,7 @@ const HeroSection = () => {
                 onClose={() => setIsAuthModalOpen(false)}
                 onSuccess={(userData) => login(userData)}
                 defaultIsLogin={false}
+                redirectOnSuccess={true}
             />
         </section>
     );

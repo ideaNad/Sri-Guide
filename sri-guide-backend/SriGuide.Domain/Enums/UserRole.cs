@@ -9,5 +9,6 @@ public enum UserRole
     RestaurantOwner,
     TravelAgency,
     Admin,
-    EventOrganizer
+    EventOrganizer,
+    TransportProvider
 }

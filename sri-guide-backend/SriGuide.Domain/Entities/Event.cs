@@ -25,7 +25,7 @@ public class Event : BaseEntity
     public string? MapLocation { get; set; }
 
     public decimal Price { get; set; }
-    public string Currency { get; set; } = "LKR";
+    public string Currency { get; set; } = "USD";
     public int MaxParticipants { get; set; }
 
     public string? CoverImage { get; set; }

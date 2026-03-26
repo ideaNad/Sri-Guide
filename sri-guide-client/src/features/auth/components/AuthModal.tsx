@@ -8,6 +8,8 @@ import {
     CheckCircle2, ArrowRight
 } from "lucide-react";
 import apiClient from "@/services/api-client";
+import { useRouter } from "next/navigation";
+import { getDashboardHref } from "@/lib/auth-utils";
 
 import { User as UserType } from "@/types";
 
@@ -16,9 +18,19 @@ interface AuthModalProps {
     onClose: () => void;
     onSuccess: (user: UserType & { token: string }) => void;
     defaultIsLogin?: boolean;
+    redirectOnSuccess?: boolean;
 }
 
-const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess, defaultIsLogin = true }) => {
+import { createPortal } from "react-dom";
+
+const AuthModal: React.FC<AuthModalProps> = ({ 
+    isOpen, 
+    onClose, 
+    onSuccess, 
+    defaultIsLogin = true,
+    redirectOnSuccess = true 
+}) => {
+    const router = useRouter();
     const [isLogin, setIsLogin] = useState(defaultIsLogin);
     const [role, setRole] = useState("Tourist");
     const [formData, setFormData] = useState({
@@ -29,8 +41,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess, defau
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [mounted, setMounted] = useState(false);
 
     React.useEffect(() => {
+        setMounted(true);
         if (isOpen) {
             setIsLogin(defaultIsLogin);
         }
@@ -45,7 +59,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess, defau
         { id: "Guide", label: "Guide", icon: <Briefcase size={20} />, description: "Showcase your expertise to the world." },
         { id: "EventOrganizer", label: "Organizer", icon: <CheckCircle2 size={20} />, description: "Create and manage events for the community." },
         // { id: "TravelAgency", label: "Agency", icon: <Building2 size={20} />, description: "Manage guides and large scale tours." },
-        // { id: "VehicleOwner", label: "Transport", icon: <Car size={20} />, description: "Provide premium vehicle rentals." }
+        { id: "TransportProvider", label: "Transport", icon: <Car size={20} />, description: "Provide premium vehicle rentals & transfers." }
     ];
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -81,6 +95,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess, defau
 
             onSuccess(userData);
             onClose();
+
+            if (redirectOnSuccess) {
+                router.push(getDashboardHref(userData.role));
+            }
         } catch (err: unknown) {
             const axiosError = err as { response?: { data?: { message?: string, errors?: string[] } } };
             setError(axiosError.response?.data?.message || axiosError.response?.data?.errors?.[0] || "Something went wrong. Please try again.");
@@ -89,10 +107,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess, defau
         }
     };
 
-    return (
+    if (!mounted || !isOpen) return null;
+
+    return createPortal(
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 overflow-y-auto">
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6 overflow-y-auto">
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -326,7 +346,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess, defau
                     </motion.div>
                 </div>
             )}
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 };
 

@@ -408,7 +408,7 @@ export default function Home() {
                 title="Upcoming Experiences"
                 subtitle="Join unique workshops, meetups, and festivals organized by locals."
               />
-              <Link href="/events" className="mb-12 text-sm font-bold text-orange-600 flex items-center gap-2 group hover:text-orange-700 transition-colors">
+              <Link href="/events" className="mb-12 text-sm font-bold text-blue-600 flex items-center gap-2 group hover:text-blue-700 transition-colors">
                 Explore All Events <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
               </Link>
             </div>
@@ -416,7 +416,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {loadingEvents ? (
                 Array(3).fill(0).map((_, i) => (
-                  <div key={i} className="h-[450px] bg-white animate-pulse rounded-[2.5rem] border border-orange-100" />
+                  <div key={i} className="h-[450px] bg-white animate-pulse rounded-[2.5rem] border border-blue-100" />
                 ))
               ) : featuredEvents.length > 0 ? (
                 featuredEvents.map((event, i) => (
@@ -445,7 +445,7 @@ export default function Home() {
                   </motion.div>
                 ))
               ) : (
-                <div className="col-span-3 text-center py-20 bg-white rounded-[2.5rem] border border-dashed border-orange-100">
+                <div className="col-span-3 text-center py-20 bg-white rounded-[2.5rem] border border-dashed border-blue-100">
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
                     No upcoming events featured yet
                   </p>

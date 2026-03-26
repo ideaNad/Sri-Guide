@@ -8,6 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import AuthModal from "@/features/auth/components/AuthModal";
 import { useAuth } from "@/providers/AuthContext";
 import apiClient from "@/services/api-client";
+import { getDashboardHref } from "@/lib/auth-utils";
 import { HelpDrawer } from "@/components/help/HelpDrawer";
 import { HELP_ITEMS } from "@/constants/HelpData";
 
@@ -36,6 +37,7 @@ const Navbar = () => {
         { name: "Events", href: "/events" },
         { name: "Agencies", href: "/agencies" },
         { name: "Guides", href: "/guides" },
+        { name: "Transport", href: "/transport" },
         // { name: "Privacy", href: "/privacy-policy" },
         { name: "Contact", href: "/contact" },
     ];
@@ -68,13 +70,8 @@ const Navbar = () => {
         </>
     );
 
-    const getDashboardHref = () => {
-        if (!user) return "/";
-        if (user.role === "Admin") return "/admin";
-        if (user.role === "Guide") return "/guide";
-        if (user.role === "TravelAgency") return "/agency";
-        if (user.role === "EventOrganizer") return "/organizer";
-        return "/dashboard";
+    const getDashboardUrl = () => {
+        return getDashboardHref(user?.role);
     };
 
     return (
@@ -129,7 +126,7 @@ const Navbar = () => {
                         {user ? (
                             <div className={`flex items-center gap-6 ${!isScrolled && isHomePage ? 'bg-white/10 backdrop-blur-md px-5 py-1 rounded-full border border-white/20 shadow-sm' : ''}`}>
                                 <Link
-                                    href={getDashboardHref()}
+                                    href={getDashboardUrl()}
                                     className={`flex items-center gap-2 text-[13px] font-bold ${textColor} hover:text-primary transition-colors`}
                                 >
                                     <LayoutDashboard size={18} />
@@ -242,7 +239,7 @@ const Navbar = () => {
                                             </div>
                                         </div>
                                         <Link
-                                            href={getDashboardHref()}
+                                            href={getDashboardUrl()}
                                             className="w-full block text-center py-4 bg-gray-100 text-black rounded-full text-base font-black uppercase tracking-widest shadow-sm hover:bg-gray-200 transition-all"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
@@ -286,11 +283,6 @@ const Navbar = () => {
                 onSuccess={(userData) => {
                     login(userData);
                     setIsAuthModalOpen(false);
-                    if (userData.role === "Admin") router.push("/admin");
-                    else if (userData.role === "Guide") router.push("/guide");
-                    else if (userData.role === "TravelAgency") router.push("/agency");
-                    else if (userData.role === "EventOrganizer") router.push("/organizer");
-                    else router.push("/dashboard");
                 }}
             />
 

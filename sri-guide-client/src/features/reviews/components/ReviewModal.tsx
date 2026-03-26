@@ -14,12 +14,19 @@ interface ReviewModalProps {
     onSuccess: () => void;
 }
 
+import { createPortal } from "react-dom";
+
 export default function ReviewModal({ isOpen, onClose, targetId, targetType, targetName, onSuccess }: ReviewModalProps) {
     const [rating, setRating] = useState(5);
     const [hover, setHover] = useState(0);
     const [comment, setComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [mounted, setMounted] = useState(false);
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,6 +36,11 @@ export default function ReviewModal({ isOpen, onClose, targetId, targetType, tar
         try {
             if (targetType === "Event") {
                 await apiClient.post(`/events/${targetId}/reviews`, {
+                    rating,
+                    comment
+                });
+            } else if (targetType === "Vehicle") {
+                await apiClient.post(`/transport/vehicles/${targetId}/reviews`, {
                     rating,
                     comment
                 });
@@ -52,11 +64,11 @@ export default function ReviewModal({ isOpen, onClose, targetId, targetType, tar
         }
     };
 
-    if (!isOpen) return null;
+    if (!mounted || !isOpen) return null;
 
-    return (
+    return createPortal(
         <AnimatePresence>
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -142,6 +154,7 @@ export default function ReviewModal({ isOpen, onClose, targetId, targetType, tar
                     </div>
                 </motion.div>
             </div>
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }

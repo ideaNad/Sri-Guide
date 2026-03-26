@@ -57,6 +57,7 @@ const ProtectedContact: React.FC<ProtectedContactProps> = ({ type, value, label 
         isOpen={isAuthModalOpen} 
         onClose={() => setIsAuthModalOpen(false)} 
         onSuccess={() => {}} // Success is handled by AuthContext
+        redirectOnSuccess={false}
       />
     </>
   );

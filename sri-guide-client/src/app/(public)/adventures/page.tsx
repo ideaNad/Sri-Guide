@@ -221,6 +221,7 @@ export default function AdventuresPage() {
             isOpen={isAuthModalOpen}
             onClose={() => setIsAuthModalOpen(false)}
             onSuccess={(userData) => { login(userData); setIsAuthModalOpen(false); }}
+            redirectOnSuccess={false}
         />
         </>
     );

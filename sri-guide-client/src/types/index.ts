@@ -1,4 +1,4 @@
-export type UserRole = "Tourist" | "Guide" | "TravelAgency" | "Transport" | "EventOrganizer" | "Admin";
+export type UserRole = "Tourist" | "Guide" | "TravelAgency" | "TransportProvider" | "EventOrganizer" | "Admin";
 
 export interface User {
     id: string;
@@ -16,6 +16,37 @@ export interface User {
     travelDuration?: string;
     preferredLocation?: string;
     eventOrganizerProfile?: EventOrganizerProfile;
+    transportProfile?: TransportProfile;
+}
+
+export interface TransportProfile {
+    id: string;
+    userId: string;
+    businessName: string;
+    description: string;
+    phone: string;
+    profileImageUrl?: string;
+    district: string;
+    province: string;
+    latitude?: number;
+    longitude?: number;
+    isAvailable: boolean;
+    vehicles?: Vehicle[];
+}
+
+export interface Vehicle {
+    id: string;
+    transportProfileId: string;
+    vehicleType: string;
+    brand: string;
+    model: string;
+    year: number;
+    passengerCapacity: number;
+    luggageCapacity: number;
+    hasAc: boolean;
+    vehicleImageUrl?: string;
+    isAvailable: boolean;
+    driverIncluded: boolean;
 }
 
 export interface EventOrganizerProfile {

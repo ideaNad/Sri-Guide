@@ -50,7 +50,7 @@ export default function EventsPage() {
       if (filters.district) params.append('district', filters.district);
       if (filters.eventType) params.append('eventType', filters.eventType);
       if (user) params.append('UserId', user.id);
-      
+
       const { data } = await apiClient.get(`/events?${params.toString()}`);
       setEvents(data as Event[]);
     } catch (error) {
@@ -64,7 +64,7 @@ export default function EventsPage() {
     try {
       const { data } = await apiClient.get('/event-categories');
       setCategories(data as any[]);
-    } catch (error) {}
+    } catch (error) { }
   }, []);
 
   React.useEffect(() => {
@@ -94,7 +94,7 @@ export default function EventsPage() {
         }
         return event;
       }));
-      
+
       toast.success(isLikedNow ? 'Added to favorites!' : 'Removed from favorites');
     } catch (error) {
       toast.error('Action failed');
@@ -114,23 +114,23 @@ export default function EventsPage() {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="max-w-4xl mx-auto text-center mb-16">
-          <motion.span 
+          <motion.span
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-100 text-orange-700 text-xs font-black uppercase tracking-widest mb-6"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-100 text-blue-700 text-xs font-black uppercase tracking-widest mb-6"
           >
             Explore Experiences
           </motion.span>
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="text-4xl sm:text-6xl font-black text-slate-900 mb-6 tracking-tight"
           >
             Discover Events in <br />
-            <span className="text-orange-600">Sri Lanka</span>
+            <span className="text-blue-600">Sri Lanka</span>
           </motion.h1>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -145,20 +145,20 @@ export default function EventsPage() {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-              <input 
-                 type="text" 
-                 placeholder="Search events, workshops, festivals..." 
-                 className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-orange-500 outline-none font-medium"
+              <input
+                type="text"
+                placeholder="Search events, workshops, festivals..."
+                className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium"
               />
             </div>
-            <button 
+            <button
               onClick={() => setShowFilters(!showFilters)}
               className="px-6 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm flex items-center gap-2 font-bold text-slate-700 hover:bg-slate-50 transition-all"
             >
               <SlidersHorizontal size={20} />
               <span>Filters</span>
               {Object.values(filters).some(v => v !== '') && (
-                <span className="w-5 h-5 bg-orange-600 text-white text-[10px] rounded-full flex items-center justify-center translate-x-1">
+                <span className="w-5 h-5 bg-blue-600 text-white text-[10px] rounded-full flex items-center justify-center translate-x-1">
                   {Object.values(filters).filter(v => v !== '').length}
                 </span>
               )}
@@ -167,25 +167,25 @@ export default function EventsPage() {
 
           <AnimatePresence>
             {showFilters && (
-              <motion.div 
+              <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden"
               >
                 <div className="pt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                  <select 
+                  <select
                     value={filters.categoryId}
-                    onChange={(e) => setFilters({...filters, categoryId: e.target.value})}
+                    onChange={(e) => setFilters({ ...filters, categoryId: e.target.value })}
                     className="p-4 bg-white border border-slate-200 rounded-2xl font-bold text-sm outline-none cursor-pointer"
                   >
                     <option value="">All Categories</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
-                  
-                  <select 
+
+                  <select
                     value={filters.eventType}
-                    onChange={(e) => setFilters({...filters, eventType: e.target.value})}
+                    onChange={(e) => setFilters({ ...filters, eventType: e.target.value })}
                     className="p-4 bg-white border border-slate-200 rounded-2xl font-bold text-sm outline-none cursor-pointer"
                   >
                     <option value="">Any Event Type</option>
@@ -194,9 +194,9 @@ export default function EventsPage() {
                     <option>Multi-day</option>
                   </select>
 
-                  <select 
+                  <select
                     value={filters.district}
-                    onChange={(e) => setFilters({...filters, district: e.target.value})}
+                    onChange={(e) => setFilters({ ...filters, district: e.target.value })}
                     className="p-4 bg-white border border-slate-200 rounded-2xl font-bold text-sm outline-none cursor-pointer"
                   >
                     <option value="">All Regions</option>
@@ -206,7 +206,7 @@ export default function EventsPage() {
                     <option>Kandy</option>
                   </select>
 
-                  <button 
+                  <button
                     onClick={() => setFilters({ categoryId: '', district: '', eventType: '', minPrice: '', maxPrice: '' })}
                     className="flex items-center justify-center gap-2 text-rose-500 font-bold hover:bg-rose-50 rounded-2xl py-4 transition-all"
                   >
@@ -222,7 +222,7 @@ export default function EventsPage() {
         {/* Events Grid */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {[1,2,3,4,5,6].map(i => (
+            {[1, 2, 3, 4, 5, 6].map(i => (
               <div key={i} className="bg-white rounded-3xl h-[400px] animate-pulse border border-slate-100" />
             ))}
           </div>
@@ -237,7 +237,7 @@ export default function EventsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {events.map((event, i) => (
-              <motion.div 
+              <motion.div
                 key={event.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -245,8 +245,8 @@ export default function EventsPage() {
                 className="group bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500"
               >
                 <div className="aspect-[4/3] relative overflow-hidden">
-                  <img 
-                    src={getImageUrl(event.coverImage)} 
+                  <img
+                    src={getImageUrl(event.coverImage)}
                     alt={event.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
@@ -258,18 +258,18 @@ export default function EventsPage() {
                       {event.eventType}
                     </span>
                   </div>
-                  
+
                   {/* Interactive Heart Button */}
-                  <button 
+                  <button
                     onClick={(e) => handleToggleLike(e, event.id)}
                     className="absolute top-6 right-6 w-11 h-11 bg-white/90 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-lg border border-white/20 hover:scale-110 active:scale-90 transition-all group/heart"
                   >
-                    <Heart 
-                      size={20} 
-                      className={`${event.isLiked ? 'fill-rose-500 text-rose-500' : 'text-slate-400 group-hover/heart:text-rose-500'} transition-colors`} 
+                    <Heart
+                      size={20}
+                      className={`${event.isLiked ? 'fill-rose-500 text-rose-500' : 'text-slate-400 group-hover/heart:text-rose-500'} transition-colors`}
                     />
                   </button>
-                  
+
                   {/* Engagement Overlay */}
                   <div className="absolute bottom-6 right-6 flex items-center gap-2">
                     {event.averageRating > 0 && (
@@ -311,7 +311,7 @@ export default function EventsPage() {
                         {event.price === 0 ? 'FREE' : `Rs. ${event.price.toLocaleString()}`}
                       </p>
                     </div>
-                    <Link 
+                    <Link
                       href={`/events/${event.id}`}
                       className="px-6 py-3 bg-gray-900 text-white text-sm font-black rounded-2xl hover:bg-orange-600 transition-all shadow-xl shadow-gray-900/10 active:scale-95"
                     >
@@ -324,7 +324,7 @@ export default function EventsPage() {
           </div>
         )}
       </div>
-      <AuthModal 
+      <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         onSuccess={(userData) => {
@@ -332,6 +332,7 @@ export default function EventsPage() {
           setIsAuthModalOpen(false);
           fetchEvents();
         }}
+        redirectOnSuccess={false}
       />
     </main>
   );

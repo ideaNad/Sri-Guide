@@ -29,6 +29,10 @@ public interface IApplicationDbContext
     DbSet<EventFieldValue> EventFieldValues { get; }
     DbSet<EventLike> EventLikes { get; }
     DbSet<EventReview> EventReviews { get; }
-
+    DbSet<TransportProfile> TransportProfiles { get; }
+    DbSet<Vehicle> Vehicles { get; }
+    DbSet<VehicleLike> VehicleLikes { get; }
+    DbSet<VehicleReview> VehicleReviews { get; }
+    
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

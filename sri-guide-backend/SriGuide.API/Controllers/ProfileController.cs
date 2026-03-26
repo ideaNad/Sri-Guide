@@ -183,6 +183,16 @@ public class ProfileController : ControllerBase
         return await _mediator.Send(command);
     }
 
+    [HttpPost("transport/update")]
+    [Authorize(Roles = "TransportProvider")]
+    public async Task<ActionResult<bool>> UpdateTransportProfile([FromBody] UpdateTransportProfileCommand command)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null || Guid.Parse(userId) != command.UserId) return Forbid();
+
+        return await _mediator.Send(command);
+    }
+
     [HttpPost("respond-to-offer")]
     [Authorize(Roles = "Guide")]
     public async Task<IActionResult> RespondToOffer([FromBody] RespondToAgencyOfferCommand command)

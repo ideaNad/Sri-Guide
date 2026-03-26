@@ -44,6 +44,15 @@ public class UploadProfilePictureCommandHandler : IRequestHandler<UploadProfileP
         var relativePath = $"/uploads/profiles/{fileName}";
         user.ProfileImageUrl = relativePath;
 
+        // Sync with TransportProfile if it exists
+        var transportProfile = await _context.TransportProfiles
+            .FirstOrDefaultAsync(t => t.UserId == user.Id, cancellationToken);
+            
+        if (transportProfile != null)
+        {
+            transportProfile.ProfileImageUrl = relativePath;
+        }
+
         await _context.SaveChangesAsync(cancellationToken);
 
         return relativePath;

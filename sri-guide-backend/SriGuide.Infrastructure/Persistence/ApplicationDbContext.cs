@@ -36,6 +36,11 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<EventLike> EventLikes => Set<EventLike>();
     public DbSet<EventReview> EventReviews => Set<EventReview>();
 
+    public DbSet<TransportProfile> TransportProfiles => Set<TransportProfile>();
+    public DbSet<Vehicle> Vehicles => Set<Vehicle>();
+    public DbSet<VehicleLike> VehicleLikes => Set<VehicleLike>();
+    public DbSet<VehicleReview> VehicleReviews => Set<VehicleReview>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
@@ -225,6 +230,42 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .HasOne(er => er.User)
             .WithMany()
             .HasForeignKey(er => er.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // TransportProfile relationship
+        modelBuilder.Entity<TransportProfile>()
+            .HasOne(t => t.User)
+            .WithOne(u => u.TransportProfile)
+            .HasForeignKey<TransportProfile>(t => t.UserId);
+
+        modelBuilder.Entity<Vehicle>()
+            .HasOne(v => v.TransportProfile)
+            .WithMany(t => t.Vehicles)
+            .HasForeignKey(v => v.TransportProfileId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // VehicleLike
+        modelBuilder.Entity<VehicleLike>()
+            .HasIndex(vl => new { vl.UserId, vl.VehicleId })
+            .IsUnique();
+
+        modelBuilder.Entity<VehicleLike>()
+            .HasOne(vl => vl.Vehicle)
+            .WithMany(v => v.Likes)
+            .HasForeignKey(vl => vl.VehicleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // VehicleReview
+        modelBuilder.Entity<VehicleReview>()
+            .HasOne(vr => vr.Vehicle)
+            .WithMany(v => v.Reviews)
+            .HasForeignKey(vr => vr.VehicleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<VehicleReview>()
+            .HasOne(vr => vr.User)
+            .WithMany()
+            .HasForeignKey(vr => vr.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
         base.OnModelCreating(modelBuilder);

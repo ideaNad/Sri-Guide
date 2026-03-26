@@ -1059,6 +1059,7 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
                     login(userData);
                     setIsAuthModalOpen(false);
                 }}
+                redirectOnSuccess={false}
             />
 
             {tour && (

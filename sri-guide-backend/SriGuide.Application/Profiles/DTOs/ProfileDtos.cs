@@ -17,7 +17,8 @@ public record UserProfileDto(
     string? PreferredLocation,
     GuideProfileDto? GuideProfile,
     AgencyProfileDto? AgencyProfile,
-    EventOrganizerProfileDto? EventOrganizerProfile
+    EventOrganizerProfileDto? EventOrganizerProfile,
+    TransportProfileDto? TransportProfile
 );
 
 public record EventOrganizerProfileDto(
@@ -80,4 +81,46 @@ public record AgencyProfileDto(
     bool IsVerified,
     VerificationStatus VerificationStatus,
     string? ProfileImageUrl = null
+);
+
+public record TransportProfileDto(
+    Guid Id,
+    string BusinessName,
+    string? Description,
+    string? Phone,
+    string? ProfileImageUrl,
+    string? District,
+    string? Province,
+    double? Latitude,
+    double? Longitude,
+    bool IsAvailable,
+    List<VehicleDto>? Vehicles
+);
+
+public record VehicleDto(
+    Guid Id,
+    string VehicleType,
+    string Brand,
+    string Model,
+    int Year,
+    int PassengerCapacity,
+    int LuggageCapacity,
+    bool HasAc,
+    string? VehicleImageUrl,
+    bool IsAvailable = true,
+    bool DriverIncluded = false,
+    double AverageRating = 0,
+    int ReviewCount = 0,
+    int LikeCount = 0,
+    bool HasLiked = false,
+    List<VehicleReviewDto>? Reviews = null
+);
+
+public record VehicleReviewDto(
+    Guid Id,
+    string ReviewerName,
+    string? ReviewerImageUrl,
+    int Rating,
+    string? Comment,
+    DateTime CreatedAt
 );

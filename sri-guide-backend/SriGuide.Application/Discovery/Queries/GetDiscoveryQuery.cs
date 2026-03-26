@@ -147,7 +147,7 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
                 var avgRating = reviews.Any() ? (decimal)Math.Round(reviews.Average(r => (double)r.Rating), 1) : 0m;
                 var reviewCount = reviews.Count;
 
-                var firstImage = t.MainImageUrl ?? t.Images.OrderBy(i => i.CreatedAt).FirstOrDefault()?.ImageUrl;
+                var firstImage = t.MainImageUrl ?? t.Images?.OrderBy(i => i.CreatedAt).FirstOrDefault()?.ImageUrl;
 
                 results.Add(new DiscoveryItemDto(
                     t.Id,

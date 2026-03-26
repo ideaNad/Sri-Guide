@@ -493,6 +493,7 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                 isOpen={isAuthModalOpen}
                 onClose={() => setIsAuthModalOpen(false)}
                 onSuccess={(userData) => { login(userData); setIsAuthModalOpen(false); }}
+                redirectOnSuccess={false}
             />
         </div>
     );

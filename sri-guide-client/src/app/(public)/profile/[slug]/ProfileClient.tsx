@@ -904,6 +904,7 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
                     login(userData);
                     setIsAuthModalOpen(false);
                 }}
+                redirectOnSuccess={false}
             />
         </div>
     );

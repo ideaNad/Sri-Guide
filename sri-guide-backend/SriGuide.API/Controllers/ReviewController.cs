@@ -39,6 +39,17 @@ public class ReviewController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("transport-reviews")]
+    [Authorize(Roles = "TransportProvider")]
+    public async Task<IActionResult> GetTransportReviews()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var result = await _mediator.Send(new SriGuide.Application.Reviews.Queries.GetTransportReviewsQuery(Guid.Parse(userId)));
+        return Ok(result);
+    }
+
     [HttpGet("guide/{id}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetGuideReviewsPublic(Guid id, [FromQuery] string? type = null)
