@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { 
-    MapPin, Phone, Car, Users, Luggage, 
+import {
+    MapPin, Phone, Car, Users, Luggage,
     Snowflake, Calendar, ArrowLeft, MessageCircle, Star
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -73,9 +73,9 @@ export default function TransportProfilePublicView() {
             <section className="bg-gray-900 text-white pt-32 pb-20 px-6">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-10 items-center">
                     <div className="w-40 h-40 rounded-[2.5rem] overflow-hidden border-4 border-white/10 shrink-0">
-                        <img 
-                            src={getImageUrl(transport?.profileImageUrl)} 
-                            alt={transport?.businessName} 
+                        <img
+                            src={getImageUrl(transport?.profileImageUrl)}
+                            alt={transport?.businessName}
                             className="w-full h-full object-cover"
                         />
                     </div>
@@ -121,9 +121,9 @@ export default function TransportProfilePublicView() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {transport?.vehicles?.map((v: any, idx: number) => (
-                                <VehicleDiscoveryCard 
-                                    key={v.id} 
-                                    vehicle={v} 
+                                <VehicleDiscoveryCard
+                                    key={v.id}
+                                    vehicle={v}
                                     providerPhone={transport.phone}
                                     idx={idx}
                                 />
@@ -135,7 +135,7 @@ export default function TransportProfilePublicView() {
                     <div className="bg-white p-10 rounded-[2.5rem] border border-gray-100 shadow-sm">
                         <div className="flex items-center justify-between mb-10">
                             <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">What Travelers Say</h2>
-                            <button 
+                            {/* <button 
                                 onClick={() => {
                                     if (!user) setIsAuthModalOpen(true);
                                     else if (user.role === 'Tourist') setIsReviewModalOpen(true);
@@ -144,7 +144,7 @@ export default function TransportProfilePublicView() {
                                 className="px-6 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-600/20 active:scale-95 transition-all"
                             >
                                 Write Review
-                            </button>
+                            </button> */}
                         </div>
 
                         <div className="space-y-8">
@@ -153,7 +153,7 @@ export default function TransportProfilePublicView() {
                                     <div key={review.id} className="p-6 rounded-3xl bg-gray-50 border border-gray-100 transition-all hover:bg-white hover:shadow-xl group">
                                         <div className="flex items-start gap-4">
                                             <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-white shadow-sm">
-                                                <img 
+                                                <img
                                                     src={review.reviewerImageUrl || `https://ui-avatars.com/api/?name=${review.reviewerName}&background=random`}
                                                     alt={review.reviewerName}
                                                     className="w-full h-full object-cover"
@@ -167,10 +167,10 @@ export default function TransportProfilePublicView() {
                                                     </div>
                                                     <div className="flex">
                                                         {[1, 2, 3, 4, 5].map((star) => (
-                                                            <Star 
-                                                                key={star} 
-                                                                size={10} 
-                                                                className={star <= review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200"} 
+                                                            <Star
+                                                                key={star}
+                                                                size={10}
+                                                                className={star <= review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200"}
                                                             />
                                                         ))}
                                                     </div>
@@ -208,7 +208,7 @@ export default function TransportProfilePublicView() {
                         </div>
 
                         {transport?.phone && (
-                            <a 
+                            <a
                                 href={`tel:${transport.phone}`}
                                 className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-tight flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 active:scale-95"
                             >
@@ -216,7 +216,7 @@ export default function TransportProfilePublicView() {
                                 <span>Call Provider</span>
                             </a>
                         )}
-                        
+
                         <p className="text-center text-gray-500 text-[10px] font-black uppercase tracking-widest mt-6">
                             Mention SriGuide for priority service
                         </p>
@@ -224,13 +224,13 @@ export default function TransportProfilePublicView() {
                 </aside>
             </main>
 
-            <AuthModal 
-                isOpen={isAuthModalOpen} 
-                onClose={() => setIsAuthModalOpen(false)} 
-                onSuccess={() => {}} 
+            <AuthModal
+                isOpen={isAuthModalOpen}
+                onClose={() => setIsAuthModalOpen(false)}
+                onSuccess={() => { }}
             />
 
-            <ReviewModal 
+            <ReviewModal
                 isOpen={isReviewModalOpen}
                 onClose={() => setIsReviewModalOpen(false)}
                 targetId={transport.id}
@@ -238,7 +238,7 @@ export default function TransportProfilePublicView() {
                 targetName={transport.businessName}
                 onSuccess={() => {
                     toast.success('Thank you for your review!');
-                    window.location.reload(); 
+                    window.location.reload();
                 }}
             />
         </div>
