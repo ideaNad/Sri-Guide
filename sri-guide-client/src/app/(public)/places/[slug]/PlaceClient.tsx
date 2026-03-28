@@ -69,7 +69,7 @@ export default function PlaceClient({ slug, initialData }: { slug: string, initi
     return (
         <div className="bg-white min-h-screen pt-12 pb-32">
             {/* Hero Section */}
-            <div className="relative h-[60vh] md:h-[70vh] overflow-hidden">
+            <div className="relative h-[50vh] sm:h-[60vh] md:h-[70vh] overflow-hidden">
                 <img 
                     src={place.imageUrl.startsWith('/') ? `${apiClient.defaults.baseURL?.replace('/api', '')}${place.imageUrl}` : place.imageUrl}
                     alt={place.title}
@@ -77,40 +77,40 @@ export default function PlaceClient({ slug, initialData }: { slug: string, initi
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                 
-                <div className="absolute top-8 left-8 z-20">
+                <div className="absolute top-4 left-4 sm:top-8 sm:left-8 z-20">
                     <button 
                         onClick={() => router.back()}
-                        className="p-4 bg-white/10 backdrop-blur-md rounded-2xl text-white hover:bg-white hover:text-black transition-all border border-white/20"
+                        className="p-3 sm:p-4 bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl text-white hover:bg-white hover:text-black transition-all border border-white/20"
                     >
-                        <ArrowLeft size={24} />
+                        <ArrowLeft size={20} className="sm:w-6 sm:h-6" />
                     </button>
                 </div>
 
-                <div className="absolute bottom-12 left-0 w-full z-10">
-                    <div className="container mx-auto px-6">
+                <div className="absolute bottom-8 sm:bottom-12 left-0 w-full z-10">
+                    <div className="container mx-auto px-4 sm:px-6">
                         <motion.div
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             className="max-w-4xl"
                         >
-                            <span className="inline-block px-4 py-1.5 bg-primary text-gray-900 font-black text-[10px] uppercase tracking-[0.3em] rounded-full mb-6 italic shadow-xl shadow-primary/20">
+                            <span className="inline-block px-3 py-1 sm:px-4 sm:py-1.5 bg-primary text-gray-900 font-black text-[9px] sm:text-[10px] uppercase tracking-[0.3em] rounded-full mb-4 sm:mb-6 italic shadow-xl shadow-primary/20">
                                 Featured Destination
                             </span>
-                            <h1 className="text-5xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-none mb-6">
+                            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-none mb-4 sm:mb-6">
                                 {place.title}
                             </h1>
-                            <div className="flex flex-wrap items-center gap-6 text-white/80 font-bold text-xs uppercase tracking-widest">
+                            <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-white/80 font-bold text-[10px] sm:text-xs uppercase tracking-widest">
                                 <div className="flex items-center gap-2">
-                                    <MapPin size={16} className="text-primary" />
+                                    <MapPin size={14} className="text-primary sm:w-4 sm:h-4" />
                                     <span>Sri Lanka</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Eye size={16} className="text-primary" />
-                                    <span>{place.viewCount} Exploration Views</span>
+                                    <Eye size={14} className="text-primary sm:w-4 sm:h-4" />
+                                    <span>{place.viewCount} Views</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Calendar size={16} className="text-primary" />
-                                    <span>Published {new Date(place.createdAt).toLocaleDateString()}</span>
+                                    <Calendar size={14} className="text-primary sm:w-4 sm:h-4" />
+                                    <span>{new Date(place.createdAt).toLocaleDateString()}</span>
                                 </div>
                             </div>
                         </motion.div>
@@ -119,9 +119,9 @@ export default function PlaceClient({ slug, initialData }: { slug: string, initi
             </div>
 
             {/* Content Section */}
-            <section className="py-24 relative">
-                <div className="container mx-auto px-6">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+            <section className="py-12 sm:py-24 relative">
+                <div className="container mx-auto px-4 sm:px-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
                         <div className="lg:col-span-8">
                             <style>{`
                                 .richtextbody { color: #4b5563; line-height: 1.8; font-size: 1rem; word-break: break-word; overflow-wrap: break-word; }
@@ -161,7 +161,7 @@ export default function PlaceClient({ slug, initialData }: { slug: string, initi
                         </div>
 
                         <div className="lg:col-span-4 space-y-8">
-                            <div className="bg-gray-50 rounded-[2.5rem] p-10 border border-gray-100 sticky top-24">
+                            <div className="bg-gray-50 rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-10 border border-gray-100 sticky top-24">
                                 <h3 className="text-xl font-black text-gray-900 italic uppercase mb-6">Explore This Region</h3>
                                 <p className="text-gray-500 text-sm font-medium mb-10 leading-relaxed">
                                     Ready to experience {place.title}? Connect with our local guides to plan an authentic journey to this destination.
