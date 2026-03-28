@@ -67,7 +67,7 @@ export default function PlaceClient({ slug, initialData }: { slug: string, initi
     }
 
     return (
-        <div className="bg-white min-h-screen pt-12 pb-32">
+        <div className="bg-white min-h-screen pt-20 sm:pt-28 pb-32 overflow-x-hidden">
             {/* Hero Section */}
             <div className="relative h-[50vh] sm:h-[60vh] md:h-[70vh] overflow-hidden">
                 <img 
@@ -96,7 +96,7 @@ export default function PlaceClient({ slug, initialData }: { slug: string, initi
                             <span className="inline-block px-3 py-1 sm:px-4 sm:py-1.5 bg-primary text-gray-900 font-black text-[9px] sm:text-[10px] uppercase tracking-[0.3em] rounded-full mb-4 sm:mb-6 italic shadow-xl shadow-primary/20">
                                 Featured Destination
                             </span>
-                            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-none mb-4 sm:mb-6">
+                            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-none mb-4 sm:mb-6 break-words">
                                 {place.title}
                             </h1>
                             <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-white/80 font-bold text-[10px] sm:text-xs uppercase tracking-widest">
