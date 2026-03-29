@@ -31,6 +31,7 @@ public class GetPendingUpgradesQueryHandler : IRequestHandler<GetPendingUpgrades
                 a.RegistrationNumber ?? "",
                 a.Phone ?? "",
                 a.WhatsApp ?? "",
+                a.RegistrationDocUrl ?? "",
                 a.CreatedAt
             ))
             .ToListAsync(cancellationToken);

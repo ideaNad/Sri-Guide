@@ -9,5 +9,6 @@ public record AgencyApprovalDto(
     string RegistrationNumber,
     string Phone,
     string WhatsApp,
+    string RegistrationDocUrl,
     DateTime CreatedAt
 );

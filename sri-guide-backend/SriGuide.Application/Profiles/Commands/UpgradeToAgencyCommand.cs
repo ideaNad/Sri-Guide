@@ -13,7 +13,8 @@ public record UpgradeToAgencyCommand(
     string CompanyEmail,
     string RegNumber,
     string Phone,
-    string WhatsApp
+    string WhatsApp,
+    string RegistrationDocUrl
 ) : IRequest<bool>;
 
 public class UpgradeToAgencyCommandHandler : IRequestHandler<UpgradeToAgencyCommand, bool>
@@ -45,6 +46,7 @@ public class UpgradeToAgencyCommandHandler : IRequestHandler<UpgradeToAgencyComm
             Slug = SlugHelper.GenerateSlug(request.CompanyName),
             CompanyEmail = request.CompanyEmail,
             RegistrationNumber = request.RegNumber,
+            RegistrationDocUrl = request.RegistrationDocUrl,
             Phone = request.Phone,
             WhatsApp = request.WhatsApp,
             VerificationStatus = VerificationStatus.Pending

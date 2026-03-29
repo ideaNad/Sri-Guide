@@ -5,7 +5,7 @@ import { useAuth } from "@/providers/AuthContext";
 import { useRouter } from "next/navigation";
 import { 
     CheckCircle2, XCircle, Clock, Search, 
-    Filter, LayoutDashboard, Building2, User, Eye, Trash2
+    Filter, LayoutDashboard, Building2, User, Eye, Trash2, FileText
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/services/api-client";
@@ -19,6 +19,7 @@ interface PendingUpgrade {
     registrationNumber: string;
     phone: string;
     whatsApp: string;
+    registrationDocUrl: string;
     createdAt: string;
 }
 
@@ -146,6 +147,20 @@ const AdminUpgradesPage = () => {
                                     >
                                         <Eye size={22} />
                                     </button>
+                                    {upgrade.registrationDocUrl && (
+                                        <button
+                                            onClick={() => {
+                                                const url = upgrade.registrationDocUrl.startsWith("http") 
+                                                    ? upgrade.registrationDocUrl 
+                                                    : `${apiClient.defaults.baseURL?.replace("/api", "")}${upgrade.registrationDocUrl.startsWith("/") ? "" : "/"}${upgrade.registrationDocUrl}`;
+                                                window.open(url, "_blank");
+                                            }}
+                                            className="p-3 rounded-2xl border border-gray-50 text-amber-500 hover:bg-amber-50 hover:border-amber-100 transition-all"
+                                            title="View Registration Document"
+                                        >
+                                            <FileText size={22} />
+                                        </button>
+                                    )}
                                     <button
                                         disabled={!!actionLoading}
                                         onClick={() => handleAction(upgrade.id, "reject")}

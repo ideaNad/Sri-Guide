@@ -13,6 +13,7 @@ public class AgencyProfile : BaseEntity
     public string? Bio { get; set; }
     public string? CompanyEmail { get; set; }
     public string? RegistrationNumber { get; set; }
+    public string? RegistrationDocUrl { get; set; }
     public string? Phone { get; set; }
     public string? WhatsApp { get; set; }
     public string? CompanyAddress { get; set; }

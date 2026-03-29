@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import apiClient from "@/services/api-client";
 import { useToast } from "@/hooks/useToast";
 import { useConfirm } from "@/hooks/useConfirm";
+import FileUpload from "@/components/ui/FileUpload";
 
 
 const UpgradePage = () => {
@@ -29,7 +30,8 @@ const UpgradePage = () => {
         companyEmail: "",
         regNumber: "",
         phone: "",
-        whatsApp: ""
+        whatsApp: "",
+        registrationDocUrl: ""
     });
 
     React.useEffect(() => {
@@ -247,6 +249,23 @@ const UpgradePage = () => {
                                 </div>
                             </div>
 
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Business Registration Document (Proof)*</label>
+                                    <FileUpload 
+                                        value={formData.registrationDocUrl}
+                                        onChange={url => setFormData({...formData, registrationDocUrl: url})}
+                                        label="Upload Image or PDF"
+                                    />
+                                    {!formData.registrationDocUrl && (
+                                        <div className="flex items-center gap-2 text-rose-500 mt-2 px-1">
+                                            <AlertCircle size={14} />
+                                            <span className="text-[10px] font-black uppercase tracking-widest">Document is required for verification</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Office Phone</label>
@@ -280,9 +299,9 @@ const UpgradePage = () => {
 
                             <div className="pt-4">
                                 <button 
-                                    disabled={loading}
+                                    disabled={loading || !formData.registrationDocUrl}
                                     type="submit"
-                                    className="w-full bg-gray-900 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                                    className="w-full bg-gray-900 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {loading ? <Loader2 className="animate-spin" size={20} /> : "Submit Application"}
                                 </button>
