@@ -3,7 +3,7 @@ using SriGuide.Domain.Enums;
 
 namespace SriGuide.Domain.Entities;
 
-public class User : BaseEntity
+public class User : BaseEntity, ISluggable
 {
     public string FullName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;

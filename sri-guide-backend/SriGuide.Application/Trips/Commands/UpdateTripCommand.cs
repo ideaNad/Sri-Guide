@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SriGuide.Domain.Enums;
 using SriGuide.Application.Common.Helpers;
 using SriGuide.Application.Common.Interfaces;
+using SriGuide.Domain.Entities;
 
 namespace SriGuide.Application.Trips.Commands;
 
@@ -19,10 +20,12 @@ public record UpdateTripCommand(
 public class UpdateTripCommandHandler : IRequestHandler<UpdateTripCommand, bool>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ISlugService _slugService;
 
-    public UpdateTripCommandHandler(IApplicationDbContext context)
+    public UpdateTripCommandHandler(IApplicationDbContext context, ISlugService slugService)
     {
         _context = context;
+        _slugService = slugService;
     }
 
     public async Task<bool> Handle(UpdateTripCommand request, CancellationToken cancellationToken)
@@ -35,7 +38,7 @@ public class UpdateTripCommandHandler : IRequestHandler<UpdateTripCommand, bool>
         if (trip == null) return false;
 
         trip.Title = request.Title;
-        trip.Slug = SlugHelper.GenerateSlug(request.Title);
+        trip.Slug = await _slugService.CreateUniqueSlugAsync<Trip>(request.Title, trip.Id, cancellationToken);
         trip.Location = request.Location;
         trip.Description = request.Description;
         trip.Date = request.Date.HasValue ? DateTime.SpecifyKind(request.Date.Value, DateTimeKind.Utc) : null;

@@ -2,7 +2,7 @@ using SriGuide.Domain.Common;
 
 namespace SriGuide.Domain.Entities;
 
-public class Trip : BaseEntity
+public class Trip : BaseEntity, ISluggable
 {
     public Guid? GuideId { get; set; }
     public User? Guide { get; set; }

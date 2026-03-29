@@ -20,10 +20,12 @@ public record UpgradeToAgencyCommand(
 public class UpgradeToAgencyCommandHandler : IRequestHandler<UpgradeToAgencyCommand, bool>
 {
     private readonly IApplicationDbContext _context;
-
-    public UpgradeToAgencyCommandHandler(IApplicationDbContext context)
+    private readonly ISlugService _slugService;
+ 
+    public UpgradeToAgencyCommandHandler(IApplicationDbContext context, ISlugService slugService)
     {
         _context = context;
+        _slugService = slugService;
     }
 
     public async Task<bool> Handle(UpgradeToAgencyCommand request, CancellationToken cancellationToken)
@@ -43,7 +45,7 @@ public class UpgradeToAgencyCommandHandler : IRequestHandler<UpgradeToAgencyComm
         {
             UserId = user.Id,
             CompanyName = request.CompanyName,
-            Slug = SlugHelper.GenerateSlug(request.CompanyName),
+            Slug = await _slugService.CreateUniqueSlugAsync<AgencyProfile>(request.CompanyName, cancellationToken: cancellationToken),
             CompanyEmail = request.CompanyEmail,
             RegistrationNumber = request.RegNumber,
             RegistrationDocUrl = request.RegistrationDocUrl,

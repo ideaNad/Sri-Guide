@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SriGuide.Application.Common.Helpers;
 using SriGuide.Application.Common.Interfaces;
+using SriGuide.Domain.Entities;
 
 namespace SriGuide.Application.Profiles.Commands;
 
@@ -19,10 +20,12 @@ public record UpdateUserProfileCommand(
 public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfileCommand, bool>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ISlugService _slugService;
 
-    public UpdateUserProfileCommandHandler(IApplicationDbContext context)
+    public UpdateUserProfileCommandHandler(IApplicationDbContext context, ISlugService slugService)
     {
         _context = context;
+        _slugService = slugService;
     }
 
     public async Task<bool> Handle(UpdateUserProfileCommand request, CancellationToken cancellationToken)
@@ -33,7 +36,7 @@ public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfile
         if (request.FullName != null)
         {
             user.FullName = request.FullName;
-            user.Slug = SlugHelper.GenerateSlug(request.FullName);
+            user.Slug = await _slugService.CreateUniqueSlugAsync<User>(request.FullName, user.Id, cancellationToken);
         }
         
         user.ProfileImageUrl = request.ProfileImageUrl ?? user.ProfileImageUrl;

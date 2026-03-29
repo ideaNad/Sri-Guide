@@ -2,7 +2,7 @@ using SriGuide.Domain.Common;
 
 namespace SriGuide.Domain.Entities;
 
-public class PopularPlace : BaseEntity
+public class PopularPlace : BaseEntity, ISluggable
 {
     public string Title { get; set; } = string.Empty;
     public string? Slug { get; set; }

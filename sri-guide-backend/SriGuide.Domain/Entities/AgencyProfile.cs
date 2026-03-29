@@ -3,7 +3,7 @@ using SriGuide.Domain.Enums;
 
 namespace SriGuide.Domain.Entities;
 
-public class AgencyProfile : BaseEntity
+public class AgencyProfile : BaseEntity, ISluggable
 {
     public Guid UserId { get; set; }
     public User? User { get; set; }

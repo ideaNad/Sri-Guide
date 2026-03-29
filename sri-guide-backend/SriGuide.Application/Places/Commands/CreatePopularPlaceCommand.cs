@@ -15,10 +15,12 @@ public record CreatePopularPlaceCommand(
 public class CreatePopularPlaceCommandHandler : IRequestHandler<CreatePopularPlaceCommand, Guid>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ISlugService _slugService;
 
-    public CreatePopularPlaceCommandHandler(IApplicationDbContext context)
+    public CreatePopularPlaceCommandHandler(IApplicationDbContext context, ISlugService slugService)
     {
         _context = context;
+        _slugService = slugService;
     }
 
     public async Task<Guid> Handle(CreatePopularPlaceCommand request, CancellationToken cancellationToken)
@@ -26,7 +28,7 @@ public class CreatePopularPlaceCommandHandler : IRequestHandler<CreatePopularPla
         var entity = new PopularPlace
         {
             Title = request.Title,
-            Slug = SlugHelper.GenerateSlug(request.Title),
+            Slug = await _slugService.CreateUniqueSlugAsync<PopularPlace>(request.Title, cancellationToken: cancellationToken),
             Description = request.Description,
             ImageUrl = request.ImageUrl,
             MapLink = request.MapLink,

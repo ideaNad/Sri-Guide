@@ -14,10 +14,12 @@ namespace SriGuide.Application.Trips.Commands;
 public class UpdateTourCommandHandler : IRequestHandler<UpdateTourCommand, bool>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ISlugService _slugService;
 
-    public UpdateTourCommandHandler(IApplicationDbContext context)
+    public UpdateTourCommandHandler(IApplicationDbContext context, ISlugService slugService)
     {
         _context = context;
+        _slugService = slugService;
     }
 
     public async Task<bool> Handle(UpdateTourCommand request, CancellationToken cancellationToken)
@@ -33,7 +35,7 @@ public class UpdateTourCommandHandler : IRequestHandler<UpdateTourCommand, bool>
         if (request.Title != null)
         {
             tour.Title = request.Title;
-            tour.Slug = SlugHelper.GenerateSlug(request.Title);
+            tour.Slug = await _slugService.CreateUniqueSlugAsync<Tour>(request.Title, tour.Id, cancellationToken);
         }
         tour.Description = request.Description ?? tour.Description;
         tour.Location = request.Location ?? tour.Location;

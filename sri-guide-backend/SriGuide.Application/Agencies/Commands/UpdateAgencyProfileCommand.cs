@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SriGuide.Application.Common.Helpers;
 using SriGuide.Application.Common.Interfaces;
+using SriGuide.Domain.Entities;
 
 namespace SriGuide.Application.Agencies.Commands;
 
@@ -26,10 +27,12 @@ public record UpdateAgencyProfileCommand(
 public class UpdateAgencyProfileCommandHandler : IRequestHandler<UpdateAgencyProfileCommand, bool>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ISlugService _slugService;
 
-    public UpdateAgencyProfileCommandHandler(IApplicationDbContext context)
+    public UpdateAgencyProfileCommandHandler(IApplicationDbContext context, ISlugService slugService)
     {
         _context = context;
+        _slugService = slugService;
     }
 
     public async Task<bool> Handle(UpdateAgencyProfileCommand request, CancellationToken cancellationToken)
@@ -40,7 +43,9 @@ public class UpdateAgencyProfileCommandHandler : IRequestHandler<UpdateAgencyPro
         if (agency == null) throw new Exception("Agency profile not found");
 
         agency.CompanyName = request.CompanyName ?? agency.CompanyName;
-        agency.Slug = !string.IsNullOrEmpty(request.CompanyName) ? SlugHelper.GenerateSlug(request.CompanyName) : agency.Slug;
+        agency.Slug = !string.IsNullOrEmpty(request.CompanyName) 
+            ? await _slugService.CreateUniqueSlugAsync<AgencyProfile>(request.CompanyName, agency.Id, cancellationToken) 
+            : agency.Slug;
         
         agency.Bio = request.Bio ?? agency.Bio;
         agency.Phone = request.Phone ?? agency.Phone;

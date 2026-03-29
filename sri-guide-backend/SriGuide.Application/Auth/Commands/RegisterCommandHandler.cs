@@ -12,12 +12,14 @@ namespace SriGuide.Application.Auth.Commands;
 public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResponse>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ISlugService _slugService;
     private readonly IJwtService _jwtService;
 
-    public RegisterCommandHandler(IApplicationDbContext context, IJwtService jwtService)
+    public RegisterCommandHandler(IApplicationDbContext context, IJwtService jwtService, ISlugService slugService)
     {
         _context = context;
         _jwtService = jwtService;
+        _slugService = slugService;
     }
 
     public async Task<AuthResponse> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -47,7 +49,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
             PasswordHash = BC.HashPassword(request.Password),
             Role = request.Role,
             IsVerified = false,
-            Slug = SlugHelper.GenerateSlug(request.FullName)
+            Slug = await _slugService.CreateUniqueSlugAsync<User>(request.FullName, cancellationToken: cancellationToken)
         };
 
         _context.Users.Add(user);

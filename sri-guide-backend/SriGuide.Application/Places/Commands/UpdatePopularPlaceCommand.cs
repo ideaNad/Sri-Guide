@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SriGuide.Application.Common.Helpers;
 using SriGuide.Application.Common.Interfaces;
+using SriGuide.Domain.Entities;
 
 namespace SriGuide.Application.Places.Commands;
 
@@ -16,10 +17,12 @@ public record UpdatePopularPlaceCommand(
 public class UpdatePopularPlaceCommandHandler : IRequestHandler<UpdatePopularPlaceCommand, bool>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ISlugService _slugService;
 
-    public UpdatePopularPlaceCommandHandler(IApplicationDbContext context)
+    public UpdatePopularPlaceCommandHandler(IApplicationDbContext context, ISlugService slugService)
     {
         _context = context;
+        _slugService = slugService;
     }
 
     public async Task<bool> Handle(UpdatePopularPlaceCommand request, CancellationToken cancellationToken)
@@ -31,7 +34,7 @@ public class UpdatePopularPlaceCommandHandler : IRequestHandler<UpdatePopularPla
             return false;
 
         entity.Title = request.Title;
-        entity.Slug = SlugHelper.GenerateSlug(request.Title);
+        entity.Slug = await _slugService.CreateUniqueSlugAsync<PopularPlace>(request.Title, entity.Id, cancellationToken);
         entity.Description = request.Description;
         entity.MapLink = request.MapLink;
         

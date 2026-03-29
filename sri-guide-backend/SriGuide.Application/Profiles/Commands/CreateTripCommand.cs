@@ -10,10 +10,12 @@ public record CreateTripCommand(Guid? GuideId, string Title, string Description,
 public class CreateTripCommandHandler : IRequestHandler<CreateTripCommand, Guid>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ISlugService _slugService;
 
-    public CreateTripCommandHandler(IApplicationDbContext context)
+    public CreateTripCommandHandler(IApplicationDbContext context, ISlugService slugService)
     {
         _context = context;
+        _slugService = slugService;
     }
 
     public async Task<Guid> Handle(CreateTripCommand request, CancellationToken cancellationToken)
@@ -23,7 +25,7 @@ public class CreateTripCommandHandler : IRequestHandler<CreateTripCommand, Guid>
             GuideId = request.GuideId,
             AgencyId = request.AgencyId,
             Title = request.Title,
-            Slug = SlugHelper.GenerateSlug(request.Title),
+            Slug = await _slugService.CreateUniqueSlugAsync<Trip>(request.Title, cancellationToken: cancellationToken),
             Description = request.Description,
             Location = request.Location,
             Date = request.Date.HasValue ? DateTime.SpecifyKind(request.Date.Value, DateTimeKind.Utc) : null

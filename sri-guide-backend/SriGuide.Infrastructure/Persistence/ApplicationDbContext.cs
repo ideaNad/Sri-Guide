@@ -49,6 +49,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
             .IsUnique();
+        
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Slug)
+            .IsUnique();
 
         // GuideProfile relationships
         modelBuilder.Entity<GuideProfile>()
@@ -67,6 +71,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .HasOne(a => a.User)
             .WithOne(u => u.AgencyProfile)
             .HasForeignKey<AgencyProfile>(a => a.UserId);
+
+        modelBuilder.Entity<AgencyProfile>()
+            .HasIndex(a => a.Slug)
+            .IsUnique();
 
         // Review relationship
         modelBuilder.Entity<Review>()
@@ -110,6 +118,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .WithOne(i => i.Trip)
             .HasForeignKey(i => i.TripId);
 
+        modelBuilder.Entity<Trip>()
+            .HasIndex(t => t.Slug)
+            .IsUnique();
+
         // TripLike — unique per user per trip
         modelBuilder.Entity<TripLike>()
             .HasIndex(tl => new { tl.UserId, tl.TripId })
@@ -143,6 +155,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .WithOne(d => d.Tour)
             .HasForeignKey(d => d.TourId);
 
+        modelBuilder.Entity<Tour>()
+            .HasIndex(t => t.Slug)
+            .IsUnique();
+
         // TourLike
         modelBuilder.Entity<TourLike>()
             .HasIndex(tl => new { tl.UserId, tl.TourId })
@@ -168,6 +184,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.Entity<PopularPlace>()
             .Property(p => p.Description)
             .IsRequired();
+
+        modelBuilder.Entity<PopularPlace>()
+            .HasIndex(p => p.Slug)
+            .IsUnique();
 
         // EventOrganizerProfile relationship
         modelBuilder.Entity<EventOrganizerProfile>()
