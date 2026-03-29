@@ -11,6 +11,7 @@ import apiClient from "@/services/api-client";
 import { getDashboardHref } from "@/lib/auth-utils";
 import { HelpDrawer } from "@/components/help/HelpDrawer";
 import { HELP_ITEMS } from "@/constants/HelpData";
+import ImpersonationBanner from "./ImpersonationBanner";
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -153,6 +154,7 @@ const Navbar = () => {
 
     return (
         <>
+            <ImpersonationBanner />
             <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${navBackground}`}>
                 <div className="container mx-auto px-6 md:px-12 lg:px-24 flex items-center justify-between">
 

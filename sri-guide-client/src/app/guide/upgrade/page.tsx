@@ -263,6 +263,9 @@ const UpgradePage = () => {
                                             <span className="text-[10px] font-black uppercase tracking-widest">Document is required for verification</span>
                                         </div>
                                     )}
+                                    <p className="text-[10px] text-gray-400 mt-3 px-1 font-medium leading-relaxed italic">
+                                        Note: This document is for verification purposes only. Once verified (approved or rejected), it will be <span className="text-primary font-black">permanently deleted</span> from our system to ensure your business privacy.
+                                    </p>
                                 </div>
                             </div>
 

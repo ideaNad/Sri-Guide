@@ -2,10 +2,13 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { 
-    Users, Search, User, ChevronLeft, ChevronRight, Trash2
+    Users, Search, User as UserIcon, ChevronLeft, ChevronRight, Trash2, UserSearch
 } from "lucide-react";
 import { motion } from "framer-motion";
 import apiClient from "@/services/api-client";
+import { useAuth } from "@/providers/AuthContext";
+import { useRouter } from "next/navigation";
+import { User } from "@/types";
 
 interface AdminUser {
     id: string;
@@ -32,6 +35,8 @@ const ROLE_TABS = [
 ];
 
 const UserDirectoryPage = () => {
+    const { login } = useAuth();
+    const router = useRouter();
     const [data, setData] = useState<PaginatedResult | null>(null);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
@@ -70,6 +75,21 @@ const UserDirectoryPage = () => {
         e.preventDefault();
         setPage(1);
         fetchUsers();
+    };
+
+    const handleImpersonate = async (user: AdminUser) => {
+        if (!window.confirm(`Are you sure you want to impersonate ${user.fullName}? You will be logged in as this user.`)) {
+            return;
+        }
+
+        try {
+            const response = await apiClient.post<User>(`/auth/impersonate/${user.id}`);
+            login(response.data); // result is an AuthResponse (token, user info)
+            router.push("/"); // Redirect to home or dashboard
+        } catch (error) {
+            console.error("Error impersonating user:", error);
+            alert("Failed to impersonate user. Please try again.");
+        }
     };
 
     const handleDeleteUser = async (user: AdminUser) => {
@@ -207,16 +227,27 @@ const UserDirectoryPage = () => {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 text-right">
-                                    <button 
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDeleteUser(u);
-                                        }}
-                                        className="p-2 text-[#A5A3AE] hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
-                                        title="Delete User"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
+                                    <div className="flex items-center justify-end gap-1">
+                                        {u.role !== "Admin" && (
+                                            <button 
+                                                onClick={() => handleImpersonate(u)}
+                                                className="p-2 text-[#A5A3AE] hover:text-[#7367F0] hover:bg-[#7367F0]/5 rounded-lg transition-all"
+                                                title="Impersonate User"
+                                            >
+                                                <UserSearch size={16} />
+                                            </button>
+                                        )}
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteUser(u);
+                                            }}
+                                            className="p-2 text-[#A5A3AE] hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                                            title="Delete User"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
                                 </td>
                             </motion.tr>
                         ))}

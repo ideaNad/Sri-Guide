@@ -10,6 +10,7 @@ export interface User {
     token?: string;
     createdAt?: string;
     onboardingCompleted?: boolean;
+    isImpersonated?: boolean;
     interests?: string[];
     budget?: string;
     slug?: string;

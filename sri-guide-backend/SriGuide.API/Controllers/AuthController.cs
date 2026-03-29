@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SriGuide.Application.Auth.Commands;
 
@@ -13,6 +14,21 @@ public class AuthController : ControllerBase
     public AuthController(IMediator mediator)
     {
         _mediator = mediator;
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost("impersonate/{userId}")]
+    public async Task<IActionResult> Impersonate(Guid userId)
+    {
+        try
+        {
+            var result = await _mediator.Send(new ImpersonateCommand(userId));
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpPost("register")]

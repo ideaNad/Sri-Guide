@@ -25,6 +25,11 @@ const PrivacyPolicyPage = () => {
             icon: <FileText className="text-gray-600" size={24} />,
             title: "Third-Party Sharing",
             content: "We do not sell your personal information. We only share data with guides or agencies you've booked with, or with service providers who help us operate our platform (e.g., payment processors)."
+        },
+        {
+            icon: <Lock className="text-amber-500" size={24} />,
+            title: "Temporary Verification Data",
+            content: "Certain sensitive documents, such as business registrations required for agency upgrades, are processed strictly for verification. Upon approval or rejection of your application, these documents are permanently deleted from our servers to ensure your business privacy."
         }
     ];
 
@@ -89,7 +94,7 @@ const PrivacyPolicyPage = () => {
 
                     <div className="mt-20 pt-10 border-t border-gray-100 text-center">
                         <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">
-                            Last Updated: March 23, 2026 • © 2026 SriGuide Team
+                            Last Updated: March 29, 2026 • © 2026 SriGuide Team
                         </p>
                     </div>
                 </motion.div>

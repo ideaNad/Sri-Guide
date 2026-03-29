@@ -17,7 +17,7 @@ public class JwtService : IJwtService
         _configuration = configuration;
     }
 
-    public string GenerateToken(User user)
+    public string GenerateToken(User user, bool isImpersonated = false)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings.GetValue<string>("SecretKey") ?? "YourSuperSecretKey_SriGuide_2024_Premium";
@@ -31,6 +31,11 @@ public class JwtService : IJwtService
             new Claim(JwtRegisteredClaimNames.Name, user.FullName),
             new Claim(ClaimTypes.Role, user.Role.ToString())
         };
+
+        if (isImpersonated)
+        {
+            claims.Add(new Claim("is_impersonated", "true"));
+        }
 
         if (user.GuideProfile != null)
         {

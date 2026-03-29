@@ -4,5 +4,5 @@ namespace SriGuide.Application.Common.Interfaces;
 
 public interface IJwtService
 {
-    string GenerateToken(User user);
+    string GenerateToken(User user, bool isImpersonated = false);
 }
