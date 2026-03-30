@@ -92,7 +92,7 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
                 Id = g.UserId,
                 Name = g.User!.FullName,
                 Role = "Guide",
-                Rating = 4.8, // Fallback
+                Rating = 0.0, // Fallback
                 Location = g.OperatingAreas?.FirstOrDefault() ?? "Sri Lanka",
                 Status = "Active",
                 TripCount = 0, // Needs real count if possible
