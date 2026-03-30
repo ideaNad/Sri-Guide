@@ -72,6 +72,11 @@ export default function GuideTripsPage() {
             return;
         }
 
+        if (!newTrip.date) {
+            toast.error("Trip date is required.", "Validation Error");
+            return;
+        }
+
 
         setSubmitting(true);
         try {
@@ -250,6 +255,7 @@ export default function GuideTripsPage() {
                                     <div className="relative">
                                         <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
                                         <input 
+                                            required
                                             type="date"
                                             className="w-full bg-gray-50 border-none rounded-2xl pl-12 pr-6 py-4 font-bold text-gray-900 focus:ring-2 focus:ring-primary/20 transition-all"
                                             value={newTrip.date}
