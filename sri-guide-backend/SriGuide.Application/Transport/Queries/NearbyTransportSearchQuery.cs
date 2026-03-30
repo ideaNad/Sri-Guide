@@ -31,8 +31,6 @@ public class NearbyTransportSearchQueryHandler : IRequestHandler<NearbyTransport
     {
         var query = _context.Vehicles
             .Include(v => v.TransportProfile)
-            .Include(v => v.Reviews)
-            .Include(v => v.Likes)
             .Where(v => v.IsAvailable && v.TransportProfile!.IsAvailable);
 
         // Apply filters
@@ -48,19 +46,33 @@ public class NearbyTransportSearchQueryHandler : IRequestHandler<NearbyTransport
         if (request.HasAc.HasValue)
             query = query.Where(v => v.HasAc == request.HasAc.Value);
 
-        var allMatchingVehicles = await query.ToListAsync(cancellationToken);
-
-        // Calculate distance and filter by radius
-        var vehiclesWithDistance = allMatchingVehicles
+        // Optimized: Using projections to avoid overhead and implement quality-based ordering
+        var vehiclesQuery = query
             .Select(v => new
             {
                 Vehicle = v,
-                Distance = v.TransportProfile!.Latitude.HasValue && v.TransportProfile.Longitude.HasValue
-                    ? CalculateDistance(request.Lat, request.Lng, v.TransportProfile.Latitude!.Value, v.TransportProfile.Longitude!.Value)
+                TransportProfile = v.TransportProfile,
+                ReviewCount = v.Reviews.Count,
+                LikeCount = v.Likes.Count,
+                AvgRating = v.Reviews.Any() ? v.Reviews.Average(r => (double)r.Rating) : 0
+            });
+
+        var allMatchingData = await vehiclesQuery.ToListAsync(cancellationToken);
+
+        // Calculate distance and filter by radius
+        var vehiclesWithDistance = allMatchingData
+            .Select(x => new
+            {
+                Data = x,
+                Distance = x.TransportProfile!.Latitude.HasValue && x.TransportProfile.Longitude.HasValue
+                    ? CalculateDistance(request.Lat, request.Lng, x.TransportProfile.Latitude!.Value, x.TransportProfile.Longitude!.Value)
                     : 0
             })
-            .Where(x => x.Distance <= request.RadiusInKm || !x.Vehicle.TransportProfile!.Latitude.HasValue)
-            .OrderBy(x => x.Distance)
+            .Where(x => x.Distance <= request.RadiusInKm || !x.Data.TransportProfile!.Latitude.HasValue)
+            // Quality-based ordering: Rating, then Review Count, then Distance
+            .OrderByDescending(x => x.Data.AvgRating)
+            .ThenByDescending(x => x.Data.ReviewCount)
+            .ThenBy(x => x.Distance)
             .ToList();
 
         var totalCount = vehiclesWithDistance.Count;
@@ -70,31 +82,31 @@ public class NearbyTransportSearchQueryHandler : IRequestHandler<NearbyTransport
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
             .Select(x => new VehicleDiscoveryDto(
-                x.Vehicle.Id,
-                x.Vehicle.VehicleType,
-                x.Vehicle.Brand,
-                x.Vehicle.Model,
-                x.Vehicle.Year,
-                x.Vehicle.PassengerCapacity,
-                x.Vehicle.LuggageCapacity,
-                x.Vehicle.HasAc,
-                x.Vehicle.VehicleImageUrl,
-                x.Vehicle.IsAvailable,
-                x.Vehicle.DriverIncluded,
-                x.Vehicle.Reviews.Any() ? x.Vehicle.Reviews.Average(r => r.Rating) : 0,
-                x.Vehicle.Reviews.Count,
-                x.Vehicle.Likes.Count,
-                request.UserId.HasValue && x.Vehicle.Likes.Any(l => l.UserId == request.UserId.Value),
+                x.Data.Vehicle.Id,
+                x.Data.Vehicle.VehicleType,
+                x.Data.Vehicle.Brand,
+                x.Data.Vehicle.Model,
+                x.Data.Vehicle.Year,
+                x.Data.Vehicle.PassengerCapacity,
+                x.Data.Vehicle.LuggageCapacity,
+                x.Data.Vehicle.HasAc,
+                x.Data.Vehicle.VehicleImageUrl,
+                x.Data.Vehicle.IsAvailable,
+                x.Data.Vehicle.DriverIncluded,
+                x.Data.AvgRating,
+                x.Data.ReviewCount,
+                x.Data.LikeCount,
+                request.UserId.HasValue && x.Data.Vehicle.Likes.Any(l => l.UserId == request.UserId.Value),
                 
                 // Provider Info
-                x.Vehicle.TransportProfile!.Id,
-                x.Vehicle.TransportProfile.BusinessName,
-                x.Vehicle.TransportProfile.Phone,
-                x.Vehicle.TransportProfile.ProfileImageUrl,
-                x.Vehicle.TransportProfile.District,
-                x.Vehicle.TransportProfile.Province,
-                x.Vehicle.TransportProfile.Latitude,
-                x.Vehicle.TransportProfile.Longitude,
+                x.Data.TransportProfile!.Id,
+                x.Data.TransportProfile.BusinessName,
+                x.Data.TransportProfile.Phone,
+                x.Data.TransportProfile.ProfileImageUrl,
+                x.Data.TransportProfile.District,
+                x.Data.TransportProfile.Province,
+                x.Data.TransportProfile.Latitude,
+                x.Data.TransportProfile.Longitude,
                 x.Distance
             ))
             .ToList();

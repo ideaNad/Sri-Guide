@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SriGuide.Application.Common.Interfaces;
 using SriGuide.Application.Common.Models;
 using SriGuide.Domain.Enums;
+using SriGuide.Domain.Entities;
 
 namespace SriGuide.Application.Discovery.Queries;
 
@@ -179,64 +180,76 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
         }
 
         // For other types (Guide, Agency, or Mixed), we maintain the current in-memory processing for now but with pagination
-        // This can be further optimized if needed.
+        // Optimized: Using projections to avoid N+1 queries for reviews and tour counts
         
         // If type is guide or null, add guides
         var isGuideType = string.IsNullOrEmpty(request.Type) || string.Equals(request.Type, "guide", StringComparison.OrdinalIgnoreCase);
         if (isGuideType)
         {
-            var guidesRaw = await _context.GuideProfiles
+            var guidesQuery = _context.GuideProfiles
                 .Include(g => g.User)
-                .Include(g => g.Trips)
                 .Include(g => g.Agency)
                 .Where(g => string.IsNullOrEmpty(request.Query) || 
                             g.User.FullName.Contains(request.Query) || 
-                            (g.Bio != null && g.Bio.Contains(request.Query)))
-                .ToListAsync(cancellationToken);
+                            (g.Bio != null && g.Bio.Contains(request.Query)));
 
+            // Basic filtering
             if (request.Languages != null && request.Languages.Any())
             {
-                guidesRaw = guidesRaw.Where(g => g.Languages != null && request.Languages.Any(l => g.Languages.Contains(l))).ToList();
+                guidesQuery = guidesQuery.Where(g => g.Languages != null && g.Languages.Any(l => request.Languages.Contains(l)));
             }
             if (request.Specialties != null && request.Specialties.Any())
             {
-                guidesRaw = guidesRaw.Where(g => g.Specialties != null && request.Specialties.Any(s => g.Specialties.Contains(s))).ToList();
+                guidesQuery = guidesQuery.Where(g => g.Specialties != null && g.Specialties.Any(s => request.Specialties.Contains(s)));
             }
             if (request.Areas != null && request.Areas.Any())
             {
-                guidesRaw = guidesRaw.Where(g => g.OperatingAreas != null && request.Areas.Any(a => g.OperatingAreas.Contains(a))).ToList();
+                guidesQuery = guidesQuery.Where(g => g.OperatingAreas != null && g.OperatingAreas.Any(a => request.Areas.Contains(a)));
             }
 
-            foreach (var g in guidesRaw)
+            // Project directly to DTO with counts/ratings
+            var guidesProjected = await guidesQuery
+                .Select(g => new
+                {
+                    Profile = g,
+                    User = g.User,
+                    ReviewCount = _context.Reviews.Count(r => (r.TargetType == "Guide" && r.TargetId == g.UserId) || 
+                                                              (r.TargetType == "Trip" && g.Trips.Any(t => t.Id == r.TargetId))),
+                    AvgRating = _context.Reviews
+                                    .Where(r => (r.TargetType == "Guide" && r.TargetId == g.UserId) || 
+                                                (r.TargetType == "Trip" && g.Trips.Any(t => t.Id == r.TargetId)))
+                                    .Select(r => (double?)r.Rating)
+                                    .Average() ?? 0.0
+                })
+                .ToListAsync(cancellationToken);
+
+            // Sort in-memory to avoid LINQ translation issues for complex quality sorting
+            var guidesData = guidesProjected
+                .OrderByDescending(g => g.Profile.IsVerified)
+                .ThenByDescending(g => g.ReviewCount)
+                .ThenByDescending(g => g.Profile.CreatedAt)
+                .ToList();
+
+            foreach (var item in guidesData)
             {
-                var tripIds = g.Trips.Select(t => t.Id).ToList();
-                var tripReviews = await _context.Reviews
-                    .Where(r => r.TargetType == "Trip" && tripIds.Contains(r.TargetId))
-                    .ToListAsync(cancellationToken);
+                var g = item.Profile;
+                var u = item.User;
                 
-                var profileReviews = await _context.Reviews
-                    .Where(r => r.TargetType == "Guide" && r.TargetId == g.UserId)
-                    .ToListAsync(cancellationToken);
-
-                var allReviews = profileReviews.Concat(tripReviews).ToList();
-                var avgRating = allReviews.Any() ? (decimal)Math.Round(allReviews.Average(r => (double)r.Rating), 1) : 0m;
-                var reviewCount = allReviews.Count;
-
                 results.Add(new DiscoveryItemDto(
                     g.UserId,
-                    g.User.FullName,
-                    g.User.Slug,
+                    u?.FullName ?? "Unknown Guide",
+                    u?.Slug,
                     g.Specialties != null && g.Specialties.Any() ? string.Join(", ", g.Specialties) : (g.Bio != null && g.Bio.Length > 60 ? g.Bio.Substring(0, 57) + "..." : g.Bio) ?? "Professional Local Guide",
-                    g.User.ProfileImageUrl != null && !g.User.ProfileImageUrl.StartsWith("/") && !g.User.ProfileImageUrl.StartsWith("http") 
-                        ? "/" + g.User.ProfileImageUrl 
-                        : g.User.ProfileImageUrl ?? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(g.User.FullName)}&background=FFCC00&color=000&bold=true",
+                    u?.ProfileImageUrl != null && !u.ProfileImageUrl.StartsWith("/") && !u.ProfileImageUrl.StartsWith("http") 
+                        ? "/" + u.ProfileImageUrl 
+                        : u?.ProfileImageUrl ?? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(u?.FullName ?? "Guide")}&background=FFCC00&color=000&bold=true",
                     "Sri Lanka",
-                    avgRating,
-                    reviewCount,
+                    (decimal)Math.Round(item.AvgRating, 1),
+                    item.ReviewCount,
                     "guide",
-                    g.Languages.ToArray(),
-                    g.User.Email,
-                    g.User.Email,
+                    g.Languages?.ToArray() ?? Array.Empty<string>(),
+                    u?.Email,
+                    u?.Email,
                     g.WhatsAppNumber,
                     g.IsLegit,
                     g.VerificationStatus.ToString(),
@@ -252,51 +265,56 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
         var isAgencyType = string.IsNullOrEmpty(request.Type) || string.Equals(request.Type, "agency", StringComparison.OrdinalIgnoreCase);
         if (isAgencyType)
         {
-            var agenciesRaw = await _context.AgencyProfiles
+            var agenciesQuery = _context.AgencyProfiles
                 .Include(a => a.User)
                 .Where(a => a.VerificationStatus == VerificationStatus.Approved)
                 .Where(a => string.IsNullOrEmpty(request.Query) || 
                             a.CompanyName.Contains(request.Query) || 
-                            a.User.FullName.Contains(request.Query))
+                            a.User.FullName.Contains(request.Query));
+
+            var agenciesProjected = await agenciesQuery
+                .Select(a => new
+                {
+                    Profile = a,
+                    User = a.User,
+                    ToursCount = _context.Tours.Count(t => t.AgencyId == a.Id),
+                    ReviewCount = _context.Reviews.Count(r => (r.TargetType == "Agency" && r.TargetId == a.UserId) ||
+                                                              ((r.TargetType == "Tour" || r.TargetType == "Trip") && 
+                                                               (_context.Tours.Any(t => t.AgencyId == a.Id && t.Id == r.TargetId) || 
+                                                                _context.Trips.Any(t => t.AgencyId == a.Id && t.Id == r.TargetId)))),
+                    AvgRating = _context.Reviews
+                        .Where(r => (r.TargetType == "Agency" && r.TargetId == a.UserId) ||
+                                    ((r.TargetType == "Tour" || r.TargetType == "Trip") && 
+                                     (_context.Tours.Any(t => t.AgencyId == a.Id && t.Id == r.TargetId) || 
+                                      _context.Trips.Any(t => t.AgencyId == a.Id && t.Id == r.TargetId))))
+                        .Select(r => (double?)r.Rating)
+                        .Average() ?? 0.0
+                })
                 .ToListAsync(cancellationToken);
 
-            foreach (var a in agenciesRaw)
+            // Sort in-memory
+            var agenciesData = agenciesProjected
+                .OrderByDescending(a => a.AvgRating)
+                .ThenByDescending(a => a.ToursCount)
+                .ThenByDescending(a => a.Profile.CreatedAt)
+                .ToList();
+
+            foreach (var item in agenciesData)
             {
-                var tourIds = await _context.Tours
-                    .Where(t => t.AgencyId == a.Id)
-                    .Select(t => t.Id)
-                    .ToListAsync(cancellationToken);
-                    
-                var tripIds = await _context.Trips
-                    .Where(t => t.AgencyId == a.Id)
-                    .Select(t => t.Id)
-                    .ToListAsync(cancellationToken);
+                var a = item.Profile;
+                var u = item.User;
                 
-                var allItemIds = tourIds.Concat(tripIds).ToList();
-
-                var itemReviews = await _context.Reviews
-                    .Where(r => (r.TargetType == "Tour" || r.TargetType == "Trip") && allItemIds.Contains(r.TargetId))
-                    .ToListAsync(cancellationToken);
-                    
-                var profileReviews = await _context.Reviews
-                    .Where(r => r.TargetType == "Agency" && r.TargetId == a.UserId)
-                    .ToListAsync(cancellationToken);
-                
-                var allReviews = profileReviews.Concat(itemReviews).ToList();
-                var avgRating = allReviews.Any() ? (decimal)Math.Round(allReviews.Average(r => (double)r.Rating), 1) : 0m;
-                var reviewCount = allReviews.Count;
-
                 results.Add(new DiscoveryItemDto(
                     a.Id,
                     a.CompanyName,
                     a.Slug,
                     "Official Travel Agency",
-                    a.User.ProfileImageUrl != null && !a.User.ProfileImageUrl.StartsWith("/") && !a.User.ProfileImageUrl.StartsWith("http") 
-                        ? "/" + a.User.ProfileImageUrl 
-                        : a.User.ProfileImageUrl ?? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(a.CompanyName)}&background=000&color=fff&bold=true",
+                    u?.ProfileImageUrl != null && !u.ProfileImageUrl.StartsWith("/") && !u.ProfileImageUrl.StartsWith("http") 
+                        ? "/" + u.ProfileImageUrl 
+                        : u?.ProfileImageUrl ?? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(a.CompanyName)}&background=000&color=fff&bold=true",
                     "Sri Lanka",
-                    avgRating,
-                    reviewCount,
+                    (decimal)Math.Round(item.AvgRating, 1),
+                    item.ReviewCount,
                     "agency",
                     new string[] { "Certified", "Premium" },
                     a.Phone,
@@ -314,7 +332,15 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
         }
 
         // Filter and Paginate the combined results
-        var sortedResults = results.OrderByDescending(r => r.Rating).ThenByDescending(r => r.Reviews).ToList();
+        // Use custom ordering based on type if it's mixed, otherwise maintain the order we already applied
+        var sortedResults = results.ToList();
+        
+        // If it's mixed search, we apply a general quality sort at the end
+        if (string.IsNullOrEmpty(request.Type))
+        {
+            sortedResults = results.OrderByDescending(r => r.Rating).ThenByDescending(r => r.Reviews).ToList();
+        }
+
         var totalCount = sortedResults.Count;
         var paginatedResults = sortedResults.Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize).ToList();
 

@@ -59,7 +59,8 @@ public class GetEventsQueryHandler : IRequestHandler<GetEventsQuery, List<EventD
             query = query.Where(e => e.EndDate <= request.EndDate.Value);
 
         return await query
-            .OrderByDescending(e => e.StartDate)
+            .OrderByDescending(e => _context.EventReviews.Where(r => r.EventId == e.Id).Average(r => (double?)r.Rating) ?? 0)
+            .ThenByDescending(e => e.CreatedAt)
             .Select(e => new EventDto
             {
                 Id = e.Id,
