@@ -46,9 +46,11 @@ public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand, Uni
 
     public async Task<Unit> Handle(UpdateEventCommand request, CancellationToken cancellationToken)
     {
+        // 1. Load with AsNoTracking to get a clean slate
         var @event = await _context.Events
             .Include(e => e.FieldValues)
             .Include(e => e.OrganizerProfile)
+            .AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
         if (@event == null)
@@ -61,39 +63,96 @@ public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand, Uni
             throw new Exception("You are not authorized to update this event.");
         }
 
-        @event.Title = request.Title;
-        @event.ShortDescription = request.ShortDescription;
-        @event.FullDescription = request.FullDescription;
-        @event.CategoryId = request.CategoryId;
-        @event.EventType = request.EventType;
-        @event.StartDate = DateTime.SpecifyKind(request.StartDate, DateTimeKind.Utc);
-        @event.EndDate = DateTime.SpecifyKind(request.EndDate, DateTimeKind.Utc);
-        @event.StartTime = request.StartTime;
-        @event.EndTime = request.EndTime;
-        @event.LocationName = request.LocationName;
-        @event.District = request.District;
-        @event.MapLocation = request.MapLocation;
-        @event.Price = request.Price;
-        @event.MaxParticipants = request.MaxParticipants;
-        @event.CoverImage = request.CoverImage;
-        @event.GalleryImages = request.GalleryImages != null ? string.Join(",", request.GalleryImages) : null;
-        @event.UpdatedAt = DateTime.UtcNow;
+        // 2. Synchronization Logic (Disconnected)
+        bool isModified = false;
+        if (@event.Title != request.Title) { @event.Title = request.Title; isModified = true; }
+        if (@event.ShortDescription != request.ShortDescription) { @event.ShortDescription = request.ShortDescription; isModified = true; }
+        if (@event.FullDescription != request.FullDescription) { @event.FullDescription = request.FullDescription; isModified = true; }
+        if (@event.CategoryId != request.CategoryId) { @event.CategoryId = request.CategoryId; isModified = true; }
+        if (@event.EventType != request.EventType) { @event.EventType = request.EventType; isModified = true; }
+        
+        var newStartDate = DateTime.SpecifyKind(request.StartDate, DateTimeKind.Utc);
+        if (@event.StartDate != newStartDate) { @event.StartDate = newStartDate; isModified = true; }
+        
+        var newEndDate = DateTime.SpecifyKind(request.EndDate, DateTimeKind.Utc);
+        if (@event.EndDate != newEndDate) { @event.EndDate = newEndDate; isModified = true; }
+        
+        if (@event.StartTime != request.StartTime) { @event.StartTime = request.StartTime; isModified = true; }
+        if (@event.EndTime != request.EndTime) { @event.EndTime = request.EndTime; isModified = true; }
+        if (@event.LocationName != request.LocationName) { @event.LocationName = request.LocationName; isModified = true; }
+        if (@event.District != request.District) { @event.District = request.District; isModified = true; }
+        if (@event.MapLocation != request.MapLocation) { @event.MapLocation = request.MapLocation; isModified = true; }
+        if (@event.Price != request.Price) { @event.Price = request.Price; isModified = true; }
+        if (@event.MaxParticipants != request.MaxParticipants) { @event.MaxParticipants = request.MaxParticipants; isModified = true; }
+        if (@event.CoverImage != request.CoverImage) { @event.CoverImage = request.CoverImage; isModified = true; }
+        
+        var newGalleryImages = request.GalleryImages != null ? string.Join(",", request.GalleryImages) : null;
+        if (@event.GalleryImages != newGalleryImages) { @event.GalleryImages = newGalleryImages; isModified = true; }
 
-        // Update Field Values (Bulk Update pattern)
-        await _context.EventFieldValues
-            .Where(v => v.EventId == request.Id)
-            .ExecuteDeleteAsync(cancellationToken);
+        if (isModified) @event.UpdatedAt = DateTime.UtcNow;
 
-        if (request.FieldValues != null)
+        // Sync FieldValues
+        var incomingFieldValues = (request.FieldValues ?? new List<UpdateEventFieldValueDto>())
+            .GroupBy(v => v.FieldId)
+            .Select(g => g.First())
+            .ToList();
+
+        // Get valid fields for this category
+        var validFieldIds = await _context.EventCategoryFields
+            .Where(f => f.CategoryId == request.CategoryId)
+            .Select(f => f.Id)
+            .ToListAsync(cancellationToken);
+
+        incomingFieldValues = incomingFieldValues.Where(v => validFieldIds.Contains(v.FieldId)).ToList();
+
+        var existingFieldValues = @event.FieldValues.ToList();
+        var valuesToUpdate = new List<EventFieldValue>();
+        var valuesToAdd = new List<EventFieldValue>();
+        var valuesToRemove = new List<EventFieldValue>();
+
+        // Identify ones to remove
+        var incomingFieldIds = incomingFieldValues.Select(v => v.FieldId).ToList();
+        valuesToRemove.AddRange(existingFieldValues.Where(v => !incomingFieldIds.Contains(v.FieldId) || !validFieldIds.Contains(v.FieldId)));
+
+        foreach (var incoming in incomingFieldValues)
         {
-            foreach (var rv in request.FieldValues)
+            var existing = existingFieldValues.FirstOrDefault(v => v.FieldId == incoming.FieldId);
+            if (existing != null)
             {
-                @event.FieldValues.Add(new EventFieldValue
+                if (existing.Value != (incoming.Value ?? string.Empty))
                 {
-                    FieldId = rv.FieldId,
-                    Value = rv.Value ?? string.Empty
+                    existing.Value = incoming.Value ?? string.Empty;
+                    existing.UpdatedAt = DateTime.UtcNow;
+                    valuesToUpdate.Add(existing);
+                }
+            }
+            else
+            {
+                valuesToAdd.Add(new EventFieldValue
+                {
+                    EventId = @event.Id,
+                    FieldId = incoming.FieldId,
+                    Value = incoming.Value ?? string.Empty
                 });
             }
+        }
+
+        // 3. Manual Attachment
+        _context.Entry(@event).State = isModified ? EntityState.Modified : EntityState.Unchanged;
+
+        foreach (var val in valuesToUpdate)
+        {
+            _context.Entry(val).State = EntityState.Modified;
+        }
+
+        foreach (var val in valuesToAdd)
+        {
+            _context.Entry(val).State = EntityState.Added;
+        }
+
+        foreach (var val in valuesToRemove)
+        {
+            _context.Entry(val).State = EntityState.Deleted;
         }
 
         await _context.SaveChangesAsync(cancellationToken);

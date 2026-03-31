@@ -226,7 +226,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .HasOne(v => v.Field)
             .WithMany()
             .HasForeignKey(v => v.FieldId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         // EventLike
         modelBuilder.Entity<EventLike>()
@@ -291,7 +291,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         base.OnModelCreating(modelBuilder);
     }
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         foreach (var entry in ChangeTracker.Entries<BaseEntity>())
         {
@@ -306,6 +306,14 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             }
         }
 
-        return base.SaveChangesAsync(cancellationToken);
+        try 
+        {
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            var details = string.Join("; ", ex.Entries.Select(e => $"{e.Entity.GetType().Name} [ID: {((BaseEntity)e.Entity).Id}] State: {e.State}"));
+            throw new Exception($"Concurrency conflict detected on: {details}. The record may have been deleted or modified in the database since loading.", ex);
+        }
     }
 }

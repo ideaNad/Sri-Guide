@@ -97,4 +97,10 @@ public class AdminController : ControllerBase
         if (id != command.Id) return BadRequest();
         return await _mediator.Send(command);
     }
+
+    [HttpDelete("event-categories/{id}")]
+    public async Task<ActionResult<bool>> DeleteEventCategory(Guid id)
+    {
+        return await _mediator.Send(new SriGuide.Application.EventCategories.Commands.DeleteCategory.DeleteCategoryCommand(id));
+    }
 }

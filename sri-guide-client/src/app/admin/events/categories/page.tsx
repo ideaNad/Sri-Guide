@@ -48,7 +48,6 @@ export default function CategoryManager() {
   const handleSave = async (category: EventCategory) => {
     try {
       if (category.id) {
-        // Update logic (to be implemented on backend)
         await apiClient.put(`/admin/event-categories/${category.id}`, category);
       } else {
         await apiClient.post('/admin/event-categories', category);
@@ -58,6 +57,18 @@ export default function CategoryManager() {
       fetchCategories();
     } catch (error) {
       toast.error('Failed to save category');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this category? This action cannot be undone.')) return;
+    try {
+      await apiClient.delete(`/admin/event-categories/${id}`);
+      toast.success('Category deleted successfully');
+      fetchCategories();
+    } catch (error: any) {
+      const msg = error.response?.data?.message || 'Failed to delete category';
+      toast.error(msg);
     }
   };
 
@@ -99,15 +110,23 @@ export default function CategoryManager() {
                   </p>
                 </div>
               </div>
-              <button 
-                onClick={() => {
-                  setEditingCategory(cat);
-                  setIsModalOpen(true);
-                }}
-                className="p-2 text-[#A5A3AE] hover:text-[#7367F0] hover:bg-[#F8F7FA] rounded-lg transition-all"
-              >
-                <Settings size={18} />
-              </button>
+              <div className="flex items-center gap-1">
+                <button 
+                  onClick={() => {
+                    setEditingCategory(cat);
+                    setIsModalOpen(true);
+                  }}
+                  className="p-2 text-[#A5A3AE] hover:text-[#7367F0] hover:bg-[#F8F7FA] rounded-lg transition-all"
+                >
+                  <Settings size={18} />
+                </button>
+                <button 
+                  onClick={() => handleDelete(cat.id)}
+                  className="p-2 text-[#A5A3AE] hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
             </div>
 
             <div className="space-y-2">

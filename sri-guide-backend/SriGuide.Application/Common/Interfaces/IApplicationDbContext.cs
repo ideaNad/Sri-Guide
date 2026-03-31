@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using SriGuide.Domain.Entities;
 
 namespace SriGuide.Application.Common.Interfaces;
@@ -34,5 +35,6 @@ public interface IApplicationDbContext
     DbSet<VehicleLike> VehicleLikes { get; }
     DbSet<VehicleReview> VehicleReviews { get; }
     
+    EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
