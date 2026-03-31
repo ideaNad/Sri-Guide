@@ -89,6 +89,7 @@ public record TransportProfileDto(
     string? Description,
     string? Phone,
     string? ProfileImageUrl,
+    string? WhatsAppNumber,
     string? District,
     string? Province,
     double? Latitude,

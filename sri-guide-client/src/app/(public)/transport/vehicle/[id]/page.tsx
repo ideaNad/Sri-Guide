@@ -6,7 +6,7 @@ import {
     MapPin, Phone, Car, Users, Luggage,
     Snowflake, Calendar, ArrowLeft, Star,
     Heart, Share2, MessageSquare, CheckCircle2,
-    ShieldCheck, Activity, Award
+    ShieldCheck, Activity, Award, MessageCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import apiClient from '@/services/api-client';
@@ -119,12 +119,13 @@ export default function VehicleDetailPage() {
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20">
-            {/* Header Navigation */}
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100 px-6 py-4">
-                <div className="max-w-[1600px] mx-auto flex items-center justify-between">
+
+            <div className="pt-24 px-6 relative">
+                {/* Back button and floating actions for mobile/desktop */}
+                <div className="max-w-[1600px] mx-auto mb-8 flex items-center justify-between">
                     <button
                         onClick={() => router.back()}
-                        className="p-3 bg-gray-50 hover:bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-gray-900 transition-all active:scale-95 flex items-center gap-2 group"
+                        className="p-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-2xl text-gray-500 hover:text-gray-900 transition-all active:scale-95 flex items-center gap-2 group shadow-sm"
                     >
                         <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
                         <span className="text-[10px] font-black uppercase tracking-widest hidden sm:block">Back to Fleet</span>
@@ -133,9 +134,9 @@ export default function VehicleDetailPage() {
                     <div className="flex items-center gap-3">
                         <button
                             onClick={handleLike}
-                            className={`p-3 rounded-2xl border transition-all active:scale-95 flex items-center gap-2 ${hasLiked
-                                ? 'bg-rose-50 border-rose-100 text-rose-500 shadow-sm shadow-rose-500/10'
-                                : 'bg-white border-gray-100 text-gray-400 hover:text-rose-500'
+                            className={`p-3 rounded-2xl border transition-all active:scale-95 flex items-center gap-2 shadow-sm ${hasLiked
+                                ? 'bg-rose-50 border-rose-200 text-rose-500'
+                                : 'bg-white border-gray-200 text-gray-400 hover:text-rose-500'
                                 }`}
                         >
                             <Heart size={20} className={hasLiked ? 'fill-current text-rose-500' : ''} />
@@ -145,16 +146,13 @@ export default function VehicleDetailPage() {
                         </button>
                         <button
                             onClick={handleShare}
-                            className="p-3 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-blue-600 transition-all active:scale-95 flex items-center gap-2"
+                            className="p-3 bg-white border border-gray-200 rounded-2xl text-gray-400 hover:text-blue-600 transition-all active:scale-95 flex items-center gap-2 shadow-sm"
                         >
                             <Share2 size={20} />
                             <span className="text-[10px] font-black uppercase tracking-widest hidden sm:block">Share</span>
                         </button>
                     </div>
                 </div>
-            </nav>
-
-            <div className="pt-32 px-6">
                 <div className="max-w-[1600px] mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                         {/* Main Content */}
@@ -393,6 +391,17 @@ export default function VehicleDetailPage() {
                                         >
                                             <Phone size={20} />
                                             <span>Call Now</span>
+                                        </a>
+                                    )}
+                                    {provider.whatsAppNumber && (
+                                        <a
+                                            href={`https://wa.me/${provider.whatsAppNumber.replace(/[^0-9]/g, '')}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="w-full py-5 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-tight flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 active:scale-95"
+                                        >
+                                            <MessageCircle size={20} />
+                                            <span>WhatsApp</span>
                                         </a>
                                     )}
                                     <Link

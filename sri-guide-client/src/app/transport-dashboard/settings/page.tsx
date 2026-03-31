@@ -12,6 +12,7 @@ import {
     Image as ImageIcon,
     Camera,
     UserCircle,
+    MessageCircle,
     CheckCircle2,
     AlertCircle,
     X
@@ -100,7 +101,8 @@ export default function TransportProfileSettings() {
             province: formData.get('province'),
             latitude: formData.get('latitude') ? parseFloat(formData.get('latitude') as string) : null,
             longitude: formData.get('longitude') ? parseFloat(formData.get('longitude') as string) : null,
-            isAvailable: profile?.isAvailable ?? true
+            isAvailable: profile?.isAvailable ?? true,
+            whatsAppNumber: formData.get('whatsAppNumber')
         };
 
         try {
@@ -270,6 +272,22 @@ export default function TransportProfileSettings() {
                                         defaultValue={profile?.phone || ''} 
                                         placeholder="+94 77 123 4567"
                                         className="w-full pl-12 pr-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest px-1">WhatsApp Number</label>
+                                <div className="relative">
+                                    <MessageCircle className="absolute left-4 top-4 text-gray-400" size={20} />
+                                    <input 
+                                        type="tel" 
+                                        name="whatsAppNumber" 
+                                        pattern="[0-9+]{10,15}"
+                                        title="Please enter a valid WhatsApp number (10-15 digits)"
+                                        defaultValue={profile?.whatsAppNumber || ''} 
+                                        placeholder="+94 7X XXX XXXX"
+                                        className="w-full pl-12 pr-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none"
                                     />
                                 </div>
                             </div>

@@ -27,6 +27,7 @@ export interface TransportProfile {
     description: string;
     phone: string;
     profileImageUrl?: string;
+    whatsAppNumber?: string;
     district: string;
     province: string;
     latitude?: number;

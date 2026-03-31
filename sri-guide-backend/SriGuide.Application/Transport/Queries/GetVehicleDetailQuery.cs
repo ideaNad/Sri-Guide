@@ -54,6 +54,7 @@ public class GetVehicleDetailQueryHandler : IRequestHandler<GetVehicleDetailQuer
                 transportProfile.Description,
                 transportProfile.Phone,
                 transportProfile.ProfileImageUrl,
+                transportProfile.WhatsAppNumber,
                 transportProfile.District,
                 transportProfile.Province,
                 transportProfile.Latitude,

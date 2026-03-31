@@ -109,6 +109,7 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
                 user.TransportProfile.Description,
                 user.TransportProfile.Phone,
                 user.TransportProfile.ProfileImageUrl,
+                user.TransportProfile.WhatsAppNumber,
                 user.TransportProfile.District,
                 user.TransportProfile.Province,
                 user.TransportProfile.Latitude,

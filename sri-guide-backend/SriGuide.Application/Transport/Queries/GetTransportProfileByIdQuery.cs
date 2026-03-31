@@ -33,6 +33,7 @@ public class GetTransportProfileByIdQueryHandler : IRequestHandler<GetTransportP
             profile.Description,
             profile.Phone,
             profile.ProfileImageUrl,
+            profile.WhatsAppNumber,
             profile.District,
             profile.Province,
             profile.Latitude,

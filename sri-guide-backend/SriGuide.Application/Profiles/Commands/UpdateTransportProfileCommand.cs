@@ -15,7 +15,8 @@ public record UpdateTransportProfileCommand(
     string? Province,
     double? Latitude,
     double? Longitude,
-    bool? IsAvailable
+    bool? IsAvailable,
+    string? WhatsAppNumber
 ) : IRequest<bool>;
 
 public class UpdateTransportProfileCommandHandler : IRequestHandler<UpdateTransportProfileCommand, bool>
@@ -51,6 +52,7 @@ public class UpdateTransportProfileCommandHandler : IRequestHandler<UpdateTransp
         transportProfile.Latitude = request.Latitude ?? transportProfile.Latitude;
         transportProfile.Longitude = request.Longitude ?? transportProfile.Longitude;
         transportProfile.IsAvailable = request.IsAvailable ?? transportProfile.IsAvailable;
+        transportProfile.WhatsAppNumber = request.WhatsAppNumber ?? transportProfile.WhatsAppNumber;
 
         await _context.SaveChangesAsync(cancellationToken);
         return true;

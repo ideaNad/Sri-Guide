@@ -11,6 +11,7 @@ public class TransportProfile : BaseEntity
     public string? Description { get; set; }
     public string? Phone { get; set; }
     public string? ProfileImageUrl { get; set; }
+    public string? WhatsAppNumber { get; set; }
     
     public string? District { get; set; }
     public string? Province { get; set; }
