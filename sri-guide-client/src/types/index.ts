@@ -91,6 +91,7 @@ export interface GuideProfile {
     verificationStatus?: "None" | "Pending" | "Approved" | "Rejected";
     registrationNumber?: string;
     licenseExpirationDate?: string;
+    registrationDocUrl?: string;
 }
 
 export interface AgencyProfile {

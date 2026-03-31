@@ -12,6 +12,7 @@ public record PendingVerificationDto(
     string Role,
     string RegistrationNumber,
     DateTime? LicenseExpirationDate,
+    string? RegistrationDocUrl,
     DateTime CreatedAt
 );
 
@@ -39,6 +40,7 @@ public class GetPendingVerificationsQueryHandler : IRequestHandler<GetPendingVer
                 u.Role.ToString(),
                 u.GuideProfile!.RegistrationNumber ?? "",
                 u.GuideProfile.LicenseExpirationDate,
+                u.GuideProfile.RegistrationDocUrl,
                 u.CreatedAt
             ))
             .ToListAsync(cancellationToken);

@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { 
-    Building2, Phone, MessageSquare, Globe, 
-    Facebook, Instagram, Linkedin, Youtube, 
+import {
+    Building2, Phone, MessageSquare, Globe,
+    Facebook, Instagram, Linkedin, Youtube,
     Twitter, Save, Loader2, Info, CheckCircle2,
-    ShieldCheck, Mail, Camera, User, Briefcase, 
+    ShieldCheck, Mail, Camera, User, Briefcase,
     MapPin, Star, Languages as LangIcon, X, Plus,
     DollarSign, Clock, Zap, MessageCircle, AlertCircle
 } from "lucide-react";
@@ -18,7 +18,7 @@ import { Profile, AgencyProfile, GuideProfile } from "@/types";
 
 const XIcon = ({ size }: { size?: number }) => (
     <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
     </svg>
 );
 
@@ -40,7 +40,7 @@ export default function AgencyProfilePage() {
             try {
                 const res = await apiClient.get<Profile>("/profile/me");
                 setProfile(res.data);
-                
+
                 if (res.data.guideProfile) {
                     let initialModel: 'hourly' | 'daily' | 'negotiable' = 'daily';
                     if (res.data.guideProfile.contactForPrice) initialModel = 'negotiable';
@@ -135,9 +135,9 @@ export default function AgencyProfilePage() {
             };
 
             await apiClient.post("/profile/update-guide", guidePayload);
-            
+
             if (user) login({ ...user, fullName: profile.fullName });
-            
+
             setMessage({ type: "success", text: "Owner profile updated successfully!" });
             setTimeout(() => setMessage(null), 3000);
         } catch (error) {
@@ -230,16 +230,16 @@ export default function AgencyProfilePage() {
                             {activeTab === "agency" ? "Agency Profile" : "Owner Profile"}
                         </h1>
                     </div>
-                    
+
                     {/* Tabs */}
                     <div className="flex bg-gray-100 p-1 rounded-2xl w-fit">
-                        <button 
+                        <button
                             onClick={() => setActiveTab("agency")}
                             className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "agency" ? "bg-white text-teal-600 shadow-sm" : "text-gray-500 hover:text-gray-900"}`}
                         >
                             Agency
                         </button>
-                        <button 
+                        <button
                             onClick={() => setActiveTab("owner")}
                             className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "owner" ? "bg-white text-teal-600 shadow-sm" : "text-gray-500 hover:text-gray-900"}`}
                         >
@@ -249,7 +249,7 @@ export default function AgencyProfilePage() {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <Link 
+                    <Link
                         href={`/profile/${profile.agencyProfile?.slug || profile.agencyProfile?.id}?type=${activeTab === 'agency' ? 'agency' : 'guide'}`}
                         target="_blank"
                         className="group flex items-center gap-3 px-6 py-4 rounded-2xl bg-white border border-gray-100 text-gray-500 hover:text-teal-600 hover:border-teal-100 transition-all font-bold text-xs uppercase tracking-widest shadow-sm hover:shadow-md"
@@ -267,8 +267,8 @@ export default function AgencyProfilePage() {
                         animate={{ opacity: 1, y: 0, x: "-50%" }}
                         exit={{ opacity: 0, y: -50, x: "-50%" }}
                         className={`fixed top-24 left-1/2 z-[100] p-5 rounded-3xl border shadow-2xl flex items-center gap-4 min-w-[320px] ${message.type === "success"
-                                ? "bg-emerald-50 border-emerald-100 text-emerald-700"
-                                : "bg-rose-50 border-rose-100 text-rose-700"
+                            ? "bg-emerald-50 border-emerald-100 text-emerald-700"
+                            : "bg-rose-50 border-rose-100 text-rose-700"
                             }`}
                     >
                         {message.type === "success" ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
@@ -282,7 +282,7 @@ export default function AgencyProfilePage() {
 
             <AnimatePresence mode="wait">
                 {activeTab === "agency" ? (
-                    <motion.div 
+                    <motion.div
                         key="agency"
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -294,14 +294,14 @@ export default function AgencyProfilePage() {
                             <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50/50 blur-3xl -z-10" />
                             <div className="relative group">
                                 <div className="w-32 h-32 rounded-[2.5rem] overflow-hidden bg-gray-100 border-4 border-white shadow-xl ring-1 ring-gray-100">
-                                    <img 
-                                        src={profile.profileImageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${profile.profileImageUrl}` : `https://ui-avatars.com/api/?name=${profile.agencyProfile?.companyName}&background=F0FDFA&color=0D9488&bold=true`} 
-                                        alt={profile.agencyProfile?.companyName} 
+                                    <img
+                                        src={profile.profileImageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${profile.profileImageUrl}` : `https://ui-avatars.com/api/?name=${profile.agencyProfile?.companyName}&background=F0FDFA&color=0D9488&bold=true`}
+                                        alt={profile.agencyProfile?.companyName}
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
                                 <input type="file" id="agency-photo-upload" className="hidden" onChange={handlePhotoUpload} accept="image/*" />
-                                <label 
+                                <label
                                     htmlFor="agency-photo-upload"
                                     className="absolute -bottom-2 -right-2 p-3 bg-gray-900 text-white rounded-2xl shadow-lg border-4 border-white cursor-pointer hover:bg-teal-600 transition-all active:scale-95 group-hover:scale-110"
                                 >
@@ -322,7 +322,7 @@ export default function AgencyProfilePage() {
                                         <Building2 size={12} className="text-teal-600" />
                                         Business Name
                                     </label>
-                                    <input 
+                                    <input
                                         type="text"
                                         value={profile.agencyProfile?.companyName || ""}
                                         onChange={e => setProfile({ ...profile, agencyProfile: { ...profile.agencyProfile!, companyName: e.target.value } })}
@@ -335,7 +335,7 @@ export default function AgencyProfilePage() {
                                         <ShieldCheck size={12} className="text-teal-600" />
                                         Registration
                                     </label>
-                                    <input 
+                                    <input
                                         type="text"
                                         value={profile.agencyProfile?.registrationNumber || ""}
                                         disabled
@@ -350,7 +350,7 @@ export default function AgencyProfilePage() {
                                         <Mail size={12} className="text-teal-600" />
                                         Business Email
                                     </label>
-                                    <input 
+                                    <input
                                         type="email"
                                         value={profile.agencyProfile?.companyEmail || ""}
                                         disabled
@@ -362,7 +362,7 @@ export default function AgencyProfilePage() {
                                         <MapPin size={12} className="text-teal-600" />
                                         Company Address
                                     </label>
-                                    <input 
+                                    <input
                                         type="text"
                                         value={profile.agencyProfile?.companyAddress || ""}
                                         onChange={e => setProfile({ ...profile, agencyProfile: { ...profile.agencyProfile!, companyAddress: e.target.value } })}
@@ -378,7 +378,7 @@ export default function AgencyProfilePage() {
                                         <Phone size={12} className="text-teal-600" />
                                         Phone
                                     </label>
-                                    <input 
+                                    <input
                                         type="text"
                                         value={profile.agencyProfile?.phone || ""}
                                         onChange={e => setProfile({ ...profile, agencyProfile: { ...profile.agencyProfile!, phone: e.target.value } })}
@@ -391,7 +391,7 @@ export default function AgencyProfilePage() {
                                         <MessageSquare size={12} className="text-teal-600" />
                                         WhatsApp
                                     </label>
-                                    <input 
+                                    <input
                                         type="text"
                                         value={profile.agencyProfile?.whatsApp || ""}
                                         onChange={e => setProfile({ ...profile, agencyProfile: { ...profile.agencyProfile!, whatsApp: e.target.value } })}
@@ -411,20 +411,20 @@ export default function AgencyProfilePage() {
                                     {(profile.agencyProfile?.specialties || []).map((s, i) => (
                                         <span key={i} className="bg-teal-50 text-teal-700 border border-teal-100 px-4 py-2 rounded-xl text-[11px] font-bold flex items-center gap-2">
                                             {s}
-                                            <button onClick={() => setProfile({...profile, agencyProfile: {...profile.agencyProfile!, specialties: profile.agencyProfile!.specialties?.filter((_, idx) => idx !== i)}})} className="hover:text-red-500">
+                                            <button onClick={() => setProfile({ ...profile, agencyProfile: { ...profile.agencyProfile!, specialties: profile.agencyProfile!.specialties?.filter((_, idx) => idx !== i) } })} className="hover:text-red-500">
                                                 <X size={14} />
                                             </button>
                                         </span>
                                     ))}
                                 </div>
-                                <input 
+                                <input
                                     type="text"
                                     placeholder="Add expertise (e.g. Wildlife, Adventure) & press Enter"
                                     onKeyDown={e => {
                                         if (e.key === 'Enter') {
                                             const val = e.currentTarget.value.trim();
                                             if (val && !profile.agencyProfile?.specialties?.includes(val)) {
-                                                setProfile({...profile, agencyProfile: {...profile.agencyProfile!, specialties: [...(profile.agencyProfile!.specialties || []), val]}});
+                                                setProfile({ ...profile, agencyProfile: { ...profile.agencyProfile!, specialties: [...(profile.agencyProfile!.specialties || []), val] } });
                                                 e.currentTarget.value = "";
                                             }
                                         }
@@ -443,17 +443,17 @@ export default function AgencyProfilePage() {
                                     {(profile.agencyProfile?.operatingRegions || []).map((region, i) => (
                                         <span key={i} className="bg-blue-50 text-blue-700 border border-blue-100 px-4 py-2 rounded-xl text-[11px] font-bold flex items-center gap-2">
                                             {region}
-                                            <button onClick={() => setProfile({...profile, agencyProfile: {...profile.agencyProfile!, operatingRegions: profile.agencyProfile!.operatingRegions?.filter((_, idx) => idx !== i)}})} className="hover:text-red-500">
+                                            <button onClick={() => setProfile({ ...profile, agencyProfile: { ...profile.agencyProfile!, operatingRegions: profile.agencyProfile!.operatingRegions?.filter((_, idx) => idx !== i) } })} className="hover:text-red-500">
                                                 <X size={14} />
                                             </button>
                                         </span>
                                     ))}
                                 </div>
-                                <select 
+                                <select
                                     onChange={e => {
                                         const val = e.target.value;
                                         if (val && !profile.agencyProfile?.operatingRegions?.includes(val)) {
-                                            setProfile({...profile, agencyProfile: {...profile.agencyProfile!, operatingRegions: [...(profile.agencyProfile!.operatingRegions || []), val]}});
+                                            setProfile({ ...profile, agencyProfile: { ...profile.agencyProfile!, operatingRegions: [...(profile.agencyProfile!.operatingRegions || []), val] } });
                                         }
                                         e.target.value = "";
                                     }}
@@ -474,17 +474,17 @@ export default function AgencyProfilePage() {
                                     {(profile.agencyProfile?.languages || []).map((lang, i) => (
                                         <span key={i} className="bg-amber-50 text-amber-700 border border-amber-100 px-4 py-2 rounded-xl text-[11px] font-bold flex items-center gap-2">
                                             {lang}
-                                            <button onClick={() => setProfile({...profile, agencyProfile: {...profile.agencyProfile!, languages: profile.agencyProfile!.languages?.filter((_, idx) => idx !== i)}})} className="hover:text-red-500">
+                                            <button onClick={() => setProfile({ ...profile, agencyProfile: { ...profile.agencyProfile!, languages: profile.agencyProfile!.languages?.filter((_, idx) => idx !== i) } })} className="hover:text-red-500">
                                                 <X size={14} />
                                             </button>
                                         </span>
                                     ))}
                                 </div>
-                                <select 
+                                <select
                                     onChange={e => {
                                         const val = e.target.value;
                                         if (val && !profile.agencyProfile?.languages?.includes(val)) {
-                                            setProfile({...profile, agencyProfile: {...profile.agencyProfile!, languages: [...(profile.agencyProfile!.languages || []), val]}});
+                                            setProfile({ ...profile, agencyProfile: { ...profile.agencyProfile!, languages: [...(profile.agencyProfile!.languages || []), val] } });
                                         }
                                         e.target.value = "";
                                     }}
@@ -497,7 +497,7 @@ export default function AgencyProfilePage() {
 
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Agency Bio</label>
-                                <textarea 
+                                <textarea
                                     value={profile.agencyProfile?.bio || ""}
                                     onChange={e => setProfile({ ...profile, agencyProfile: { ...profile.agencyProfile!, bio: e.target.value } })}
                                     rows={4}
@@ -524,7 +524,7 @@ export default function AgencyProfilePage() {
                                             <social.icon size={12} />
                                             {social.label}
                                         </label>
-                                        <input 
+                                        <input
                                             type="url"
                                             value={(profile.agencyProfile as any)?.[social.name] || ""}
                                             onChange={e => setProfile({ ...profile, agencyProfile: { ...profile.agencyProfile!, [social.name]: e.target.value } })}
@@ -537,18 +537,18 @@ export default function AgencyProfilePage() {
                         </div>
                     </motion.div>
                 ) : (
-                    <motion.div 
+                    <motion.div
                         key="owner"
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
                         className="space-y-10"
                     >
-                         {/* Owner Details Section */}
-                         <div className="bg-white p-12 rounded-[3.5rem] border border-gray-100 shadow-sm space-y-10">
+                        {/* Owner Details Section */}
+                        <div className="bg-white p-12 rounded-[3.5rem] border border-gray-100 shadow-sm space-y-10">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Owner Full Name</label>
-                                <input 
+                                <input
                                     type="text"
                                     value={profile.fullName || ""}
                                     onChange={e => setProfile({ ...profile, fullName: e.target.value })}
@@ -559,7 +559,7 @@ export default function AgencyProfilePage() {
 
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Professional Bio</label>
-                                <textarea 
+                                <textarea
                                     value={profile.guideProfile?.bio || ""}
                                     onChange={e => setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, bio: e.target.value } })}
                                     rows={4}
@@ -574,7 +574,7 @@ export default function AgencyProfilePage() {
                                         <Phone size={12} className="text-teal-600" />
                                         Mobile (+94...)
                                     </label>
-                                    <input 
+                                    <input
                                         type="text"
                                         value={profile.guideProfile?.phoneNumber || ""}
                                         onChange={e => setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, phoneNumber: e.target.value } })}
@@ -587,7 +587,7 @@ export default function AgencyProfilePage() {
                                         <MessageCircle size={12} className="text-teal-600" />
                                         WhatsApp (+94...)
                                     </label>
-                                    <input 
+                                    <input
                                         type="text"
                                         value={profile.guideProfile?.whatsAppNumber || ""}
                                         onChange={e => setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, whatsAppNumber: e.target.value } })}
@@ -596,12 +596,12 @@ export default function AgencyProfilePage() {
                                     />
                                 </div>
                             </div>
-                         </div>
+                        </div>
 
-                         {/* Owner Rates & Skills */}
-                         <div className="bg-white p-12 rounded-[3.5rem] border border-gray-100 shadow-sm space-y-12">
+                        {/* Owner Rates & Skills */}
+                        <div className="bg-white p-12 rounded-[3.5rem] border border-gray-100 shadow-sm space-y-12">
                             <h3 className="text-xl font-black text-gray-900 italic tracking-tight">Rates & Skills</h3>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                                 <div className="space-y-6">
                                     <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 block ml-2">Pricing Model</label>
@@ -631,13 +631,13 @@ export default function AgencyProfilePage() {
                                             </label>
                                             <div className="relative">
                                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-black text-gray-300">$</span>
-                                                <input 
+                                                <input
                                                     type="number"
                                                     value={pricingModel === 'hourly' ? (profile.guideProfile?.hourlyRate ?? 0) : (profile.guideProfile?.dailyRate ?? 0)}
                                                     onChange={e => {
                                                         const val = Number(e.target.value);
-                                                        if (pricingModel === 'hourly') setProfile({...profile, guideProfile: {...profile.guideProfile!, hourlyRate: val}});
-                                                        else setProfile({...profile, guideProfile: {...profile.guideProfile!, dailyRate: val}});
+                                                        if (pricingModel === 'hourly') setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, hourlyRate: val } });
+                                                        else setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, dailyRate: val } });
                                                     }}
                                                     className="bg-gray-50 border border-transparent rounded-3xl py-6 px-12 text-4xl font-black text-gray-900 outline-none w-full text-center focus:bg-white focus:border-teal-100 transition-all"
                                                 />
@@ -660,17 +660,17 @@ export default function AgencyProfilePage() {
                                         {(profile.guideProfile?.languages || []).map((lang, i) => (
                                             <span key={i} className="bg-amber-50 text-amber-700 border border-amber-100 px-4 py-2 rounded-xl text-[11px] font-bold flex items-center gap-2">
                                                 {lang}
-                                                <button onClick={() => setProfile({...profile, guideProfile: {...profile.guideProfile!, languages: profile.guideProfile!.languages?.filter((_, idx) => idx !== i)}})} className="hover:text-red-500">
+                                                <button onClick={() => setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, languages: profile.guideProfile!.languages?.filter((_, idx) => idx !== i) } })} className="hover:text-red-500">
                                                     <X size={14} />
                                                 </button>
                                             </span>
                                         ))}
                                     </div>
-                                    <select 
+                                    <select
                                         onChange={e => {
                                             const val = e.target.value;
                                             if (val && !profile.guideProfile?.languages?.includes(val)) {
-                                                setProfile({...profile, guideProfile: {...profile.guideProfile!, languages: [...(profile.guideProfile!.languages || []), val]}});
+                                                setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, languages: [...(profile.guideProfile!.languages || []), val] } });
                                             }
                                             e.target.value = "";
                                         }}
@@ -691,20 +691,20 @@ export default function AgencyProfilePage() {
                                         {(profile.guideProfile?.specialties || []).map((s, i) => (
                                             <span key={i} className="bg-teal-50 text-teal-700 border border-teal-100 px-4 py-2 rounded-xl text-[11px] font-bold flex items-center gap-2">
                                                 {s}
-                                                <button onClick={() => setProfile({...profile, guideProfile: {...profile.guideProfile!, specialties: profile.guideProfile!.specialties?.filter((_, idx) => idx !== i)}})} className="hover:text-red-500">
+                                                <button onClick={() => setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, specialties: profile.guideProfile!.specialties?.filter((_, idx) => idx !== i) } })} className="hover:text-red-500">
                                                     <X size={14} />
                                                 </button>
                                             </span>
                                         ))}
                                     </div>
-                                    <input 
+                                    <input
                                         type="text"
                                         placeholder="Type Specialty & Press Enter"
                                         onKeyDown={e => {
                                             if (e.key === 'Enter') {
                                                 const val = e.currentTarget.value.trim();
                                                 if (val && !profile.guideProfile?.specialties?.includes(val)) {
-                                                    setProfile({...profile, guideProfile: {...profile.guideProfile!, specialties: [...(profile.guideProfile!.specialties || []), val]}});
+                                                    setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, specialties: [...(profile.guideProfile!.specialties || []), val] } });
                                                     e.currentTarget.value = "";
                                                 }
                                             }
@@ -723,17 +723,17 @@ export default function AgencyProfilePage() {
                                         {(profile.guideProfile?.operatingAreas || []).map((area, i) => (
                                             <span key={i} className="bg-blue-50 text-blue-700 border border-blue-100 px-4 py-2 rounded-xl text-[11px] font-bold flex items-center gap-2">
                                                 {area}
-                                                <button onClick={() => setProfile({...profile, guideProfile: {...profile.guideProfile!, operatingAreas: profile.guideProfile!.operatingAreas?.filter((_, idx) => idx !== i)}})} className="hover:text-red-500">
+                                                <button onClick={() => setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, operatingAreas: profile.guideProfile!.operatingAreas?.filter((_, idx) => idx !== i) } })} className="hover:text-red-500">
                                                     <X size={14} />
                                                 </button>
                                             </span>
                                         ))}
                                     </div>
-                                    <select 
+                                    <select
                                         onChange={e => {
                                             const val = e.target.value;
                                             if (val && !profile.guideProfile?.operatingAreas?.includes(val)) {
-                                                setProfile({...profile, guideProfile: {...profile.guideProfile!, operatingAreas: [...(profile.guideProfile!.operatingAreas || []), val]}});
+                                                setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, operatingAreas: [...(profile.guideProfile!.operatingAreas || []), val] } });
                                             }
                                             e.target.value = "";
                                         }}
@@ -744,17 +744,17 @@ export default function AgencyProfilePage() {
                                     </select>
                                 </div>
                             </div>
-                         </div>
+                        </div>
 
-                         {/* Owner Verification Details */}
-                         <div className="bg-white p-12 rounded-[3.5rem] border border-gray-100 shadow-sm space-y-10">
+                        {/* Owner Verification Details */}
+                        <div className="bg-white p-12 rounded-[3.5rem] border border-gray-100 shadow-sm space-y-10">
                             <div className="flex items-center gap-3">
                                 <div className="p-3 rounded-2xl bg-teal-50 text-teal-600">
                                     <ShieldCheck size={24} />
                                 </div>
                                 <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">Verification (Licensed Guide Badge)</h3>
                             </div>
-                            
+
                             <p className="text-xs text-gray-500 font-medium leading-relaxed italic">
                                 Provide your official registration details to receive the <span className="text-teal-600 font-bold">LICENSED GUIDE</span> badge.
                             </p>
@@ -762,17 +762,17 @@ export default function AgencyProfilePage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Registration Number</label>
-                                    <input 
+                                    <input
                                         type="text"
                                         value={profile.guideProfile?.registrationNumber || ""}
                                         onChange={e => setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, registrationNumber: e.target.value } })}
-                                        placeholder="SLTDA/G/..."
+                                        placeholder="Registration Number"
                                         className={inputClasses}
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">License Expiry Date</label>
-                                    <input 
+                                    <input
                                         type="date"
                                         value={profile.guideProfile?.licenseExpirationDate ? new Date(profile.guideProfile.licenseExpirationDate).toISOString().split('T')[0] : ""}
                                         onChange={e => setProfile({ ...profile, guideProfile: { ...profile.guideProfile!, licenseExpirationDate: e.target.value } })}
@@ -785,16 +785,16 @@ export default function AgencyProfilePage() {
                                 onClick={handleRequestVerification}
                                 disabled={saving || !profile.guideProfile?.registrationNumber || !profile.guideProfile?.licenseExpirationDate || profile.guideProfile?.verificationStatus === "Pending"}
                                 className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all disabled:opacity-50 ${profile.guideProfile?.verificationStatus === "Pending"
-                                        ? "bg-amber-50 text-amber-700 border border-amber-200 cursor-not-allowed"
-                                        : "bg-teal-50 text-teal-700 border border-teal-100 hover:bg-teal-500 hover:text-white"
+                                    ? "bg-amber-50 text-amber-700 border border-amber-200 cursor-not-allowed"
+                                    : "bg-teal-50 text-teal-700 border border-teal-100 hover:bg-teal-500 hover:text-white"
                                     }`}
                             >
                                 {saving ? "Processing..." : (profile.guideProfile?.verificationStatus === "Pending" ? "Pending Approval" : "Submit for Verification")}
                             </button>
-                         </div>
+                        </div>
 
-                         {/* Owner Social Presence */}
-                         <div className="bg-white p-12 rounded-[3.5rem] border border-gray-100 shadow-sm space-y-10">
+                        {/* Owner Social Presence */}
+                        <div className="bg-white p-12 rounded-[3.5rem] border border-gray-100 shadow-sm space-y-10">
                             <div className="flex items-center gap-3">
                                 <div className="p-3 rounded-2xl bg-teal-50 text-teal-600">
                                     <Instagram size={24} />
@@ -840,7 +840,7 @@ export default function AgencyProfilePage() {
                                     );
                                 })}
                             </div>
-                         </div>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -852,7 +852,7 @@ export default function AgencyProfilePage() {
                 <div className="space-y-2 text-center md:text-left">
                     <h3 className="text-xl font-black italic tracking-tight italic">Security & Verification</h3>
                     <p className="text-gray-400 text-sm font-medium leading-relaxed max-w-xl">
-                        {profile.agencyProfile?.isVerified 
+                        {profile.agencyProfile?.isVerified
                             ? "Your agency is fully verified. Your profile displays the verification badge and ranks higher in discovery results."
                             : "Your agency verification is currently pending. Once verified, you'll receive a badge and increased visibility."}
                     </p>
@@ -862,7 +862,7 @@ export default function AgencyProfilePage() {
             {/* Bottom Save Bar */}
             <div className="sticky bottom-8 left-0 right-0 z-40 px-4 pointer-events-none">
                 <div className="max-w-4xl mx-auto flex justify-end pointer-events-auto">
-                    <button 
+                    <button
                         onClick={activeTab === "agency" ? handleSaveAgency : handleSaveOwner}
                         disabled={saving}
                         className="group bg-gray-900 text-white px-12 py-6 rounded-[2.5rem] font-black text-xs uppercase tracking-[0.3em] hover:bg-teal-600 transition-all shadow-2xl flex items-center gap-4 active:scale-95 disabled:opacity-50 ring-4 ring-white"

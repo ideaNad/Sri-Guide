@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Profile } from "@/types";
+import FileUpload from "@/components/ui/FileUpload";
 
 const XIcon = ({ className, size }: { className?: string, size?: number }) => (
     <svg className={className} width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -83,6 +84,7 @@ export default function GuideProfilePage() {
         linkedinLink: "",
         registrationNumber: "",
         licenseExpirationDate: "",
+        registrationDocUrl: "",
     });
 
     useEffect(() => {
@@ -105,29 +107,38 @@ export default function GuideProfilePage() {
                 setPricingModel(initialModel);
 
                 // Initialize form states
-                setFormData(prev => ({
-                    ...prev,
-                    fullName: data.fullName || "",
-                    bio: data.guideProfile?.bio || "",
-                    specialties: data.guideProfile?.specialties || [],
-                    dailyRate: data.guideProfile?.dailyRate || 0,
-                    hourlyRate: data.guideProfile?.hourlyRate || 0,
-                    contactForPrice: data.guideProfile?.contactForPrice || false,
-                    languages: data.guideProfile?.languages || [],
-                    operatingAreas: data.guideProfile?.operatingAreas || [],
-                    phoneNumber: data.guideProfile?.phoneNumber || "",
-                    whatsAppNumber: data.guideProfile?.whatsAppNumber || "",
-                    youTubeLink: data.guideProfile?.youTubeLink || "",
-                    tikTokLink: data.guideProfile?.tikTokLink || "",
-                    facebookLink: data.guideProfile?.facebookLink || "",
-                    instagramLink: data.guideProfile?.instagramLink || "",
-                    twitterLink: data.guideProfile?.twitterLink || "",
-                    linkedinLink: data.guideProfile?.linkedinLink || "",
-                    registrationNumber: data.guideProfile?.registrationNumber || "",
-                    licenseExpirationDate: data.guideProfile?.licenseExpirationDate
-                        ? new Date(data.guideProfile.licenseExpirationDate).toISOString().split('T')[0]
-                        : "",
-                }));
+                const guide = data.guideProfile;
+                if (guide) {
+                    setFormData(prev => ({
+                        ...prev,
+                        fullName: data.fullName || "",
+                        bio: guide.bio || "",
+                        specialties: guide.specialties || [],
+                        dailyRate: guide.dailyRate || 0,
+                        hourlyRate: guide.hourlyRate || 0,
+                        contactForPrice: guide.contactForPrice || false,
+                        languages: guide.languages || [],
+                        operatingAreas: guide.operatingAreas || [],
+                        phoneNumber: guide.phoneNumber || "",
+                        whatsAppNumber: guide.whatsAppNumber || "",
+                        youTubeLink: guide.youTubeLink || "",
+                        tikTokLink: guide.tikTokLink || "",
+                        facebookLink: guide.facebookLink || "",
+                        instagramLink: guide.instagramLink || "",
+                        twitterLink: guide.twitterLink || "",
+                        linkedinLink: guide.linkedinLink || "",
+                        registrationNumber: guide.registrationNumber || "",
+                        licenseExpirationDate: guide.licenseExpirationDate
+                            ? new Date(guide.licenseExpirationDate).toISOString().split('T')[0]
+                            : "",
+                        registrationDocUrl: guide.registrationDocUrl || "",
+                    }));
+                } else {
+                    setFormData(prev => ({
+                        ...prev,
+                        fullName: data.fullName || ""
+                    }));
+                }
             } catch (error) {
                 console.error("Failed to fetch profile", error);
             } finally {
@@ -257,7 +268,8 @@ export default function GuideProfilePage() {
         try {
             await apiClient.post("/profile/request-verification", {
                 registrationNumber: formData.registrationNumber,
-                licenseExpirationDate: formData.licenseExpirationDate
+                licenseExpirationDate: formData.licenseExpirationDate,
+                registrationDocUrl: formData.registrationDocUrl
             });
             setMessage({ type: "success", text: "Verification request submitted! Admin will review it soon." });
 
@@ -285,7 +297,8 @@ export default function GuideProfilePage() {
         profile?.guideProfile?.registrationNumber !== formData.registrationNumber ||
         (profile?.guideProfile?.licenseExpirationDate
             ? new Date(profile.guideProfile.licenseExpirationDate).toISOString().split('T')[0]
-            : "") !== formData.licenseExpirationDate;
+            : "") !== formData.licenseExpirationDate ||
+        profile?.guideProfile?.registrationDocUrl !== formData.registrationDocUrl;
 
     const vStatus = profile?.guideProfile?.verificationStatus || "None";
 
@@ -293,7 +306,7 @@ export default function GuideProfilePage() {
     if (vStatus === "Pending") btnText = "Pending Approval";
     else if (vStatus === "Approved") btnText = "Renew Verification";
 
-    const glowClass = isVerificationChanged && formData.registrationNumber && formData.licenseExpirationDate
+    const glowClass = isVerificationChanged && formData.registrationNumber && formData.licenseExpirationDate && formData.registrationDocUrl
         ? "shadow-[0_0_20px_rgba(16,185,129,0.4)] border-emerald-400 bg-emerald-100 ring-2 ring-emerald-500 ring-offset-2 hover:bg-emerald-200"
         : "";
 
@@ -506,8 +519,8 @@ export default function GuideProfilePage() {
                                         <label
                                             key={model.id}
                                             className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all cursor-pointer h-[88px] ${pricingModel === model.id
-                                                    ? 'bg-blue-50/50 border-primary text-primary'
-                                                    : 'bg-gray-50/50 border-transparent text-gray-500 hover:border-gray-200'
+                                                ? 'bg-blue-50/50 border-primary text-primary'
+                                                : 'bg-gray-50/50 border-transparent text-gray-500 hover:border-gray-200'
                                                 }`}
                                         >
                                             <input
@@ -608,7 +621,7 @@ export default function GuideProfilePage() {
                                         value={formData.registrationNumber}
                                         onChange={handleChange}
                                         className="w-full bg-gray-50 border border-transparent rounded-2xl py-4 px-6 font-bold text-gray-900 outline-none focus:bg-white focus:border-primary/20 transition-all text-sm"
-                                        placeholder="SLTDA/G/..."
+                                        placeholder="Registration Number"
                                     />
                                 </div>
                                 <div>
@@ -623,12 +636,32 @@ export default function GuideProfilePage() {
                                 </div>
                             </div>
 
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-[2px] text-gray-400 ml-1 mb-2 block">Registration Document (Proof)*</label>
+                                    <FileUpload
+                                        value={formData.registrationDocUrl}
+                                        onChange={url => setFormData({ ...formData, registrationDocUrl: url })}
+                                        label="Upload Image or PDF"
+                                    />
+                                    {!formData.registrationDocUrl && (
+                                        <div className="flex items-center gap-2 text-rose-500 mt-2 px-1">
+                                            <AlertCircle size={14} />
+                                            <span className="text-[10px] font-black uppercase tracking-widest">Document is required for verification</span>
+                                        </div>
+                                    )}
+                                    <p className="text-[10px] text-gray-400 mt-3 px-1 font-medium leading-relaxed italic">
+                                        Note: This document is for verification purposes only. Once verified (approved or rejected), it will be <span className="text-primary font-black">permanently deleted</span> from our system to ensure your business privacy.
+                                    </p>
+                                </div>
+                            </div>
+
                             <button
                                 onClick={handleRequestVerification}
-                                disabled={saving || !formData.registrationNumber || !formData.licenseExpirationDate || vStatus === "Pending"}
+                                disabled={saving || !formData.registrationNumber || !formData.licenseExpirationDate || !formData.registrationDocUrl || vStatus === "Pending"}
                                 className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all disabled:opacity-50 ${vStatus === "Pending"
-                                        ? "bg-amber-50 text-amber-700 border border-amber-200 cursor-not-allowed"
-                                        : `bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-500 hover:text-white ${glowClass}`
+                                    ? "bg-amber-50 text-amber-700 border border-amber-200 cursor-not-allowed"
+                                    : `bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-500 hover:text-white ${glowClass}`
                                     }`}
                             >
                                 {saving ? "Processing..." : (vStatus === "Pending" ? "Pending Approval" : isVerificationChanged ? "Submit for Verification" : btnText)}
@@ -688,8 +721,8 @@ export default function GuideProfilePage() {
                             animate={{ opacity: 1, y: 0, x: "-50%" }}
                             exit={{ opacity: 0, y: -50, x: "-50%" }}
                             className={`fixed top-24 left-1/2 z-[100] p-5 rounded-3xl border shadow-2xl flex items-center gap-4 min-w-[320px] ${message.type === "success"
-                                    ? "bg-emerald-50 border-emerald-100 text-emerald-700"
-                                    : "bg-rose-50 border-rose-100 text-rose-700"
+                                ? "bg-emerald-50 border-emerald-100 text-emerald-700"
+                                : "bg-rose-50 border-rose-100 text-rose-700"
                                 }`}
                         >
                             {message.type === "success" ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}

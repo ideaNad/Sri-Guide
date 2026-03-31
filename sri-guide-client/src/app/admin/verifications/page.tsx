@@ -4,7 +4,8 @@ import React, { useEffect, useState } from "react";
 import { 
     CheckCircle2, XCircle, Clock, Search, 
     Filter, ShieldCheck, User, Building2, 
-    Eye, MoreVertical, Check, X, Trash2
+    Eye, MoreVertical, Check, X, Trash2,
+    FileText
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/services/api-client";
@@ -18,6 +19,7 @@ interface VerificationRequest {
     role: "Guide" | "TravelAgency";
     registrationNumber: string;
     licenseExpirationDate?: string;
+    registrationDocUrl?: string;
     createdAt: string;
 }
 
@@ -179,6 +181,17 @@ const AdminVerificationsPage = () => {
                                                 >
                                                     <Eye size={18} />
                                                 </button>
+                                                {req.registrationDocUrl && (
+                                                    <a 
+                                                        href={`${apiClient.defaults.baseURL?.replace('/api', '')}${req.registrationDocUrl}`} 
+                                                        target="_blank" 
+                                                        rel="noopener noreferrer"
+                                                        className="p-2 text-blue-400 hover:text-blue-600 transition-colors"
+                                                        title="View Document"
+                                                    >
+                                                        <FileText size={18} />
+                                                    </a>
+                                                )}
                                                 <button 
                                                     disabled={!!actionLoading}
                                                     onClick={() => handleAction(req.id, "reject")}

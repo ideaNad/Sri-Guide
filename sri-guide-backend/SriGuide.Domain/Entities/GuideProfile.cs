@@ -21,6 +21,7 @@ public class GuideProfile : BaseEntity
     public string? RegistrationNumber { get; set; }
     public DateTime? LicenseExpirationDate { get; set; }
     public bool IsLegit { get; set; }
+    public string? RegistrationDocUrl { get; set; }
 
     public VerificationStatus VerificationStatus { get; set; } = VerificationStatus.None;
     public bool IsVerified { get; set; }

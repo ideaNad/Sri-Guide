@@ -5,7 +5,7 @@ using SriGuide.Domain.Enums;
 
 namespace SriGuide.Application.Profiles.Commands;
 
-public record RequestVerificationCommand(Guid UserId, string RegistrationNumber, DateTime LicenseExpirationDate) : IRequest<bool>
+public record RequestVerificationCommand(Guid UserId, string RegistrationNumber, DateTime LicenseExpirationDate, string? RegistrationDocUrl) : IRequest<bool>
 {
     public Guid UserId { get; init; } // Set by controller
 }
@@ -28,6 +28,7 @@ public class RequestVerificationCommandHandler : IRequestHandler<RequestVerifica
 
         guide.RegistrationNumber = request.RegistrationNumber;
         guide.LicenseExpirationDate = DateTime.SpecifyKind(request.LicenseExpirationDate, DateTimeKind.Utc);
+        guide.RegistrationDocUrl = request.RegistrationDocUrl;
         guide.VerificationStatus = VerificationStatus.Pending;
         
         await _context.SaveChangesAsync(cancellationToken);
