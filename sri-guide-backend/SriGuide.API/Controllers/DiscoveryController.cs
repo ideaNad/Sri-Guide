@@ -84,4 +84,23 @@ public class DiscoveryController : ControllerBase
         var result = await _mediator.Send(new GetPopularToursQuery(userIdObj));
         return Ok(result);
     }
+
+    [HttpGet("adventures")]
+    public async Task<IActionResult> GetAdventures(
+        [FromQuery] string? query,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 12,
+        [FromQuery] string? location = null,
+        [FromQuery] decimal? minRating = null,
+        [FromQuery] string? sortBy = null)
+    {
+        var result = await _mediator.Send(new GetAdventuresQuery(
+            query,
+            pageNumber,
+            pageSize,
+            location,
+            minRating,
+            sortBy));
+        return Ok(result);
+    }
 }

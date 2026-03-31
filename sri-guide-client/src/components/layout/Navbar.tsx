@@ -44,6 +44,7 @@ const Navbar = () => {
     }
 
     const exploreLinks = [
+        { name: "Adventures", href: "/adventures" },
         { name: "Agencies", href: "/agencies" },
         { name: "Transport", href: "/transport" },
     ];

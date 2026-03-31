@@ -351,8 +351,8 @@ export default function Home() {
                 title="Recent Adventures"
                 subtitle="Real experiences shared by our certified guides across the island."
               />
-              <Link href="/guides" className="mb-12 text-sm font-bold text-primary flex items-center gap-2 group hover:text-secondary transition-colors">
-                Meet All Guides <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
+              <Link href="/adventures" className="mb-12 bg-gray-900 text-white px-8 py-3 font-bold text-[10px] uppercase tracking-widest rounded-full hover:bg-black transition-all shadow-md">
+                View All Adventures
               </Link>
             </div>
 
@@ -408,8 +408,8 @@ export default function Home() {
                 title="Upcoming Experiences"
                 subtitle="Join unique workshops, meetups, and festivals organized by locals."
               />
-              <Link href="/events" className="mb-12 text-sm font-bold text-blue-600 flex items-center gap-2 group hover:text-blue-700 transition-colors">
-                Explore All Events <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
+              <Link href="/events" className="mb-12 bg-gray-900 text-white px-8 py-3 font-bold text-[10px] uppercase tracking-widest rounded-full hover:bg-black transition-all shadow-md">
+                Explore All Events
               </Link>
             </div>
 
@@ -458,11 +458,17 @@ export default function Home() {
         {/* Top Local Guides - Profile Cards */}
         <section className="py-24 bg-primary/5">
           <div className="container mx-auto px-4 md:px-6">
-            <SectionHeader
-              badge="Expert Minds"
-              title="Our Top Local Guides"
-              subtitle="Connect with certified professionals who bring stories to life."
-            />
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+              <SectionHeader
+                badge="Expert Minds"
+                title="Our Top Local Guides"
+                subtitle="Connect with certified professionals who bring stories to life."
+              />
+
+              <Link href="/guides" className="mb-12 bg-gray-900 text-white px-8 py-3 font-bold text-[10px] uppercase tracking-widest rounded-full hover:bg-black transition-all shadow-md">
+                View All Guides
+              </Link>
+            </div>
 
             {loadingGuides ? (
               <div className="flex justify-center py-20">
@@ -486,11 +492,17 @@ export default function Home() {
         <section className="py-24 bg-white overflow-hidden relative">
           <div className="absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gray-100 to-transparent" />
           <div className="container mx-auto px-4 md:px-6 relative z-10">
-            <SectionHeader
-              badge="Business Partners"
-              title="Our Top Travel Agencies"
-              subtitle="Explore certified tour companies providing premium travel experiences."
-            />
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+              <SectionHeader
+                badge="Business Partners"
+                title="Our Top Travel Agencies"
+                subtitle="Explore certified tour companies providing premium travel experiences."
+              />
+
+              <Link href="/agencies" className="mb-12 bg-gray-900 text-white px-8 py-3 font-bold text-[10px] uppercase tracking-widest rounded-full hover:bg-black transition-all shadow-md">
+                View All Agencies
+              </Link>
+            </div>
 
             {loadingAgencies ? (
               <div className="flex justify-center py-20">
