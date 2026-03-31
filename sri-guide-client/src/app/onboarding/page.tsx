@@ -65,7 +65,7 @@ export default function OnboardingPage() {
 
       if (user.onboardingCompleted) {
         const role = user.role?.toLowerCase() || '';
-        if (role === 'guide') router.push('/guide');
+        if (role === 'guide') router.push('/guide/profile');
         else if (role === 'travelagency') router.push('/agency');
         else if (role === 'eventorganizer') router.push('/organizer');
         else if (role === 'admin') router.push('/admin');
@@ -168,7 +168,7 @@ export default function OnboardingPage() {
       completeOnboarding();
       
       // Navigate based on role
-      if (userRole === 'guide') router.push('/guide');
+      if (userRole === 'guide') router.push('/guide/profile');
       else if (userRole === 'agency') router.push('/agency');
       else if (userRole === 'eventOrganizer') router.push('/organizer');
       else router.push('/dashboard');

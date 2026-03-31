@@ -516,17 +516,17 @@ const CreateTourPage = () => {
                                         <div className="lg:col-span-12 space-y-8">
                                             <div className="flex items-center justify-between px-2">
                                                 <label className="text-xs font-black text-gray-900 uppercase tracking-[0.2em]">Tour Gallery</label>
-                                                <span className="text-[10px] font-black text-teal-600 bg-teal-50 px-4 py-2 rounded-full uppercase tracking-widest italic">Experience Gallery</span>
+                                                                                <span className="text-[10px] font-black text-teal-600 bg-teal-50 px-4 py-2 rounded-full uppercase tracking-widest italic">Experience Gallery</span>
                                             </div>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
                                                 {formData.additionalImages.map((img, idx) => (
                                                     <div key={idx} className="relative group aspect-video rounded-3xl overflow-hidden border border-gray-100 shadow-xl shadow-gray-100/50 transform transition-all duration-500 hover:scale-[1.02]">
                                                         <img src={getImageUrl(img)} className="w-full h-full object-cover" />
-                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/40 transition-all flex items-center justify-center">
                                                             <button
                                                                 type="button"
                                                                 onClick={() => setFormData(prev => ({ ...prev, additionalImages: prev.additionalImages.filter((_, i) => i !== idx) }))}
-                                                                className="bg-white/90 text-rose-500 p-4 rounded-2xl transform hover:scale-110 transition-all border border-rose-100"
+                                                                className="bg-white/90 text-rose-500 p-4 rounded-2xl transform hover:scale-110 transition-all border border-rose-100 shadow-lg"
                                                             >
                                                                 <Trash2 size={20} />
                                                             </button>
@@ -682,7 +682,7 @@ const CreateTourPage = () => {
                                                                         newItinerary.splice(globalIndex, 1);
                                                                         setFormData({ ...formData, itinerary: newItinerary });
                                                                     }}
-                                                                    className="absolute -top-3 -right-3 p-3 bg-white text-rose-500 rounded-2xl shadow-xl border border-rose-50 hover:bg-rose-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                                                                    className="absolute -top-3 -right-3 p-3 bg-white text-rose-500 rounded-2xl shadow-xl border border-rose-50 hover:bg-rose-500 hover:text-white transition-all"
                                                                 >
                                                                     <Trash2 size={16} />
                                                                 </button>

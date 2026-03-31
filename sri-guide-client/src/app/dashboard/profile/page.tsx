@@ -130,7 +130,7 @@ export default function ProfilePage() {
                                         <Loader2 className="w-6 h-6 text-white animate-spin" />
                                     </div>
                                 )}
-                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 flex items-center justify-center transition-all">
                                     <Camera size={20} className="text-white" />
                                 </div>
                             </div>

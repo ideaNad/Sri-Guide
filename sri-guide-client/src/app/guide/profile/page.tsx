@@ -324,7 +324,7 @@ export default function GuideProfilePage() {
                             <input type="file" id="photo-upload" className="hidden" onChange={handlePhotoUpload} />
                             <label
                                 htmlFor="photo-upload"
-                                className="absolute bottom-2 right-2 p-3 bg-gray-900 text-white rounded-2xl shadow-lg border-4 border-white opacity-0 group-hover:opacity-100 transition-all hover:bg-primary cursor-pointer"
+                                className="absolute bottom-2 right-2 p-3 bg-gray-900 text-white rounded-2xl shadow-lg border-4 border-white transition-all hover:bg-primary cursor-pointer"
                             >
                                 <Camera size={18} />
                             </label>

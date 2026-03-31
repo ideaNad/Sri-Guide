@@ -171,7 +171,7 @@ export default function AgencyDashboardPage() {
                                     alt={tour.title}
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent transition-opacity" />
                                 <div className="absolute top-4 sm:top-6 right-4 sm:right-6 bg-white/95 backdrop-blur-md px-3 sm:px-4 py-1.5 rounded-full text-[9px] font-black uppercase text-teal-600 border border-white shadow-xl">
                                     {tour.status}
                                 </div>
@@ -260,7 +260,7 @@ export default function AgencyDashboardPage() {
                                     }`}>
                                         {guide.status}
                                     </span>
-                                    <ArrowRight size={14} className="text-gray-300 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0 hidden sm:block" />
+                                    <ArrowRight size={14} className="text-gray-300 group-hover:text-teal-600 transition-all hidden sm:block" />
                                 </div>
                             </div>
                         ))}

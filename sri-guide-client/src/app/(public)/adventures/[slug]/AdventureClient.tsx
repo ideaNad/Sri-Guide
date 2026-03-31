@@ -257,9 +257,8 @@ const ImageGrid = ({
                 className="w-full h-[300px] sm:h-[420px] md:h-[520px] rounded-2xl overflow-hidden cursor-pointer group relative"
                 onClick={() => onOpenLightbox(0)}
             >
-                <img src={getImageUrl(images[0])} alt="Tour" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 rounded-full p-3">
+                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                    <div className="bg-white/80 group-hover:bg-white rounded-full p-3 transition-all">
                         <ZoomIn size={22} className="text-gray-800" />
                     </div>
                 </div>

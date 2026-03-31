@@ -210,8 +210,8 @@ export default function EditProfilePage() {
                                     alt="Profile"
                                     className="w-full h-full object-cover"
                                 />
-                                <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Camera size={20} className="text-white" />
+                                <div className="absolute inset-0 bg-black/10 flex items-center justify-center transition-opacity hover:bg-black/30">
+                                    <Camera size={20} className="text-white shadow-sm" />
                                 </div>
                             </div>
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">

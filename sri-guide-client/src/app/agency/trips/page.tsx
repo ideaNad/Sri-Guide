@@ -283,7 +283,7 @@ export default function AgencyTripsPage() {
                                                     <button 
                                                         type="button" 
                                                         onClick={() => handleRemoveExistingImage(imgUrl)}
-                                                        className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity"
+                                                        className="absolute inset-0 bg-black/10 hover:bg-black/40 flex items-center justify-center text-white transition-all shadow-lg"
                                                     >
                                                         <Trash2 size={16} />
                                                     </button>
@@ -367,7 +367,7 @@ export default function AgencyTripsPage() {
                                                 <span className="text-[10px] font-black uppercase tracking-widest">No Photos Added</span>
                                             </div>
                                         )}
-                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                                        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/40 transition-all flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
                                             <label className="cursor-pointer bg-white text-gray-900 px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg hover:scale-105 transition-transform flex items-center gap-2">
                                                 <Plus size={14} /> Upload Photo
                                                 <input 

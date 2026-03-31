@@ -162,19 +162,19 @@ export default function ImageUpload({
                                 alt="Preview" 
                                 className="w-full h-full object-cover"
                             />
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/40 transition-all flex items-center justify-center gap-3">
                                 <button 
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         fileInputRef.current?.click();
                                     }}
-                                    className="p-3 bg-white text-gray-900 rounded-2xl hover:bg-primary hover:text-white transition-all transform hover:scale-110"
+                                    className="p-3 bg-white text-gray-900 rounded-2xl hover:bg-primary hover:text-white transition-all transform hover:scale-110 shadow-lg"
                                 >
                                     <Upload size={20} />
                                 </button>
                                 <button 
                                     onClick={removeImage}
-                                    className="p-3 bg-white text-rose-500 rounded-2xl hover:bg-rose-500 hover:text-white transition-all transform hover:scale-110"
+                                    className="p-3 bg-white text-rose-500 rounded-2xl hover:bg-rose-500 hover:text-white transition-all transform hover:scale-110 shadow-lg"
                                 >
                                     <X size={20} />
                                 </button>

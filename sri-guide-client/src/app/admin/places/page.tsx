@@ -196,7 +196,7 @@ const PlacesManagementPage = () => {
                                 alt={place.title}
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                             />
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/40 transition-all flex items-center justify-center gap-3">
                                 <button 
                                     onClick={() => handleOpenModal(place)}
                                     className="p-3 bg-white text-[#7367F0] rounded-2xl hover:scale-110 transition-transform shadow-lg"
@@ -310,7 +310,7 @@ const PlacesManagementPage = () => {
                                                         className="w-full h-full object-cover" 
                                                         alt="Preview"
                                                     />
-                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white">
+                                                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/40 transition-all flex flex-col items-center justify-center text-white">
                                                         <ImageIcon size={32} className="mb-2" />
                                                         <span className="font-black text-[10px] uppercase tracking-widest">Change Image</span>
                                                     </div>
