@@ -1,6 +1,9 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 using SriGuide.Application.Common.Interfaces;
+using SriGuide.Domain.Entities;
+using SriGuide.Domain.Enums;
 
 namespace SriGuide.Application.Profiles.Commands;
 
@@ -17,10 +20,28 @@ public class DeleteTripCommandHandler : IRequestHandler<DeleteTripCommand, bool>
 
     public async Task<bool> Handle(DeleteTripCommand request, CancellationToken cancellationToken)
     {
-        var trip = await _context.Trips
-            .FirstOrDefaultAsync(t => t.Id == request.Id && 
-                (request.GuideId != null ? t.GuideId == request.GuideId : t.AgencyId == request.AgencyId), 
-                cancellationToken);
+        Trip? trip = null;
+        if (request.AgencyId != null)
+        {
+            var agency = await _context.AgencyProfiles
+                .Include(a => a.Guides.Where(g => g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted))
+                .FirstOrDefaultAsync(a => a.Id == request.AgencyId, cancellationToken);
+            
+            if (agency != null)
+            {
+                var guideUserIds = agency.Guides.Select(g => g.UserId).ToList();
+                trip = await _context.Trips
+                    .FirstOrDefaultAsync(t => t.Id == request.Id && 
+                        (t.AgencyId == agency.Id || guideUserIds.Contains(t.GuideId ?? Guid.Empty)), 
+                        cancellationToken);
+            }
+        }
+        else
+        {
+            trip = await _context.Trips
+                .FirstOrDefaultAsync(t => t.Id == request.Id && t.GuideId == request.GuideId, 
+                    cancellationToken);
+        }
 
         if (trip == null) return false;
 

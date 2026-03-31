@@ -642,16 +642,22 @@ export default function GuideProfilePage() {
                                     <FileUpload
                                         value={formData.registrationDocUrl}
                                         onChange={url => setFormData({ ...formData, registrationDocUrl: url })}
-                                        label="Upload Image or PDF"
+                                        label="Upload Official Registration (Image or PDF)"
                                     />
+                                    <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4 mt-4">
+                                        <p className="text-[10px] text-gray-600 font-bold leading-relaxed">
+                                            <span className="text-primary uppercase tracking-wider mr-1">Verification Tip:</span>
+                                            Ensure the uploaded document clearly displays your <span className="text-gray-900 underline decoration-primary underline-offset-4">Registration Number: {formData.registrationNumber || "Enter number above"}</span>.
+                                        </p>
+                                    </div>
                                     {!formData.registrationDocUrl && (
-                                        <div className="flex items-center gap-2 text-rose-500 mt-2 px-1">
+                                        <div className="flex items-center gap-2 text-rose-500 mt-3 px-1">
                                             <AlertCircle size={14} />
-                                            <span className="text-[10px] font-black uppercase tracking-widest">Document is required for verification</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest leading-none">Document is required for verification</span>
                                         </div>
                                     )}
-                                    <p className="text-[10px] text-gray-400 mt-3 px-1 font-medium leading-relaxed italic">
-                                        Note: This document is for verification purposes only. Once verified (approved or rejected), it will be <span className="text-primary font-black">permanently deleted</span> from our system to ensure your business privacy.
+                                    <p className="text-[10px] text-gray-400 mt-4 px-1 font-medium leading-relaxed italic">
+                                        Note: This document is for internal verification only and will be <span className="text-primary font-black">permanently deleted</span> after review to protect your business privacy.
                                     </p>
                                 </div>
                             </div>

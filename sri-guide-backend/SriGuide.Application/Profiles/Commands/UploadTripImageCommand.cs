@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SriGuide.Application.Common.Interfaces;
 using SriGuide.Domain.Entities;
 using System.IO;
+using SriGuide.Domain.Enums;
 
 namespace SriGuide.Application.Profiles.Commands;
 
@@ -20,11 +21,30 @@ public class UploadTripImageCommandHandler : IRequestHandler<UploadTripImageComm
 
     public async Task<string> Handle(UploadTripImageCommand request, CancellationToken cancellationToken)
     {
-        var trip = await _context.Trips
-            .Include(t => t.Images)
-            .FirstOrDefaultAsync(t => t.Id == request.TripId && 
-                (request.GuideId != null ? t.GuideId == request.GuideId : t.AgencyId == request.AgencyId), 
-                cancellationToken);
+        Trip? trip = null;
+        if (request.AgencyId != null)
+        {
+            var agency = await _context.AgencyProfiles
+                .Include(a => a.Guides.Where(g => g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted))
+                .FirstOrDefaultAsync(a => a.Id == request.AgencyId, cancellationToken);
+            
+            if (agency != null)
+            {
+                var guideUserIds = agency.Guides.Select(g => g.UserId).ToList();
+                trip = await _context.Trips
+                    .Include(t => t.Images)
+                    .FirstOrDefaultAsync(t => t.Id == request.TripId && 
+                        (t.AgencyId == agency.Id || guideUserIds.Contains(t.GuideId ?? Guid.Empty)), 
+                        cancellationToken);
+            }
+        }
+        else
+        {
+            trip = await _context.Trips
+                .Include(t => t.Images)
+                .FirstOrDefaultAsync(t => t.Id == request.TripId && t.GuideId == request.GuideId, 
+                    cancellationToken);
+        }
 
         if (trip == null)
             throw new Exception("Trip not found or unauthorized");

@@ -1,6 +1,8 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SriGuide.Application.Common.Interfaces;
+using SriGuide.Domain.Entities;
+using SriGuide.Domain.Enums;
 
 namespace SriGuide.Application.Trips.Commands;
 
@@ -22,11 +24,30 @@ public class DeleteTripImageCommandHandler : IRequestHandler<DeleteTripImageComm
 
     public async Task<bool> Handle(DeleteTripImageCommand request, CancellationToken cancellationToken)
     {
-        var trip = await _context.Trips
-            .Include(t => t.Images)
-            .FirstOrDefaultAsync(t => t.Id == request.TripId && 
-                (request.GuideId != null ? t.GuideId == request.GuideId : t.AgencyId == request.AgencyId), 
-                cancellationToken);
+        Trip? trip = null;
+        if (request.AgencyId != null)
+        {
+            var agency = await _context.AgencyProfiles
+                .Include(a => a.Guides.Where(g => g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted))
+                .FirstOrDefaultAsync(a => a.Id == request.AgencyId, cancellationToken);
+            
+            if (agency != null)
+            {
+                var guideUserIds = agency.Guides.Select(g => g.UserId).ToList();
+                trip = await _context.Trips
+                    .Include(t => t.Images)
+                    .FirstOrDefaultAsync(t => t.Id == request.TripId && 
+                        (t.AgencyId == agency.Id || guideUserIds.Contains(t.GuideId ?? Guid.Empty)), 
+                        cancellationToken);
+            }
+        }
+        else
+        {
+            trip = await _context.Trips
+                .Include(t => t.Images)
+                .FirstOrDefaultAsync(t => t.Id == request.TripId && t.GuideId == request.GuideId, 
+                    cancellationToken);
+        }
             
         if (trip == null) return false;
 

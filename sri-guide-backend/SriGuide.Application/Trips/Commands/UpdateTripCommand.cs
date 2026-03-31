@@ -30,10 +30,30 @@ public class UpdateTripCommandHandler : IRequestHandler<UpdateTripCommand, bool>
 
     public async Task<bool> Handle(UpdateTripCommand request, CancellationToken cancellationToken)
     {
-        var trip = await _context.Trips
-            .FirstOrDefaultAsync(t => t.Id == request.TripId &&
-                (request.GuideId != null ? t.GuideId == request.GuideId : t.AgencyId == request.AgencyId),
-                cancellationToken);
+        Trip? trip = null;
+        Guid? tripOwnerId = null;
+        if (request.AgencyId != null)
+        {
+            var agency = await _context.AgencyProfiles
+                .Include(a => a.Guides.Where(g => g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted))
+                .FirstOrDefaultAsync(a => a.Id == request.AgencyId, cancellationToken);
+            
+            if (agency != null)
+            {
+                var guideUserIds = agency.Guides.Select(g => g.UserId).ToList();
+                var tripToUpdate = await _context.Trips
+                    .FirstOrDefaultAsync(t => t.Id == request.TripId && 
+                        (t.AgencyId == agency.Id || guideUserIds.Contains(t.GuideId ?? Guid.Empty)), 
+                        cancellationToken);
+                trip = tripToUpdate;
+            }
+        }
+        else
+        {
+            trip = await _context.Trips
+                .FirstOrDefaultAsync(t => t.Id == request.TripId && t.GuideId == request.GuideId,
+                    cancellationToken);
+        }
 
         if (trip == null) return false;
 
