@@ -7,7 +7,7 @@ public class Vehicle : BaseEntity
     public Guid TransportProfileId { get; set; }
     public TransportProfile? TransportProfile { get; set; }
 
-    public string VehicleType { get; set; } = string.Empty; // car, van, bus, tuk, jeep
+    public string VehicleType { get; set; } = string.Empty; // car, van, bus, tuk, jeep, bike
     public string Brand { get; set; } = string.Empty;
     public string Model { get; set; } = string.Empty;
     public int Year { get; set; }

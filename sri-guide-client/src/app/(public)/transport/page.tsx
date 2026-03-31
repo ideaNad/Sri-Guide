@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-    Search, MapPin, Car, Users, Luggage, 
+    Search, MapPin, Car, Bike, Users, Luggage, 
     Navigation, Filter, X, Loader2, ArrowRight,
     Map as MapIcon, Snowflake
 } from 'lucide-react';
@@ -333,7 +333,7 @@ function FilterContent({
             <div className="space-y-3">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Vehicle Type</label>
                 <div className="grid grid-cols-2 gap-2">
-                    {['car', 'van', 'bus', 'tuk', 'jeep'].map((type) => (
+                    {['car', 'van', 'bus', 'tuk', 'jeep', 'bike'].map((type) => (
                         <button 
                             key={type}
                             onClick={() => { setVehicleType(vehicleType === type ? '' : type); setPage(1); }}

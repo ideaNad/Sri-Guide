@@ -310,6 +310,7 @@ export default function AddVehiclePage() {
                                     <option value="bus">Tourist Bus</option>
                                     <option value="tuk">Tuk Tuk</option>
                                     <option value="jeep">4x4 Jeep / SUV</option>
+                                    <option value="bike">Motorbike / Scooter</option>
                                 </select>
                             </div>
                             
