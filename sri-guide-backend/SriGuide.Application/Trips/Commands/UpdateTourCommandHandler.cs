@@ -41,6 +41,7 @@ public class UpdateTourCommandHandler : IRequestHandler<UpdateTourCommand, bool>
         tour.Location = request.Location ?? tour.Location;
         tour.Category = request.Category ?? tour.Category;
         tour.Duration = request.Duration;
+        tour.ParticipantCount = request.ParticipantCount;
         tour.MapLink = request.MapLink;
         tour.IsActive = request.IsActive;
         tour.Price = request.Price;

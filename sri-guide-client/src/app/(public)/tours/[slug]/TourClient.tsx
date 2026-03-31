@@ -34,7 +34,7 @@ interface ItineraryStep {
     dayNumber: number;
     order: number;
 }
- 
+
 interface TripDetail {
     id: string;
     slug?: string;
@@ -42,6 +42,9 @@ interface TripDetail {
     description: string;
     location: string;
     date?: string;
+    price: number;
+    participantCount?: string;
+    duration?: string;
     images: string[];
     guideId: string;
     guideName: string;
@@ -101,10 +104,13 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                 guideTotalReviews: data.guideTotalReviews || 0,
                 rating: data.rating || 0,
                 reviewsCount: data.reviewsCount || 0,
+                price: data.price || 0,
+                participantCount: data.participantCount,
+                duration: data.duration,
                 itinerary: data.itinerary || []
             };
             setTour(mappedData);
-            
+
             // Fetch reviews
             if (mappedData.id) {
                 fetchReviews(mappedData.id);
@@ -193,6 +199,18 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                                 <MapPin className="w-5 h-5 mr-2 text-primary" />
                                 <span className="font-medium">{tour.location}</span>
                             </div>
+                            {tour.duration && (
+                                <div className="flex items-center">
+                                    <Clock className="w-5 h-5 mr-2 text-primary" />
+                                    <span className="font-medium">{tour.duration}</span>
+                                </div>
+                            )}
+                            {tour.participantCount && (
+                                <div className="flex items-center">
+                                    <Users className="w-5 h-5 mr-2 text-primary" />
+                                    <span className="font-medium">{tour.participantCount}</span>
+                                </div>
+                            )}
                             {tour.rating > 0 && (
                                 <div className="flex bg-blue-400/10 backdrop-blur-md px-3 py-1.5 rounded-full items-center gap-1.5 border border-blue-200/50 shadow-sm ml-2">
                                     <div className="flex items-center gap-0.5">
@@ -222,13 +240,13 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
 
                 {/* Action Buttons */}
                 <div className="absolute top-28 right-8 flex space-x-0">
-                    <button 
+                    <button
                         onClick={handleToggleLike}
                         className={`w-14 h-14 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all ${tour.isLikedByCurrentUser ? "bg-primary text-white" : "bg-white/10 text-white hover:bg-white hover:text-gray-900"}`}
                     >
                         <Heart className={`w-5 h-5 ${tour.isLikedByCurrentUser ? "fill-white" : ""}`} />
                     </button>
-                    <button 
+                    <button
                         onClick={() => share({
                             title: tour.title,
                             text: tour.description,
@@ -280,7 +298,7 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                                                 What&apos;s Included
                                             </h4>
                                             <ul className="space-y-4">
-                                                {[ "Professional Local Guide", "Private Luxury Transportation", "All Entrance Fees", "Traditional Lunch & Drinks", "High-Quality Photography Service"].map(item => (
+                                                {["Professional Local Guide", "Private Luxury Transportation", "All Entrance Fees", "Traditional Lunch & Drinks", "High-Quality Photography Service"].map(item => (
                                                     <li key={item} className="flex items-center text-sm text-gray-600">
                                                         <Check className="w-4 h-4 mr-3 text-green-500 flex-shrink-0" />
                                                         {item}
@@ -294,7 +312,7 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                                                 What&apos;s Excluded
                                             </h4>
                                             <ul className="space-y-4">
-                                                {[ "Personal Expenses", "Travel Insurance", "Gratuities (Recommended)", "Extra Snacks"].map(item => (
+                                                {["Personal Expenses", "Travel Insurance", "Gratuities (Recommended)", "Extra Snacks"].map(item => (
                                                     <li key={item} className="flex items-center text-sm text-gray-400 font-medium">
                                                         <span className="w-2 h-2 bg-gray-300 mr-4" />
                                                         {item}
@@ -319,7 +337,7 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                                                         </div>
                                                         <h4 className="text-2xl font-black text-gray-900 italic uppercase">Day {dayNum} Schedule</h4>
                                                     </div>
-                                                    
+
                                                     <div className="space-y-8 pl-8 md:pl-20 border-l border-gray-100 ml-8 md:ml-8">
                                                         {daySteps.map((item, i) => (
                                                             <div key={i} className="flex gap-8 relative pb-12 last:pb-0">
@@ -333,7 +351,7 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                                                                         </div>
                                                                         {item.imageUrl && (
                                                                             <div className="w-full md:w-56 h-36 flex-shrink-0 bg-gray-100 rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500">
-                                                                                <img 
+                                                                                <img
                                                                                     src={item.imageUrl.startsWith("/") ? `${apiClient.defaults.baseURL?.replace('/api', '')}${item.imageUrl}` : item.imageUrl}
                                                                                     alt={item.title}
                                                                                     className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
@@ -363,17 +381,17 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                                 <div className="space-y-12">
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-2xl font-black text-gray-900">Traveler Reviews</h3>
-                                    {(!user || user.role === "Tourist") && (
-                                        <button 
-                                            onClick={() => {
-                                                if (!user) { setIsAuthModalOpen(true); return; }
-                                                setIsReviewModalOpen(true);
-                                            }}
-                                            className="bg-gray-900 text-white px-8 py-3 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-primary transition-all"
-                                        >
-                                            Write a Review
-                                        </button>
-                                    )}
+                                        {(!user || user.role === "Tourist") && (
+                                            <button
+                                                onClick={() => {
+                                                    if (!user) { setIsAuthModalOpen(true); return; }
+                                                    setIsReviewModalOpen(true);
+                                                }}
+                                                className="bg-gray-900 text-white px-8 py-3 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-primary transition-all"
+                                            >
+                                                Write a Review
+                                            </button>
+                                        )}
                                     </div>
 
                                     <div className="grid grid-cols-1 gap-10">
@@ -386,8 +404,8 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                                                 <div key={review.id} className="bg-gray-50/50 p-8 rounded-[2.5rem] border border-gray-100 relative group transition-all hover:bg-white hover:shadow-xl">
                                                     <div className="flex items-start gap-6">
                                                         <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-md flex-shrink-0">
-                                                            <img 
-                                                                src={review.reviewerImageUrl || `https://ui-avatars.com/api/?name=${review.reviewerName}&background=random&color=fff&bold=true`} 
+                                                            <img
+                                                                src={review.reviewerImageUrl || `https://ui-avatars.com/api/?name=${review.reviewerName}&background=random&color=fff&bold=true`}
                                                                 alt={review.reviewerName}
                                                                 className="w-full h-full object-cover"
                                                             />
@@ -402,10 +420,10 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                                                                 </div>
                                                                 <div className="flex gap-0.5">
                                                                     {[1, 2, 3, 4, 5].map((star) => (
-                                                                        <Star 
-                                                                            key={star} 
-                                                                            size={12} 
-                                                                            className={star <= review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200"} 
+                                                                        <Star
+                                                                            key={star}
+                                                                            size={12}
+                                                                            className={star <= review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200"}
                                                                         />
                                                                     ))}
                                                                 </div>
@@ -432,10 +450,20 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                             <div className="bg-gray-900 p-10 text-white shadow-2xl relative overflow-hidden border border-white/10">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-3xl -z-10" />
 
-                                <div className="flex items-center justify-between mb-12">
+                                <div className="flex flex-col gap-6 mb-12">
+                                    <div>
+                                        <span className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] block mb-2">Base Price</span>
+                                        <div className="text-3xl font-black">
+                                            {tour.price === 0 || tour.price === null || tour.price === undefined ? (
+                                                <span className="text-lg">Contact agency for pricing</span>
+                                            ) : (
+                                                <>${tour.price} <span className="text-lg text-white/40 font-normal">/ {tour.participantCount || "p.p"}</span></>
+                                            )}
+                                        </div>
+                                    </div>
                                     <div>
                                         <span className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] block mb-2">Total Likes</span>
-                                        <div className="text-4xl font-black">{tour.likeCount} <span className="text-lg text-white/40 font-normal">Likes</span></div>
+                                        <div className="text-3xl font-black">{tour.likeCount} <span className="text-lg text-white/40 font-normal">Likes</span></div>
                                     </div>
                                 </div>
                                 <div className="space-y-4 pt-10 border-t border-white/10">
@@ -453,10 +481,10 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                             {/* Guide Profile Promo */}
                             <Link href={`/profile/${tour.guideSlug || tour.guideId}`} className="bg-white p-8 border border-gray-100 shadow-sm flex items-center gap-6 group hover:shadow-2xl transition-all cursor-pointer">
                                 <div className="w-24 h-24 overflow-hidden shadow-xl border-4 border-white">
-                                    <img 
-                                        src={tour.guideImageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${tour.guideImageUrl}` : `https://ui-avatars.com/api/?name=${tour.guideName}&background=FFCC00&color=000&bold=true`} 
-                                        alt={tour.guideName} 
-                                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
+                                    <img
+                                        src={tour.guideImageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${tour.guideImageUrl}` : `https://ui-avatars.com/api/?name=${tour.guideName}&background=FFCC00&color=000&bold=true`}
+                                        alt={tour.guideName}
+                                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
                                     />
                                 </div>
                                 <div>
@@ -475,7 +503,7 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                     </aside>
                 </div>
             </div>
-            
+
             {tour && (
                 <ReviewModal
                     isOpen={isReviewModalOpen}
@@ -489,7 +517,7 @@ export default function TourClient({ slug, initialData }: { slug: string, initia
                     }}
                 />
             )}
-            <AuthModal 
+            <AuthModal
                 isOpen={isAuthModalOpen}
                 onClose={() => setIsAuthModalOpen(false)}
                 onSuccess={(userData) => { login(userData); setIsAuthModalOpen(false); }}

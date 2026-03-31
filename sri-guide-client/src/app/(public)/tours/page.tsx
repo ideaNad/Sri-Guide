@@ -18,6 +18,7 @@ interface Tour {
     type: string;
     agencyName?: string;
     price?: number;
+    participantCount?: string;
     date?: string;
     duration?: string;
     mapLink?: string;
@@ -287,6 +288,7 @@ const ToursPageContent = () => {
                                             image={tour.image}
                                             location={tour.location}
                                             price={tour.price}
+                                            participantCount={tour.participantCount}
                                             duration={tour.duration || tour.date}
                                             mapLink={tour.mapLink}
                                             type="tour"

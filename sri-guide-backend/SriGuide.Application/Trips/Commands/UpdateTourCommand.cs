@@ -14,6 +14,7 @@ public record UpdateTourCommand(
     string? Location,
     string? Category,
     string? Duration,
+    string? ParticipantCount,
     string? MapLink,
     bool IsActive,
     decimal Price,

@@ -23,6 +23,7 @@ public record CreateTourCommand(
     string? Location,
     string? Category,
     string? Duration,
+    string? ParticipantCount,
     string? MapLink,
     bool IsActive,
     decimal Price,

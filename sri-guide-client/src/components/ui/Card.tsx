@@ -11,6 +11,7 @@ interface CardProps {
     image: string;
     location?: string;
     price?: number;
+    participantCount?: string;
     rating?: number;
     reviews?: number;
     duration?: string;
@@ -38,6 +39,7 @@ const Card: React.FC<CardProps> = ({
     image,
     location,
     price,
+    participantCount,
     rating,
     reviews,
     duration,
@@ -61,7 +63,7 @@ const Card: React.FC<CardProps> = ({
     const getProfileLink = () => {
         if (!slug && !id) return "#";
         const identifier = (slug || id)?.toString();
-        
+
         switch (type) {
             case "tour":
                 return `/tours/${identifier}`;
@@ -87,7 +89,7 @@ const Card: React.FC<CardProps> = ({
         if (image.startsWith('http') || image.startsWith('data:') || image.startsWith('blob:')) {
             return image;
         }
-        
+
         // Ensure we use the base URL for relative paths
         const baseUrl = apiClient.defaults.baseURL?.split('/api')[0];
         if (baseUrl) {
@@ -95,7 +97,7 @@ const Card: React.FC<CardProps> = ({
             const cleanPath = image.startsWith('/') ? image : `/${image}`;
             return `${baseUrl}${cleanPath}`;
         }
-        
+
         return image; // Fallback if no baseUrl and not an absolute URL
     }, [image]);
 
@@ -104,7 +106,7 @@ const Card: React.FC<CardProps> = ({
             {(isProfile || type === "tour" || type === "adventure" || type === "event") && id && (
                 <Link href={profileLink} className="absolute inset-0 z-10" />
             )}
-            
+
             {/* Legit Badge */}
             {type === "guide" && isLegit && (
                 <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md border border-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm z-20 text-xs font-bold">
@@ -126,9 +128,9 @@ const Card: React.FC<CardProps> = ({
                     alt={title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
-                {price && (
+                {type === "tour" && price !== undefined && (
                     <div className="absolute top-0 left-0 bg-primary/95 backdrop-blur-sm px-4 py-2 rounded-br-2xl text-sm font-bold text-white shadow-sm">
-                        ${price} <span className="text-xs font-medium opacity-90">/p.p</span>
+                        {price === 0 ? "Contact agency for pricing" : <>${price}{participantCount ? <span className="text-xs font-medium opacity-90"> / {participantCount}</span> : null}</>}
                     </div>
                 )}
 
@@ -220,7 +222,7 @@ const Card: React.FC<CardProps> = ({
 
 
 
-                         {likeCount !== undefined && likeCount > 0 && (
+                        {likeCount !== undefined && likeCount > 0 && (
                             <div className="flex items-center gap-1.5 text-[10px] font-bold text-rose-500 bg-rose-50 px-2.5 py-1 rounded-full whitespace-nowrap">
                                 <Heart size={10} fill="currentColor" />
                                 {likeCount}
@@ -230,9 +232,9 @@ const Card: React.FC<CardProps> = ({
 
                     {mapLink && (
                         <div className="pt-2">
-                            <a 
-                                href={mapLink} 
-                                target="_blank" 
+                            <a
+                                href={mapLink}
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
                                 className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-teal-600 hover:text-teal-700 transition-colors bg-teal-50 px-3 py-1.5 rounded-lg border border-teal-100 relative z-20"
@@ -256,10 +258,10 @@ const Card: React.FC<CardProps> = ({
                         {email && <ProtectedContact type="email" value={email} />}
                     </div>
                 )}
-                
+
                 {isProfile && (
                     <div className="mt-6 pt-5 border-t border-gray-50 relative z-20">
-                        <Link 
+                        <Link
                             href={`${profileLink}${profileLink.includes('?') ? '&' : '?'}full=true`}
                             className="flex items-center text-sm font-bold text-primary group-hover:gap-3 gap-2 transition-all w-fit"
                         >

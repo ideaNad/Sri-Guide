@@ -130,6 +130,7 @@ export interface Tour {
     durationDays: number;
     image: string;
     location: string;
+    participantCount?: string;
     rating: number;
     guideId: string;
     guideName: string;

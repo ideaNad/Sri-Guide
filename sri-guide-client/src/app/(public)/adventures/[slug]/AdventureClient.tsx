@@ -74,6 +74,7 @@ interface TripDetail {
     itinerary: ItineraryStep[];
     otherTrips: OtherTrip[];
     duration?: string;
+    participantCount?: string;
     mapLink?: string;
     price?: number;
     isAgencyTour?: boolean;
@@ -218,8 +219,8 @@ const Lightbox = ({
                                     key={idx}
                                     onClick={() => setCurrent(idx)}
                                     className={`w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all duration-200 ${idx === current
-                                            ? "border-white opacity-100 scale-105"
-                                            : "border-transparent opacity-40 hover:opacity-70"
+                                        ? "border-white opacity-100 scale-105"
+                                        : "border-transparent opacity-40 hover:opacity-70"
                                         }`}
                                 >
                                     <img src={getImageUrl(img)} alt="" className="w-full h-full object-cover" />
@@ -383,6 +384,7 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
             category: data.category || data.Category,
             price: data.price || data.Price,
             duration: data.duration || data.Duration,
+            participantCount: data.participantCount || data.ParticipantCount,
             mapLink: data.mapLink || data.MapLink,
             images: data.images || data.Images || [],
             guideId: data.guideId || data.agencyId || data.AgencyId,
@@ -475,6 +477,7 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
                 category: data.category || data.Category,
                 price: data.price || data.Price,
                 duration: data.duration || data.Duration,
+                participantCount: data.participantCount || data.ParticipantCount,
                 mapLink: data.mapLink || data.MapLink,
                 images: data.images || data.Images || [],
                 guideId: data.guideId || data.agencyId || data.AgencyId,
@@ -689,7 +692,7 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
                                     {tour.likeCount > 0 && <span>{tour.likeCount}</span>}
                                 </button>
 
-                                <button 
+                                <button
                                     onClick={() => share({
                                         title: tour.title,
                                         text: tour.description,
@@ -743,13 +746,25 @@ export default function AdventureClient({ slug, initialData, type }: { slug: str
                         <div className="flex-1 min-w-0">
 
                             {/* Price Block — before description */}
-                            {tour.price && (
+                            {tour.isAgencyTour && tour.price !== undefined && (
                                 <div className="flex items-end gap-2 mb-6 p-5 bg-primary/5 border border-primary/15 rounded-2xl">
                                     <div>
                                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Price</p>
                                         <div className="flex items-baseline gap-1.5">
                                             <span className="text-3xl font-black text-gray-900">${tour.price.toLocaleString()}</span>
-                                            <span className="text-sm font-semibold text-gray-400">/per person</span>
+                                            {tour.participantCount ? <span className="text-sm font-semibold text-gray-400">/ {tour.participantCount} person</span> : ""}
+                                        </div>
+                                    </div>
+                                    <Tag size={20} className="text-primary mb-1 ml-3" />
+                                </div>
+                            )}
+                            {tour.isAgencyTour && (tour.price === 0 || tour.price === null || tour.price === undefined) && (
+                                <div className="flex items-end gap-2 mb-6 p-5 bg-primary/5 border border-primary/15 rounded-2xl">
+                                    <div>
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Price</p>
+                                        <div className="flex items-baseline gap-1.5">
+                                            <span className="text-xl font-black text-gray-900">Contact agency for pricing</span>
+                                            {tour.participantCount ? <span className="text-sm font-semibold text-gray-400">/ {tour.participantCount} person</span> : ""}
                                         </div>
                                     </div>
                                     <Tag size={20} className="text-primary mb-1 ml-3" />

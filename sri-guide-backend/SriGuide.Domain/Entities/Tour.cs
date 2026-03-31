@@ -13,6 +13,7 @@ public class Tour : BaseEntity, ISluggable
     public string Location { get; set; } = string.Empty;
     public string? Category { get; set; }
     public string? Duration { get; set; }
+    public string? ParticipantCount { get; set; }
     public string? MapLink { get; set; }
     public decimal Price { get; set; }
     public string? MainImageUrl { get; set; }

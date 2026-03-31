@@ -34,6 +34,7 @@ public class CreateTourCommandHandler : IRequestHandler<CreateTourCommand, Guid>
             Location = request.Location,
             Category = request.Category,
             Duration = request.Duration,
+            ParticipantCount = request.ParticipantCount,
             MapLink = request.MapLink,
             Price = request.Price,
             MainImageUrl = request.MainImageUrl,

@@ -27,7 +27,8 @@ public record DiscoveryItemDto(
     decimal? Price = null,
     string? Date = null,
     string? Duration = null,
-    string? MapLink = null
+    string? MapLink = null,
+    string? ParticipantCount = null
 );
 
 public record GetDiscoveryQuery(
@@ -172,7 +173,8 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
                     t.Price,
                     null,
                     t.Duration,
-                    t.MapLink
+                    t.MapLink,
+                    t.ParticipantCount
                 ));
             }
 
@@ -257,6 +259,7 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
                     g.DailyRate,
                     null,
                     null,
+                    null,
                     null
                 ));
             }
@@ -322,6 +325,7 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
                     a.WhatsApp,
                     false,
                     "Approved",
+                    null,
                     null,
                     null,
                     null,
