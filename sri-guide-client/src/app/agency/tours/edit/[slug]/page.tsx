@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import {
     Clock, MapPin, DollarSign, Image as ImageIcon, Plus, Trash2,
-    ArrowRight, Map as MapIcon, Tag, Info, Camera, Send, ChevronRight,
+    ArrowRight, ArrowLeft, Map as MapIcon, Tag, Info, Camera, Send, ChevronRight,
     Loader2, Users
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -669,13 +669,20 @@ const EditTourPage = () => {
                             exit={{ opacity: 0, x: -20 }}
                             className="space-y-8 bg-white p-5 md:p-14 rounded-[3.5rem] border border-gray-100 shadow-xl"
                         >
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600">
+                                    <button
+                                        onClick={() => setStep(1)}
+                                        className="w-10 h-10 bg-gray-50 hover:bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 hover:text-primary transition-all border border-gray-100 shrink-0 group"
+                                        title="Back to Core Narrative"
+                                    >
+                                        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                                    </button>
+                                    <div className="w-12 h-12 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 shrink-0">
                                         <Clock size={24} />
                                     </div>
                                     <div>
-                                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight italic uppercase text-left">Daily Itinerary</h2>
+                                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight italic uppercase text-left break-words">Daily Itinerary</h2>
                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-left">Map out the moments of the journey</p>
                                     </div>
                                 </div>

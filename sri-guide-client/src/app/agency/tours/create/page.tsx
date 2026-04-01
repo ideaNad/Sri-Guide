@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import {
     Clock, MapPin, DollarSign, Image as ImageIcon, Plus, Trash2,
-    ArrowRight, Map as MapIcon, Tag, Info, Camera, Send, ChevronRight, Users
+    ArrowRight, ArrowLeft, Map as MapIcon, Tag, Info, Camera, Send, ChevronRight, Users
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import apiClient from "@/services/api-client";
@@ -593,6 +593,13 @@ const CreateTourPage = () => {
                         >
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                                 <div className="flex items-center gap-4">
+                                    <button
+                                        onClick={() => setStep(1)}
+                                        className="w-10 h-10 bg-gray-50 hover:bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 hover:text-primary transition-all border border-gray-100 shrink-0 group"
+                                        title="Back to Core Narrative"
+                                    >
+                                        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                                    </button>
                                     <div className="w-12 h-12 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 shrink-0">
                                         <Clock size={24} />
                                     </div>
