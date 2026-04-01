@@ -45,11 +45,12 @@ public class GetAgencyGuidesQueryHandler : IRequestHandler<GetAgencyGuidesQuery,
             UserId = g.UserId,
             Name = g.User?.FullName ?? "Unknown",
             Role = g.Specialties?.FirstOrDefault() ?? "Guide",
-            Rating = ratings.GetValueOrDefault(g.UserId, 5.0), 
+            Rating = ratings.GetValueOrDefault(g.UserId, 0.0), 
             Location = g.OperatingAreas?.FirstOrDefault() ?? "Sri Lanka",
             Status = g.AgencyRecruitmentStatus == RecruitmentStatus.Accepted ? "Active" : "Approval Pending",
             TripCount = g.Trips.Count,
             ProfileImageUrl = g.User?.ProfileImageUrl,
+            Slug = g.User?.Slug,
             IsOwner = g.UserId == agency.UserId
         }).ToList();
 

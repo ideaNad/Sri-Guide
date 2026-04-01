@@ -106,6 +106,7 @@ export interface PublicProfile {
             targetType: string;
         }[];
     };
+    agencyProfileImageUrl?: string;
 }
 
 import { useShare } from "@/hooks/useShare";
@@ -487,10 +488,11 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
                             className="relative w-full max-w-[320px] lg:max-w-[400px] shrink-0 mx-auto lg:mx-0"
                         >
                             <div className="w-full aspect-[4/5] overflow-hidden shadow-2xl rounded-[3rem] border-8 border-white group relative">
+                                <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-highlight/5 rounded-full" />
                                 <img
-                                    src={getImageUrl(profile.profileImageUrl) || `https://ui-avatars.com/api/?name=${profile.fullName}&background=F5F4F0&color=2563eb`}
+                                    src={getImageUrl(profile.agencyProfileImageUrl || profile.profileImageUrl) || `https://ui-avatars.com/api/?name=${profile.fullName}&size=200&background=F0FDFA&color=0D9488&bold=true`}
                                     alt={profile.fullName}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                    className="w-full h-full object-cover relative z-10"
                                 />
                             </div>
 
@@ -700,7 +702,7 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                             {profile.guides.map(guide => (
-                                <Link href={`/profile/${guide.slug || guide.id}`} key={guide.id} className="group bg-white border border-gray-100 rounded-3xl p-6 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center">
+                                <Link href={`/profile/${guide.slug || guide.id}?type=guide`} key={guide.id} className="group bg-white border border-gray-100 rounded-3xl p-6 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center">
                                     <div className="w-20 h-20 rounded-full overflow-hidden mb-4 border-4 border-gray-50 group-hover:border-primary/20 transition-colors">
                                         <img 
                                             src={guide.profileImageUrl ? getImageUrl(guide.profileImageUrl) || '' : `https://ui-avatars.com/api/?name=${guide.name}&background=F5F4F0&color=2563eb`} 

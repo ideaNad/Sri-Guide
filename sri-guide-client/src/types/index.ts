@@ -115,6 +115,7 @@ export interface AgencyProfile {
     languages?: string[];
     operatingRegions?: string[];
     slug?: string;
+    agencyProfileImageUrl?: string;
 }
 
 export interface Profile extends User {

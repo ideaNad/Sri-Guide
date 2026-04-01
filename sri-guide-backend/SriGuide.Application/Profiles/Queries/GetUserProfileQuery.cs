@@ -86,7 +86,8 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
                 agencyProfile.TwitterLink,
                 agencyProfile.LinkedinLink,
                 agencyProfile.IsVerified,
-                agencyProfile.VerificationStatus
+                agencyProfile.VerificationStatus,
+                agencyProfile.AgencyProfileImageUrl ?? user.ProfileImageUrl
             ) : null,
             user.EventOrganizerProfile != null ? new EventOrganizerProfileDto(
                 user.EventOrganizerProfile.OrganizationName,

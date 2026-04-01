@@ -96,6 +96,7 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
                 Location = g.OperatingAreas?.FirstOrDefault() ?? "Sri Lanka",
                 Status = "Active",
                 TripCount = 0, // Needs real count if possible
+                Slug = g.User!.Slug,
                 ProfileImageUrl = g.User!.ProfileImageUrl != null && !g.User.ProfileImageUrl.StartsWith("/") && !g.User.ProfileImageUrl.StartsWith("http") 
                     ? "/" + g.User.ProfileImageUrl 
                     : g.User.ProfileImageUrl
@@ -251,7 +252,8 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
             recentTrips,
             agencyGuides,
             isAgency ? "Agency" : "Guide",
-            legacyGuideProfile
+            legacyGuideProfile,
+            isAgency ? (agencyProfile!.AgencyProfileImageUrl ?? user.ProfileImageUrl) : null
         );
     }
 }

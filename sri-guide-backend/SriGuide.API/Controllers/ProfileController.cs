@@ -87,6 +87,17 @@ public class ProfileController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("upload-agency-photo")]
+    [Authorize(Roles = "TravelAgency")]
+    public async Task<ActionResult<string>> UploadAgencyPhoto([FromForm] IFormFile file)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var result = await _mediator.Send(new UploadAgencyProfilePictureCommand(Guid.Parse(userId), file));
+        return Ok(result);
+    }
+
     [HttpPost("update-user")]
     public async Task<ActionResult<bool>> UpdateUser(UpdateUserProfileCommand command)
     {

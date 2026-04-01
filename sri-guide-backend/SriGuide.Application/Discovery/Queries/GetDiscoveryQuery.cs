@@ -312,9 +312,11 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
                     a.CompanyName,
                     a.Slug,
                     "Official Travel Agency",
-                    u?.ProfileImageUrl != null && !u.ProfileImageUrl.StartsWith("/") && !u.ProfileImageUrl.StartsWith("http") 
-                        ? "/" + u.ProfileImageUrl 
-                        : u?.ProfileImageUrl ?? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(a.CompanyName)}&background=000&color=fff&bold=true",
+                    a.AgencyProfileImageUrl != null && !a.AgencyProfileImageUrl.StartsWith("/") && !a.AgencyProfileImageUrl.StartsWith("http") 
+                        ? "/" + a.AgencyProfileImageUrl 
+                        : (a.AgencyProfileImageUrl ?? u?.ProfileImageUrl) != null && !(a.AgencyProfileImageUrl ?? u?.ProfileImageUrl)!.StartsWith("/") && !(a.AgencyProfileImageUrl ?? u?.ProfileImageUrl)!.StartsWith("http") 
+                            ? "/" + (a.AgencyProfileImageUrl ?? u?.ProfileImageUrl) 
+                            : (a.AgencyProfileImageUrl ?? u?.ProfileImageUrl) ?? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(a.CompanyName)}&background=000&color=fff&bold=true",
                     "Sri Lanka",
                     (decimal)Math.Round(item.AvgRating, 1),
                     item.ReviewCount,

@@ -205,13 +205,15 @@ export default function AgencyGuidesPage() {
                                     {guide.status}
                                 </span>
                             </div>
-                            <div className="bg-gray-50 p-3 rounded-xl border border-gray-100/50">
-                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">Rating</span>
-                                <div className="flex items-center gap-1">
-                                    <Star className="w-2.5 h-2.5 text-yellow-400 fill-yellow-400" />
-                                    <span className="text-[10px] font-black text-gray-900">{guide.rating.toFixed(1)}</span>
+                            {guide.rating > 0 && (
+                                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100/50">
+                                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">Rating</span>
+                                    <div className="flex items-center gap-1">
+                                        <Star className="w-2.5 h-2.5 text-yellow-400 fill-yellow-400" />
+                                        <span className="text-[10px] font-black text-gray-900">{guide.rating.toFixed(1)}</span>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
  
                         <div className="mb-6 relative z-10">

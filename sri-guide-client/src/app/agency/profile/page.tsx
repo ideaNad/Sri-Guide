@@ -179,7 +179,35 @@ export default function AgencyProfilePage() {
         }
     };
 
-    const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleAgencyPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const formDataFile = new FormData();
+        formDataFile.append("file", file);
+
+        setSaving(true);
+        try {
+            const response = await apiClient.post<string>("/profile/upload-agency-photo", formDataFile, {
+                headers: { "Content-Type": "multipart/form-data" }
+            });
+            if (profile && profile.agencyProfile) {
+                setProfile({ 
+                    ...profile, 
+                    agencyProfile: { ...profile.agencyProfile, agencyProfileImageUrl: response.data } 
+                });
+            }
+            setMessage({ type: "success", text: "Agency logo updated!" });
+            setTimeout(() => setMessage(null), 3000);
+        } catch (error) {
+            console.error("Failed to upload agency photo", error);
+            setMessage({ type: "error", text: "Failed to upload agency logo." });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleOwnerPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -195,10 +223,10 @@ export default function AgencyProfilePage() {
                 setProfile({ ...profile, profileImageUrl: response.data });
                 if (user) login({ ...user, profileImageUrl: response.data });
             }
-            setMessage({ type: "success", text: "Profile picture updated!" });
+            setMessage({ type: "success", text: "Owner profile picture updated!" });
             setTimeout(() => setMessage(null), 3000);
         } catch (error) {
-            console.error("Failed to upload photo", error);
+            console.error("Failed to upload owner photo", error);
             setMessage({ type: "error", text: "Failed to upload photo." });
         } finally {
             setSaving(false);
@@ -295,12 +323,12 @@ export default function AgencyProfilePage() {
                             <div className="relative group">
                                 <div className="w-32 h-32 rounded-[2.5rem] overflow-hidden bg-gray-100 border-4 border-white shadow-xl ring-1 ring-gray-100">
                                     <img
-                                        src={profile.profileImageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${profile.profileImageUrl}` : `https://ui-avatars.com/api/?name=${profile.agencyProfile?.companyName}&background=F0FDFA&color=0D9488&bold=true`}
+                                        src={profile.agencyProfile?.agencyProfileImageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${profile.agencyProfile.agencyProfileImageUrl}` : (profile.profileImageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${profile.profileImageUrl}` : `https://ui-avatars.com/api/?name=${profile.agencyProfile?.companyName}&background=F0FDFA&color=0D9488&bold=true`)}
                                         alt={profile.agencyProfile?.companyName}
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
-                                <input type="file" id="agency-photo-upload" className="hidden" onChange={handlePhotoUpload} accept="image/*" />
+                                <input type="file" id="agency-photo-upload" className="hidden" onChange={handleAgencyPhotoUpload} accept="image/*" />
                                 <label
                                     htmlFor="agency-photo-upload"
                                     className="absolute -bottom-2 -right-2 p-3 bg-gray-900 text-white rounded-2xl shadow-lg border-4 border-white cursor-pointer hover:bg-teal-600 transition-all active:scale-95 group-hover:scale-110"
@@ -546,6 +574,30 @@ export default function AgencyProfilePage() {
                     >
                         {/* Owner Details Section */}
                         <div className="bg-white p-12 rounded-[3.5rem] border border-gray-100 shadow-sm space-y-10">
+                            {/* Personal Profile Image */}
+                            <div className="flex flex-col items-center md:items-start gap-6 relative overflow-hidden">
+                                <div className="relative group">
+                                    <div className="w-24 h-24 rounded-3xl overflow-hidden bg-gray-100 border-4 border-white shadow-lg ring-1 ring-gray-100">
+                                        <img
+                                            src={profile.profileImageUrl ? `${apiClient.defaults.baseURL?.replace('/api', '')}${profile.profileImageUrl}` : `https://ui-avatars.com/api/?name=${profile.fullName}&background=F5F4F0&color=2563eb&bold=true`}
+                                            alt={profile.fullName}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                    <input type="file" id="owner-photo-upload" className="hidden" onChange={handleOwnerPhotoUpload} accept="image/*" />
+                                    <label
+                                        htmlFor="owner-photo-upload"
+                                        className="absolute -bottom-2 -right-2 p-2 bg-gray-900 text-white rounded-xl shadow-lg border-2 border-white cursor-pointer hover:bg-blue-600 transition-all active:scale-95"
+                                    >
+                                        <Camera size={14} />
+                                    </label>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-black text-gray-900 italic tracking-tight">Personal Identity</h3>
+                                    <p className="text-gray-400 font-bold text-[9px] uppercase tracking-widest">Update your professional profile picture</p>
+                                </div>
+                            </div>
+
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Owner Full Name</label>
                                 <input

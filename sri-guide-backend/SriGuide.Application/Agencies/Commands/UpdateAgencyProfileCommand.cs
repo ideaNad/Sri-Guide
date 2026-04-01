@@ -21,7 +21,8 @@ public record UpdateAgencyProfileCommand(
     string? LinkedinLink = null,
     string? TikTokLink = null,
     string? TwitterLink = null,
-    string? YouTubeLink = null
+    string? YouTubeLink = null,
+    string? AgencyProfileImageUrl = null
 ) : IRequest<bool>;
 
 public class UpdateAgencyProfileCommandHandler : IRequestHandler<UpdateAgencyProfileCommand, bool>
@@ -62,6 +63,7 @@ public class UpdateAgencyProfileCommandHandler : IRequestHandler<UpdateAgencyPro
         agency.TikTokLink = request.TikTokLink ?? agency.TikTokLink;
         agency.TwitterLink = request.TwitterLink ?? agency.TwitterLink;
         agency.YouTubeLink = request.YouTubeLink ?? agency.YouTubeLink;
+        agency.AgencyProfileImageUrl = request.AgencyProfileImageUrl ?? agency.AgencyProfileImageUrl;
         
         agency.UpdatedAt = DateTime.UtcNow;
 

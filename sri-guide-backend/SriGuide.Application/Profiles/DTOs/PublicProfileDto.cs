@@ -31,7 +31,8 @@ public record PublicProfileDto(
     List<PublicTripDto> RecentTrips,
     List<SriGuide.Application.Agencies.DTOs.AgencyGuideDto>? Guides = null,
     string Role = "Guide",
-    LegacyGuideProfileDto? LegacyGuideProfile = null
+    LegacyGuideProfileDto? LegacyGuideProfile = null,
+    string? AgencyProfileImageUrl = null
 );
 
 public record LegacyGuideProfileDto(

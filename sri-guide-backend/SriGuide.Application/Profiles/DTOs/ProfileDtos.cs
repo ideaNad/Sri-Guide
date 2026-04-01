@@ -80,7 +80,7 @@ public record AgencyProfileDto(
     string? LinkedinLink,
     bool IsVerified,
     VerificationStatus VerificationStatus,
-    string? ProfileImageUrl = null
+    string? AgencyProfileImageUrl = null
 );
 
 public record TransportProfileDto(
