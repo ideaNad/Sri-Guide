@@ -249,11 +249,11 @@ const EditTourPage = () => {
     );
 
     return (
-        <div className="min-h-screen bg-[#FDFCFB] pt-32 pb-24">
-            <div className="container mx-auto px-4 max-w-5xl">
+        <div className="min-h-screen bg-[#FDFCFB] pt-16 md:pt-20 pb-24">
+            <div className="container mx-auto px-4 max-w-7xl">
 
-                <div className="flex flex-col md:flex-row items-center gap-6 mb-12 bg-white p-4 rounded-[2.5rem] border border-gray-100 shadow-sm w-fit mx-auto px-10">
-                    <div className="flex items-center gap-4 border-r border-gray-100 pr-8 mr-2">
+                <div className="flex flex-col md:flex-row items-center gap-6 mb-8 md:mb-12 bg-white p-4 rounded-[2.5rem] border border-gray-100 shadow-sm w-full md:w-fit mx-auto px-6 md:px-10 overflow-x-auto no-scrollbar">
+                    <div className="flex items-center gap-4 border-b md:border-b-0 md:border-r border-gray-100 pb-4 md:pb-0 md:pr-8 md:mr-2 w-full md:w-auto justify-center">
                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">Current Status:</span>
                         <div className={`px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${formData.isActive
                             ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
@@ -286,7 +286,7 @@ const EditTourPage = () => {
                             className="space-y-12"
                         >
                             {/* Single Unified Form Card */}
-                            <div className="bg-white p-8 md:p-16 rounded-[3.5rem] border border-gray-100 shadow-2xl shadow-gray-200/40 space-y-16">
+                            <div className="bg-white p-5 md:p-14 rounded-[3.5rem] border border-gray-100 shadow-2xl shadow-gray-200/40 space-y-10 md:space-y-16">
 
                                 {/* 1. Identity Section */}
                                 <div className="space-y-10">
@@ -338,11 +338,11 @@ const EditTourPage = () => {
                                                         className={`w-full bg-gray-50 border-transparent rounded-2xl pl-14 pr-6 py-5 text-sm font-bold focus:bg-white focus:border-teal-200 transition-all outline-none ${errors.price ? 'border-rose-300 bg-rose-50/20' : ''}`}
                                                     />
                                                     {errors.price && <p className="text-[9px] font-bold text-rose-500 mt-2 ml-2 uppercase tracking-widest">{errors.price}</p>}
-                                                </div>\
+                                                </div>
                                             </div>
                                             <div className="space-y-3">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Participant Count</label>
-                                                <div className="flex items-center justify-between bg-gray-50 rounded-2xl py-3 px-6 h-[60px]">
+                                                <div className="flex items-center justify-between bg-gray-50 rounded-2xl py-3 px-4 md:px-6 h-[60px]">
                                                     <div className="flex items-center gap-3">
                                                         <Users className="text-teal-600 flex-shrink-0" size={18} />
                                                         <span className="text-sm font-bold text-gray-500"></span>
@@ -561,7 +561,7 @@ const EditTourPage = () => {
                                     </div>
 
                                     <div className="space-y-4">
-                                        <div className={`rich-text-container bg-gray-50 rounded-[3rem] border border-transparent focus-within:bg-white focus-within:border-teal-200 transition-all overflow-hidden p-6 ${errors.description ? 'border-rose-300 bg-rose-50/20' : ''}`}>
+                                        <div className={`rich-text-container bg-gray-50 rounded-[3rem] border border-transparent focus-within:bg-white focus-within:border-teal-200 transition-all overflow-hidden p-4 md:p-6 ${errors.description ? 'border-rose-300 bg-rose-50/20' : ''}`}>
                                             <ReactQuill
                                                 theme="snow"
                                                 value={formData.description}
@@ -667,7 +667,7 @@ const EditTourPage = () => {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
-                            className="space-y-8 bg-white p-10 md:p-14 rounded-[3.5rem] border border-gray-100 shadow-xl"
+                            className="space-y-8 bg-white p-5 md:p-14 rounded-[3.5rem] border border-gray-100 shadow-xl"
                         >
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
@@ -691,7 +691,7 @@ const EditTourPage = () => {
                                 {formData.dayDescriptions.sort((a, b) => a.dayNumber - b.dayNumber).map(day => {
                                     const dayNum = day.dayNumber;
                                     return (
-                                        <div key={dayNum} className="space-y-8 p-10 bg-gray-50/50 rounded-[3rem] border border-gray-100/50 relative group/day">
+                                        <div key={dayNum} className="space-y-8 p-5 md:p-10 bg-gray-50/50 rounded-[3rem] border border-gray-100/50 relative group/day">
                                             <div className="flex items-center justify-between mb-4">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-10 h-10 bg-teal-600 text-white rounded-xl flex items-center justify-center font-black italic shadow-lg shadow-teal-600/20">
@@ -776,8 +776,8 @@ const EditTourPage = () => {
                                                                     <Trash2 size={16} />
                                                                 </button>
 
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left">
-                                                                    <div className="space-y-8">
+                                                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 text-left">
+                                                                    <div className="space-y-8 p-0">
                                                                         <div className="flex gap-4">
                                                                             <div className="flex-1 space-y-3">
                                                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Title</label>

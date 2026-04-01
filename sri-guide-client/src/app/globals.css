@@ -62,4 +62,28 @@
   .hero-gradient {
     @apply bg-gradient-to-br from-primary via-secondary to-highlight;
   }
+
+  /* Quill Editor - Fix Long Sentences in Mobile View */
+  .ql-editor {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    text-wrap: wrap;
+  }
+
+  /* Improve Rich Text Container for Mobile */
+  .rich-text-container .ql-container {
+    font-size: 14px;
+    height: 100% !important;
+  }
+
+  @media (max-width: 768px) {
+    .rich-text-container {
+      padding: 1rem !important;
+      border-radius: 1.5rem !important;
+    }
+    
+    .ql-editor {
+      padding: 0 !important;
+    }
+  }
 }

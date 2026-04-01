@@ -191,8 +191,8 @@ const CreateTourPage = () => {
     const filteredCategories = CATEGORIES.filter(c => c.toLowerCase().includes(categorySearch.toLowerCase()));
 
     return (
-        <div className="min-h-screen bg-[#FDFCFB] pt-24 md:pt-32 pb-16 md:pb-24 overflow-x-hidden">
-            <div className="container mx-auto px-4 max-w-5xl">
+        <div className="min-h-screen bg-[#FDFCFB] pt-16 md:pt-20 pb-16 md:pb-24 overflow-x-hidden">
+            <div className="container mx-auto px-4 max-w-7xl">
 
                 {/* Modern Progress Stepper */}
                 <div className="flex items-center justify-start md:justify-center gap-3 md:gap-6 mb-8 md:mb-12 bg-white p-3 md:p-4 rounded-2xl md:rounded-3xl border border-gray-100 shadow-sm w-full md:w-fit mx-auto overflow-x-auto no-scrollbar">
@@ -217,7 +217,7 @@ const CreateTourPage = () => {
                             className="space-y-12"
                         >
                             {/* Single Unified Form Card */}
-                            <div className="bg-white p-6 md:p-16 rounded-3xl md:rounded-[3.5rem] border border-gray-100 shadow-2xl shadow-gray-200/40 space-y-10 md:space-y-16">
+                            <div className="bg-white p-5 md:p-14 rounded-3xl md:rounded-[3.5rem] border border-gray-100 shadow-2xl shadow-gray-200/40 space-y-10 md:space-y-16">
 
                                 {/* 1. Identity Section */}
                                 <div className="space-y-10">
@@ -589,7 +589,7 @@ const CreateTourPage = () => {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
-                            className="space-y-6 md:space-y-8 bg-white p-4 md:p-14 rounded-2xl md:rounded-[3.5rem] border border-gray-100 shadow-xl"
+                            className="space-y-6 md:space-y-8 bg-white p-5 md:p-14 rounded-2xl md:rounded-[3.5rem] border border-gray-100 shadow-xl"
                         >
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                                 <div className="flex items-center gap-4">
@@ -698,7 +698,7 @@ const CreateTourPage = () => {
                                                                     <Trash2 size={16} />
                                                                 </button>
 
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 text-left">
+                                                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 text-left">
                                                                     <div className="space-y-8">
                                                                             <div className="flex flex-col sm:flex-row gap-4">
                                                                             <div className="flex-1 space-y-3">
