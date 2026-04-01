@@ -1,10 +1,16 @@
 import React from "react";
 import Link from "next/link";
-import { Facebook, Instagram, Youtube, Mail, MapPin, Phone } from "lucide-react";
+import { Facebook, Instagram, Youtube, Mail, MapPin, Phone, Linkedin } from "lucide-react";
 
 const XIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em">
         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+);
+
+const TikTokIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 448 512" fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em">
+        <path d="M448,209.91a210.06,210.06,0,0,1-122.77-39.25V349.38A162.55,162.55,0,1,1,185,188.31V278.2a74.62,74.62,0,1,0,52.23,71.18V0l88,0a121.18,121.18,0,0,0,1.86,22.32h0q2.55,11.33,8.06,21.57h0a121.72,121.72,0,0,0,112.82,66.07Z" />
     </svg>
 );
 
@@ -28,17 +34,18 @@ const Footer = () => {
                         </p>
                         <div className="flex space-x-4">
                             {[
-                                { Icon: Facebook, href: "https://www.facebook.com/share/1L2EokQwo5/" },
-                                // { Icon: Instagram, href: "https://instagram.com/SriGuide" },
-                                // { Icon: XIcon, href: "https://x.com/SriGuide" },
-                                // { Icon: Youtube, href: "https://www.youtube.com/@SriGuide" }
+                                { Icon: Facebook, href: "https://web.facebook.com/people/SRIGuide/61579538772356/", hoverClass: "hover:bg-[#1877F2]" },
+                                { Icon: Instagram, href: "https://www.instagram.com/sriguide?igsh=OTA4c2ljZWNobTRp", hoverClass: "hover:bg-[#E4405F]" },
+                                { Icon: Linkedin, href: "https://www.linkedin.com/company/sriguide/", hoverClass: "hover:bg-[#0A66C2]" },
+                                { Icon: TikTokIcon, href: "https://www.tiktok.com/@sriguide?_r=1&_t=ZS-95BBqbWyX2I", hoverClass: "hover:bg-black" },
+                                { Icon: Youtube, href: "https://youtu.be/2nbxd746agU?si=5L9eT1veN83IxGOb", hoverClass: "hover:bg-[#FF0000]" }
                             ].map((social, idx) => (
                                 <a
                                     key={idx}
                                     href={social.href}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors text-white"
+                                    className={`w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center transition-all text-white ${social.hoverClass}`}
                                 >
                                     <social.Icon className="w-5 h-5" />
                                 </a>
