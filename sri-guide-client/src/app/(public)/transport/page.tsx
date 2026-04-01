@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-    Search, MapPin, Car, Bike, Users, Luggage, 
+import {
+    Search, MapPin, Car, Bike, Users, Luggage,
     Navigation, Filter, X, Loader2, ArrowRight,
     Map as MapIcon, Snowflake
 } from 'lucide-react';
@@ -24,7 +24,7 @@ export default function TransportSearchPage() {
     const [driverIncluded, setDriverIncluded] = useState<boolean | null>(null);
     const [hasAc, setHasAc] = useState<boolean | null>(null);
     const [isSearchingNearby, setIsSearchingNearby] = useState(false);
-    const [userCoords, setUserCoords] = useState<{lat: number, lng: number} | null>(null);
+    const [userCoords, setUserCoords] = useState<{ lat: number, lng: number } | null>(null);
     const [showMobileFilters, setShowMobileFilters] = useState(false);
 
     useEffect(() => {
@@ -39,7 +39,7 @@ export default function TransportSearchPage() {
             const radius = userCoords ? 50 : 500;
 
             let url = `/transport/nearby?lat=${lat}&lng=${lng}&radius=${radius}&page=${page}&pageSize=${pageSize}`;
-            
+
             if (vehicleType) url += `&vehicleType=${vehicleType}`;
             if (capacity) url += `&minCapacity=${capacity}`;
             if (driverIncluded !== null) url += `&driverIncluded=${driverIncluded}`;
@@ -83,10 +83,10 @@ export default function TransportSearchPage() {
     const totalPages = Math.ceil(totalCount / pageSize);
 
     const filteredVehicles = vehicles.filter(v => {
-        const matchesLocation = !location || 
-            v.district?.toLowerCase().includes(location.toLowerCase()) || 
+        const matchesLocation = !location ||
+            v.district?.toLowerCase().includes(location.toLowerCase()) ||
             v.province?.toLowerCase().includes(location.toLowerCase());
-            
+
         return matchesLocation;
     });
 
@@ -96,7 +96,7 @@ export default function TransportSearchPage() {
             <section className="bg-gray-900 text-white pt-24 md:pt-32 pb-16 md:pb-20 px-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/20 blur-3xl rounded-full -mr-48 -mt-48" />
                 <div className="max-w-[1600px] mx-auto relative z-10">
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="max-w-2xl text-center md:text-left mx-auto md:mx-0"
@@ -120,17 +120,17 @@ export default function TransportSearchPage() {
                 <div className="bg-white p-4 md:p-6 rounded-[2.5rem] shadow-2xl shadow-gray-200/50 flex flex-col md:flex-row items-center gap-4">
                     <div className="flex-1 w-full relative group">
                         <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors" size={20} />
-                        <input 
-                            type="text" 
-                            placeholder="Where are you? (e.g. Galle, Kandy)" 
+                        <input
+                            type="text"
+                            placeholder="Where are you? (e.g. Galle, Kandy)"
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
                             className="w-full pl-16 pr-6 py-5 bg-gray-50 rounded-3xl font-bold text-gray-900 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-gray-300"
                         />
                     </div>
-                    
+
                     <div className="flex w-full md:w-auto gap-3">
-                        <button 
+                        <button
                             onClick={handleNearbySearch}
                             disabled={isSearchingNearby}
                             className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 md:px-8 py-5 bg-blue-50 text-blue-600 rounded-3xl font-black uppercase tracking-tight hover:bg-blue-100 transition-all disabled:opacity-50 group"
@@ -139,13 +139,13 @@ export default function TransportSearchPage() {
                             <span className="hidden sm:inline">Find Nearby</span>
                             <span className="sm:hidden">Nearby</span>
                         </button>
-                        
+
                         <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 md:px-10 py-5 bg-gray-900 text-white rounded-3xl font-black uppercase tracking-tight hover:bg-black transition-all shadow-lg shadow-gray-900/10">
                             <Search size={20} />
                             <span>Search</span>
                         </button>
 
-                        <button 
+                        <button
                             onClick={() => setShowMobileFilters(true)}
                             className="lg:hidden flex items-center justify-center w-16 bg-white border border-gray-100 rounded-3xl text-gray-900 hover:bg-gray-50 transition-all"
                         >
@@ -160,7 +160,7 @@ export default function TransportSearchPage() {
             <main className="max-w-[1600px] mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-5 gap-10">
                 <aside className="hidden lg:block space-y-8">
                     <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm sticky top-32">
-                        <FilterContent 
+                        <FilterContent
                             vehicleType={vehicleType}
                             setVehicleType={setVehicleType}
                             capacity={capacity}
@@ -178,14 +178,14 @@ export default function TransportSearchPage() {
                 <AnimatePresence>
                     {showMobileFilters && (
                         <>
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 onClick={() => setShowMobileFilters(false)}
                                 className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] lg:hidden"
                             />
-                            <motion.div 
+                            <motion.div
                                 initial={{ x: '100%' }}
                                 animate={{ x: 0 }}
                                 exit={{ x: '100%' }}
@@ -194,15 +194,15 @@ export default function TransportSearchPage() {
                                 <div className="p-8 space-y-8">
                                     <div className="flex items-center justify-between">
                                         <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Filters</h2>
-                                        <button 
+                                        <button
                                             onClick={() => setShowMobileFilters(false)}
                                             className="p-2 hover:bg-gray-100 rounded-xl transition-all"
                                         >
                                             <X size={24} />
                                         </button>
                                     </div>
-                                    
-                                    <FilterContent 
+
+                                    <FilterContent
                                         vehicleType={vehicleType}
                                         setVehicleType={setVehicleType}
                                         capacity={capacity}
@@ -214,7 +214,7 @@ export default function TransportSearchPage() {
                                         setPage={setPage}
                                     />
 
-                                    <button 
+                                    <button
                                         onClick={() => setShowMobileFilters(false)}
                                         className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-600/20 active:scale-95 transition-all mt-10"
                                     >
@@ -244,51 +244,50 @@ export default function TransportSearchPage() {
                         </div>
                     ) : (
                         <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                            {filteredVehicles.map((vehicle: any, idx: number) => (
-                                <VehicleDiscoveryCard 
-                                    key={vehicle.id}
-                                    vehicle={vehicle}
-                                    providerPhone={vehicle.phone}
-                                    idx={idx}
-                                />
-                            ))}
-                        </div>
-
-                        {/* Pagination */}
-                        {totalPages > 1 && (
-                            <div className="flex items-center justify-center gap-4 pt-10">
-                                <button 
-                                    disabled={page === 1}
-                                    onClick={() => setPage(p => p - 1)}
-                                    className="px-6 py-3 bg-white border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 disabled:opacity-50 transition-all shadow-sm"
-                                >
-                                    Previous
-                                </button>
-                                <div className="flex items-center gap-2">
-                                    {[...Array(totalPages)].map((_, i) => (
-                                        <button 
-                                            key={i}
-                                            onClick={() => setPage(i + 1)}
-                                            className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all ${
-                                                page === i + 1 
-                                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
-                                                    : 'bg-white text-gray-400 hover:text-gray-900 border border-gray-100'
-                                            }`}
-                                        >
-                                            {i + 1}
-                                        </button>
-                                    ))}
-                                </div>
-                                <button 
-                                    disabled={page === totalPages}
-                                    onClick={() => setPage(p => p + 1)}
-                                    className="px-6 py-3 bg-white border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 disabled:opacity-50 transition-all shadow-sm"
-                                >
-                                    Next
-                                </button>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                                {filteredVehicles.map((vehicle: any, idx: number) => (
+                                    <VehicleDiscoveryCard
+                                        key={vehicle.id}
+                                        vehicle={vehicle}
+                                        providerPhone={vehicle.phone}
+                                        idx={idx}
+                                    />
+                                ))}
                             </div>
-                        )}
+
+                            {/* Pagination */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-center gap-4 pt-10">
+                                    <button
+                                        disabled={page === 1}
+                                        onClick={() => setPage(p => p - 1)}
+                                        className="px-6 py-3 bg-white border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 disabled:opacity-50 transition-all shadow-sm"
+                                    >
+                                        Previous
+                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        {[...Array(totalPages)].map((_, i) => (
+                                            <button
+                                                key={i}
+                                                onClick={() => setPage(i + 1)}
+                                                className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all ${page === i + 1
+                                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                                                        : 'bg-white text-gray-400 hover:text-gray-900 border border-gray-100'
+                                                    }`}
+                                            >
+                                                {i + 1}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <button
+                                        disabled={page === totalPages}
+                                        onClick={() => setPage(p => p + 1)}
+                                        className="px-6 py-3 bg-white border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 disabled:opacity-50 transition-all shadow-sm"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
@@ -298,27 +297,27 @@ export default function TransportSearchPage() {
 }
 
 // Reusable Filter Content Component
-function FilterContent({ 
-    vehicleType, setVehicleType, 
-    capacity, setCapacity, 
-    driverIncluded, setDriverIncluded, 
-    hasAc, setHasAc, 
-    setPage 
+function FilterContent({
+    vehicleType, setVehicleType,
+    capacity, setCapacity,
+    driverIncluded, setDriverIncluded,
+    hasAc, setHasAc,
+    setPage
 }: any) {
     const hasActiveFilters = (vehicleType || capacity || driverIncluded !== null || hasAc !== null);
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between mb-6">
-                 <h2 className="text-sm font-black text-gray-900 uppercase tracking-widest flex items-center gap-2">
-                     <Filter size={16} className="text-blue-600" />
-                     Filters
-                 </h2>
-                 {hasActiveFilters && (
-                    <button 
-                        onClick={() => { 
-                            setVehicleType(''); 
-                            setCapacity(''); 
+                <h2 className="text-sm font-black text-gray-900 uppercase tracking-widest flex items-center gap-2">
+                    <Filter size={16} className="text-blue-600" />
+                    Filters
+                </h2>
+                {hasActiveFilters && (
+                    <button
+                        onClick={() => {
+                            setVehicleType('');
+                            setCapacity('');
                             setDriverIncluded(null);
                             setHasAc(null);
                             setPage(1);
@@ -334,14 +333,13 @@ function FilterContent({
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Vehicle Type</label>
                 <div className="grid grid-cols-2 gap-2">
                     {['car', 'van', 'bus', 'tuk', 'jeep', 'bike'].map((type) => (
-                        <button 
+                        <button
                             key={type}
                             onClick={() => { setVehicleType(vehicleType === type ? '' : type); setPage(1); }}
-                            className={`py-3 rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-tight transition-all border ${
-                                vehicleType === type 
-                                    ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20' 
+                            className={`py-3 rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-tight transition-all border ${vehicleType === type
+                                    ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20'
                                     : 'bg-white text-gray-500 border-gray-100 hover:border-blue-200'
-                            }`}
+                                }`}
                         >
                             {type}
                         </button>
@@ -351,7 +349,7 @@ function FilterContent({
 
             <div className="space-y-3">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Min. Passengers</label>
-                <select 
+                <select
                     className="w-full bg-gray-50 border-none rounded-xl py-3.5 px-4 text-xs font-black uppercase tracking-tight focus:ring-2 focus:ring-blue-500/10 outline-none"
                     value={capacity}
                     onChange={(e) => { setCapacity(e.target.value); setPage(1); }}
@@ -367,7 +365,7 @@ function FilterContent({
             <div className="space-y-4 pt-4 border-t border-gray-50">
                 <div className="flex items-center justify-between">
                     <label className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Driver Included</label>
-                    <button 
+                    <button
                         onClick={() => { setDriverIncluded(driverIncluded === true ? null : true); setPage(1); }}
                         className={`w-10 h-6 rounded-full transition-colors relative ${driverIncluded === true ? 'bg-blue-600' : 'bg-gray-200'}`}
                     >
@@ -376,7 +374,7 @@ function FilterContent({
                 </div>
                 <div className="flex items-center justify-between">
                     <label className="text-[10px] font-black text-gray-900 uppercase tracking-widest">A/C Available</label>
-                    <button 
+                    <button
                         onClick={() => { setHasAc(hasAc === true ? null : true); setPage(1); }}
                         className={`w-10 h-6 rounded-full transition-colors relative ${hasAc === true ? 'bg-blue-600' : 'bg-gray-200'}`}
                     >

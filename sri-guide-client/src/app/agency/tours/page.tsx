@@ -111,14 +111,14 @@ export default function AgencyToursPage() {
                             <MapIcon size={24} />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-black text-[#1A1F2C] tracking-tight mb-1">Tour Inventory</h1>
-                            <p className="text-gray-500 font-medium">Manage and monitor your curated Sri Lankan experiences</p>
+                            <h1 className="text-2xl md:text-3xl font-black text-[#1A1F2C] tracking-tight mb-1">Tour Inventory</h1>
+                            <p className="text-xs md:text-sm text-gray-500 font-medium">Manage and monitor your curated Sri Lankan experiences</p>
                         </div>
                     </div>
                     
                     <button 
                         onClick={() => router.push("/agency/tours/create")}
-                        className="bg-[#3061E3] hover:bg-[#2549B0] text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-[0_10px_30px_rgba(48,97,227,0.2)] flex items-center gap-3 w-fit"
+                        className="bg-[#3061E3] hover:bg-[#2549B0] text-white px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest transition-all shadow-[0_10px_30px_rgba(48,97,227,0.2)] flex items-center justify-center gap-3 w-full md:w-fit"
                     >
                         <Plus size={18} /> Create New Package
                     </button>
@@ -139,7 +139,7 @@ export default function AgencyToursPage() {
                         />
                     </div>
 
-                    <div className="flex items-center gap-2 bg-white p-2 rounded-[2rem] border border-gray-100 shadow-sm shrink-0">
+                    <div className="flex items-center gap-2 bg-white p-1.5 md:p-2 rounded-2xl md:rounded-[2rem] border border-gray-100 shadow-sm shrink-0 overflow-x-auto no-scrollbar">
                         {[
                             { id: 'all', label: 'All' },
                             { id: 'active', label: 'Active' },
@@ -148,7 +148,7 @@ export default function AgencyToursPage() {
                             <button
                                 key={tab.id}
                                 onClick={() => setStatusFilter(tab.id as any)}
-                                className={`px-8 py-4 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                className={`px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-3xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
                                     statusFilter === tab.id 
                                         ? 'bg-[#1A1F2C] text-white shadow-lg' 
                                         : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
@@ -214,7 +214,7 @@ export default function AgencyToursPage() {
                                     </div>
 
                                     {/* Content */}
-                                    <div className="p-8">
+                                    <div className="p-6 md:p-8">
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="text-[10px] font-black text-[#2E7D32] uppercase tracking-[0.2em]">
                                                 {tour.date || "Mar 21"}

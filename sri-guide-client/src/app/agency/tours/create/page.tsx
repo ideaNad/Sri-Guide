@@ -58,6 +58,17 @@ const CreateTourPage = () => {
     const [categorySearch, setCategorySearch] = useState("");
     const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [editorValue, setEditorValue] = useState(formData.description);
+
+    // Debounced sync to main state
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (editorValue !== formData.description) {
+                setFormData(prev => ({ ...prev, description: editorValue }));
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [editorValue, formData.description]);
 
     const toggleLocation = (loc: string) => {
         if (loc === "Island-wide") {
@@ -180,19 +191,19 @@ const CreateTourPage = () => {
     const filteredCategories = CATEGORIES.filter(c => c.toLowerCase().includes(categorySearch.toLowerCase()));
 
     return (
-        <div className="min-h-screen bg-[#FDFCFB] pt-32 pb-24">
+        <div className="min-h-screen bg-[#FDFCFB] pt-24 md:pt-32 pb-16 md:pb-24 overflow-x-hidden">
             <div className="container mx-auto px-4 max-w-5xl">
 
                 {/* Modern Progress Stepper */}
-                <div className="flex items-center gap-6 mb-12 bg-white p-4 rounded-3xl border border-gray-100 shadow-sm w-fit mx-auto">
-                    <div className={`flex items-center gap-3 px-6 py-3 rounded-2xl transition-all ${step === 1 ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-400'}`}>
-                        <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center font-black text-[10px]">1</div>
-                        <span className="text-[10px] font-black uppercase tracking-widest italic">Core Narrative</span>
+                <div className="flex items-center justify-start md:justify-center gap-3 md:gap-6 mb-8 md:mb-12 bg-white p-3 md:p-4 rounded-2xl md:rounded-3xl border border-gray-100 shadow-sm w-full md:w-fit mx-auto overflow-x-auto no-scrollbar">
+                    <div className={`flex items-center gap-2 md:gap-3 px-3 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl transition-all ${step === 1 ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-400'}`}>
+                        <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-white/20 flex items-center justify-center font-black text-[8px] md:text-[10px]">1</div>
+                        <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest italic md:whitespace-nowrap">Core Narrative</span>
                     </div>
-                    <ChevronRight size={16} className="text-gray-200" />
-                    <div className={`flex items-center gap-3 px-6 py-3 rounded-2xl transition-all ${step === 2 ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-400'}`}>
-                        <div className="w-6 h-6 rounded-full bg-black/5 flex items-center justify-center font-black text-[10px]">2</div>
-                        <span className="text-[10px] font-black uppercase tracking-widest italic">Daily Itinerary</span>
+                    <ChevronRight size={14} className="text-gray-200 shrink-0" />
+                    <div className={`flex items-center gap-2 md:gap-3 px-3 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl transition-all ${step === 2 ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-400'}`}>
+                        <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-black/5 flex items-center justify-center font-black text-[8px] md:text-[10px]">2</div>
+                        <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest italic md:whitespace-nowrap">Daily Itinerary</span>
                     </div>
                 </div>
 
@@ -206,7 +217,7 @@ const CreateTourPage = () => {
                             className="space-y-12"
                         >
                             {/* Single Unified Form Card */}
-                            <div className="bg-white p-8 md:p-16 rounded-[3.5rem] border border-gray-100 shadow-2xl shadow-gray-200/40 space-y-16">
+                            <div className="bg-white p-6 md:p-16 rounded-3xl md:rounded-[3.5rem] border border-gray-100 shadow-2xl shadow-gray-200/40 space-y-10 md:space-y-16">
 
                                 {/* 1. Identity Section */}
                                 <div className="space-y-10">
@@ -215,14 +226,14 @@ const CreateTourPage = () => {
                                             <Info size={24} />
                                         </div>
                                         <div>
-                                            <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight italic uppercase">Tour Identity</h2>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Essential logistics of your experience</p>
+                                            <h2 className="text-xl md:text-3xl font-black text-gray-900 tracking-tight italic uppercase break-words">Tour Identity</h2>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Essential logistics</p>
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Experience Title</label>
+                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest md:tracking-[0.2em] ml-2">Experience Title</label>
                                             <input
                                                 type="text"
                                                 value={formData.title}
@@ -235,7 +246,7 @@ const CreateTourPage = () => {
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-3">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Base Price (USD)</label>
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest md:tracking-[0.2em] ml-2">Base Price (USD)</label>
                                                 <div className="relative">
                                                     <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-teal-600" size={18} />
                                                     <input
@@ -250,13 +261,13 @@ const CreateTourPage = () => {
                                             </div>
 
                                             <div className="space-y-3">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Participant Count</label>
-                                                <div className="flex items-center justify-between bg-gray-50 rounded-2xl py-3 px-6 h-[60px]">
-                                                    <div className="flex items-center gap-3">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest md:tracking-[0.2em] ml-2">Participant Count</label>
+                                                <div className="flex items-center justify-between bg-gray-50 rounded-2xl py-3 px-4 md:px-6 h-[60px]">
+                                                    <div className="flex items-center gap-2 md:gap-3">
                                                         <Users className="text-teal-600 flex-shrink-0" size={18} />
                                                         <span className="text-sm font-bold text-gray-500"></span>
                                                     </div>
-                                                    <div className="flex items-center gap-4">
+                                                    <div className="flex items-center gap-3 md:gap-4">
                                                         <button
                                                             type="button"
                                                             onClick={() => setFormData(prev => ({ ...prev, participantCount: Math.max(1, (Number(prev.participantCount) || 1) - 1).toString() }))}
@@ -281,7 +292,7 @@ const CreateTourPage = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                         {/* Searchable Location Dropdown */}
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Operating Areas</label>
+                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest md:tracking-[0.2em] ml-2">Operating Areas</label>
                                             <div className="relative">
                                                 <div
                                                     className="w-full bg-gray-50 border-transparent rounded-2xl pl-14 pr-6 py-5 text-sm font-bold focus-within:bg-white focus-within:border-teal-200 transition-all cursor-pointer flex items-center justify-between"
@@ -315,7 +326,7 @@ const CreateTourPage = () => {
                                                                         onClick={e => e.stopPropagation()}
                                                                     />
                                                                 </div>
-                                                                <div className="max-h-[300px] overflow-y-auto p-5 custom-scrollbar grid grid-cols-2 gap-2">
+                                                                <div className="max-h-[300px] overflow-y-auto p-5 custom-scrollbar grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                                     {filteredDistricts.map(loc => (
                                                                         <button
                                                                             key={loc}
@@ -354,7 +365,7 @@ const CreateTourPage = () => {
 
                                         {/* Searchable Category Dropdown */}
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Experience Categories</label>
+                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest md:tracking-[0.2em] ml-2">Experience Categories</label>
                                             <div className="relative">
                                                 <div
                                                     className={`w-full bg-gray-50 border-transparent rounded-2xl pl-14 pr-6 py-5 text-sm font-bold focus-within:bg-white focus-within:border-teal-200 transition-all cursor-pointer flex items-center justify-between ${errors.category ? 'border-rose-300 bg-rose-50/20' : ''}`}
@@ -388,7 +399,7 @@ const CreateTourPage = () => {
                                                                         onClick={e => e.stopPropagation()}
                                                                     />
                                                                 </div>
-                                                                <div className="max-h-[300px] overflow-y-auto p-5 custom-scrollbar grid grid-cols-2 gap-2">
+                                                                <div className="max-h-[300px] overflow-y-auto p-5 custom-scrollbar grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                                     {filteredCategories.map(cat => (
                                                                         <button
                                                                             key={cat}
@@ -427,7 +438,7 @@ const CreateTourPage = () => {
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Duration</label>
+                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest md:tracking-[0.2em] ml-2">Duration</label>
                                             <div className="relative">
                                                 <Clock className="absolute left-6 top-1/2 -translate-y-1/2 text-teal-600" size={18} />
                                                 <input
@@ -447,25 +458,25 @@ const CreateTourPage = () => {
 
                                 {/* 2. Narrative & Map Link Section */}
                                 <div className="space-y-10">
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                         <div className="flex items-center gap-4">
                                             <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
                                                 <Send size={24} />
                                             </div>
                                             <div>
-                                                <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight italic uppercase">Narrative & Context</h2>
+                                                <h2 className="text-xl md:text-3xl font-black text-gray-900 tracking-tight italic uppercase break-words">Narrative & Context</h2>
                                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Share the soul of the journey</p>
                                             </div>
                                         </div>
-                                        <div className="hidden md:block">
+                                        <div className="w-full md:w-auto">
                                             <div className="flex items-center gap-3 px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                                <MapIcon size={18} className="text-teal-600" />
+                                                <MapIcon size={18} className="text-teal-600 shrink-0" />
                                                 <input
                                                     type="url"
                                                     value={formData.mapLink}
                                                     onChange={e => setFormData({ ...formData, mapLink: e.target.value })}
                                                     placeholder="Google Map Link"
-                                                    className="bg-transparent border-none text-[10px] font-black uppercase tracking-widest outline-none w-48"
+                                                    className="bg-transparent border-none text-[10px] font-black uppercase tracking-widest outline-none w-full md:w-48"
                                                 />
                                             </div>
                                         </div>
@@ -475,8 +486,8 @@ const CreateTourPage = () => {
                                         <div className={`rich-text-container bg-gray-50 rounded-[3rem] border border-transparent focus-within:bg-white focus-within:border-teal-200 transition-all overflow-hidden p-6 ${errors.description ? 'border-rose-300 bg-rose-50/20' : ''}`}>
                                             <ReactQuill
                                                 theme="snow"
-                                                value={formData.description}
-                                                onChange={val => setFormData({ ...formData, description: val })}
+                                                value={editorValue}
+                                                onChange={setEditorValue}
                                                 className="quill-editor h-80"
                                                 placeholder="Describe the adventure in rich detail..."
                                             />
@@ -494,14 +505,14 @@ const CreateTourPage = () => {
                                             <Camera size={24} />
                                         </div>
                                         <div>
-                                            <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight italic uppercase">Visual Showcase</h2>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">A journey is best seen, then lived</p>
+                                            <h2 className="text-xl md:text-3xl font-black text-gray-900 tracking-tight italic uppercase break-words">Visual Showcase</h2>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">A journey is best seen</p>
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                                         <div className="lg:col-span-12 space-y-8">
-                                            <label className="text-xs font-black text-gray-900 uppercase tracking-[0.2em] ml-2">Main Cover Image</label>
+                                            <label className="text-xs font-black text-gray-900 uppercase tracking-widest md:tracking-[0.2em] ml-2">Main Cover Image</label>
                                             <div className="max-w-2xl mx-auto">
                                                 <ImageUpload
                                                     value={formData.mainImageUrl}
@@ -514,8 +525,8 @@ const CreateTourPage = () => {
                                         </div>
 
                                         <div className="lg:col-span-12 space-y-8">
-                                            <div className="flex items-center justify-between px-2">
-                                                <label className="text-xs font-black text-gray-900 uppercase tracking-[0.2em]">Tour Gallery</label>
+                                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-2">
+                                                <label className="text-xs font-black text-gray-900 uppercase tracking-widest md:tracking-[0.2em]">Tour Gallery</label>
                                                                                 <span className="text-[10px] font-black text-teal-600 bg-teal-50 px-4 py-2 rounded-full uppercase tracking-widest italic">Experience Gallery</span>
                                             </div>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
@@ -578,23 +589,24 @@ const CreateTourPage = () => {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
-                            className="space-y-8 bg-white p-10 md:p-14 rounded-[3.5rem] border border-gray-100 shadow-xl"
+                            className="space-y-6 md:space-y-8 bg-white p-4 md:p-14 rounded-2xl md:rounded-[3.5rem] border border-gray-100 shadow-xl"
                         >
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600">
+                                    <div className="w-12 h-12 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 shrink-0">
                                         <Clock size={24} />
                                     </div>
                                     <div>
-                                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight italic uppercase text-left">Daily Itinerary</h2>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-left">Map out the moments of the journey</p>
+                                        <h2 className="text-xl md:text-3xl font-black text-gray-900 tracking-tight italic uppercase text-left break-words">Daily Itinerary</h2>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-left">Map out the moments</p>
                                     </div>
                                 </div>
                                 <button
                                     onClick={handleAddDay}
-                                    className="bg-teal-600 hover:bg-teal-700 text-white p-4 rounded-2xl transition-all shadow-lg shadow-teal-600/20"
+                                    className="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white px-6 py-4 rounded-2xl transition-all shadow-lg shadow-teal-600/20 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest"
                                 >
-                                    <Plus size={20} />
+                                    <Plus size={18} />
+                                    <span>Add Day</span>
                                 </button>
                             </div>
 
@@ -602,18 +614,18 @@ const CreateTourPage = () => {
                                 {formData.dayDescriptions.sort((a, b) => a.dayNumber - b.dayNumber).map(day => {
                                     const dayNum = day.dayNumber;
                                     return (
-                                        <div key={dayNum} className="space-y-8 p-10 bg-gray-50/50 rounded-[3rem] border border-gray-100/50 relative group/day">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 bg-teal-600 text-white rounded-xl flex items-center justify-center font-black italic shadow-lg shadow-teal-600/20">
+                                        <div key={dayNum} className="w-full max-w-full space-y-6 md:space-y-8 p-4 md:p-10 bg-gray-50/50 rounded-2xl md:rounded-[3rem] border border-gray-100/50 relative group/day overflow-hidden">
+                                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                                                <div className="flex items-center gap-3 md:gap-4">
+                                                    <div className="w-10 h-10 bg-teal-600 text-white rounded-xl flex items-center justify-center font-black italic shadow-lg shadow-teal-600/20 shrink-0">
                                                         D{dayNum}
                                                     </div>
-                                                    <h3 className="text-xl font-black text-gray-900 tracking-tight italic uppercase">Day {dayNum} Experience</h3>
+                                                    <h3 className="text-lg md:text-xl font-black text-gray-900 tracking-tight italic uppercase">Day {dayNum} Experience</h3>
                                                 </div>
-                                                <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-2 md:gap-3 w-full sm:w-auto">
                                                     <button
                                                         onClick={() => handleAddActivity(dayNum)}
-                                                        className="flex items-center gap-2 bg-white text-teal-600 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border border-teal-100 hover:bg-teal-50 transition-all shadow-sm"
+                                                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white text-teal-600 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border border-teal-100 hover:bg-teal-50 transition-all shadow-sm"
                                                     >
                                                         <Plus size={14} />
                                                         Add Activity
@@ -632,24 +644,23 @@ const CreateTourPage = () => {
                                             <div className="space-y-4 px-2 mb-8">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Day Overview</label>
                                                 <textarea
-                                                    rows={2}
-                                                    value={formData.dayDescriptions.find(d => d.dayNumber === dayNum)?.description || ""}
-                                                    onChange={e => {
+                                                    defaultValue={formData.dayDescriptions.find(d => d.dayNumber === dayNum)?.description || ""}
+                                                    onBlur={e => {
                                                         const newDays = [...formData.dayDescriptions];
                                                         const dayIdx = newDays.findIndex(d => d.dayNumber === dayNum);
                                                         if (dayIdx > -1) {
                                                             newDays[dayIdx].description = e.target.value;
-                                                            setFormData({ ...formData, dayDescriptions: newDays });
+                                                            setFormData(p => ({ ...p, dayDescriptions: newDays }));
                                                         }
                                                     }}
                                                     placeholder="What makes this day special? (Optional)"
-                                                    className="w-full bg-white border-transparent rounded-[1.5rem] px-8 py-5 text-sm font-medium text-gray-700 focus:border-teal-200 transition-all outline-none resize-none leading-relaxed shadow-sm italic text-left"
+                                                    className="w-full bg-white border-transparent rounded-2xl px-6 py-4 md:px-8 md:py-5 text-sm font-medium text-gray-700 focus:border-teal-200 transition-all outline-none resize-none leading-relaxed shadow-sm italic text-left"
                                                 />
                                             </div>
 
                                             <div className="space-y-4 px-2 mb-8">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Day Image</label>
-                                                <div className="max-w-xs transition-all duration-500 ease-in-out">
+                                                <div className="w-full max-w-xs transition-all duration-500 ease-in-out md:px-0 aspect-video overflow-hidden">
                                                     <ImageUpload
                                                         value={formData.dayDescriptions.find(d => d.dayNumber === dayNum)?.imageUrl || ""}
                                                         onChange={url => {
@@ -674,7 +685,7 @@ const CreateTourPage = () => {
                                                                 layout
                                                                 initial={{ opacity: 0, scale: 0.95 }}
                                                                 animate={{ opacity: 1, scale: 1 }}
-                                                                className="relative bg-gray-50/50 rounded-[2.5rem] p-10 border border-gray-100 hover:border-teal-100 transition-all group"
+                                                                className="relative w-full max-w-full bg-gray-50/50 rounded-xl md:rounded-[2.5rem] p-4 md:p-10 border border-gray-100 hover:border-teal-100 transition-all group overflow-hidden"
                                                             >
                                                                 <button
                                                                     onClick={() => {
@@ -682,14 +693,14 @@ const CreateTourPage = () => {
                                                                         newItinerary.splice(globalIndex, 1);
                                                                         setFormData({ ...formData, itinerary: newItinerary });
                                                                     }}
-                                                                    className="absolute -top-3 -right-3 p-3 bg-white text-rose-500 rounded-2xl shadow-xl border border-rose-50 hover:bg-rose-500 hover:text-white transition-all"
+                                                                    className="absolute top-2 right-2 md:-top-3 md:-right-3 p-3 bg-white text-rose-500 rounded-2xl shadow-xl border border-rose-50 hover:bg-rose-500 hover:text-white transition-all z-10"
                                                                 >
                                                                     <Trash2 size={16} />
                                                                 </button>
 
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left">
+                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 text-left">
                                                                     <div className="space-y-8">
-                                                                        <div className="flex gap-4">
+                                                                            <div className="flex flex-col sm:flex-row gap-4">
                                                                             <div className="flex-1 space-y-3">
                                                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Title</label>
                                                                                 <input
@@ -704,7 +715,7 @@ const CreateTourPage = () => {
                                                                                     className="w-full bg-white border-transparent rounded-2xl px-6 py-4 text-sm font-bold text-gray-900 focus:border-teal-200 transition-all outline-none"
                                                                                 />
                                                                             </div>
-                                                                            <div className="w-32 space-y-3">
+                                                                            <div className="w-full sm:w-32 space-y-3">
                                                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Time</label>
                                                                                 <input
                                                                                     type="text"
@@ -723,29 +734,29 @@ const CreateTourPage = () => {
                                                                         <div className="space-y-3">
                                                                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Highlights</label>
                                                                             <textarea
-                                                                                rows={3}
-                                                                                value={item.description}
-                                                                                onChange={e => {
+                                                                                defaultValue={item.description}
+                                                                                onBlur={e => {
                                                                                     const newItinerary = [...formData.itinerary];
                                                                                     newItinerary[globalIndex].description = e.target.value;
-                                                                                    setFormData({ ...formData, itinerary: newItinerary });
+                                                                                    setFormData(p => ({ ...p, itinerary: newItinerary }));
                                                                                 }}
                                                                                 placeholder="Brief description"
-                                                                                className="w-full bg-white border-transparent rounded-[1.5rem] px-8 py-5 text-sm font-medium text-gray-700 focus:border-teal-200 transition-all outline-none resize-none"
+                                                                                className="w-full bg-white border-transparent rounded-2xl px-6 py-4 md:px-8 md:py-5 text-sm font-medium text-gray-700 focus:border-teal-200 transition-all outline-none resize-none"
                                                                             />
                                                                         </div>
                                                                     </div>
 
                                                                     <div className="space-y-4">
-                                                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Point Visual</label>
-                                                                        <ImageUpload
-                                                                            value={item.imageUrl}
-                                                                            onChange={url => {
-                                                                                const newItinerary = [...formData.itinerary];
-                                                                                newItinerary[globalIndex].imageUrl = url;
-                                                                                setFormData({ ...formData, itinerary: newItinerary });
-                                                                            }}
-                                                                        />
+                                                                        <div className="w-full aspect-video overflow-hidden rounded-2xl">
+                                                                            <ImageUpload
+                                                                                value={item.imageUrl}
+                                                                                onChange={url => {
+                                                                                    const newItinerary = [...formData.itinerary];
+                                                                                    newItinerary[globalIndex].imageUrl = url;
+                                                                                    setFormData({ ...formData, itinerary: newItinerary });
+                                                                                }}
+                                                                            />
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </motion.div>
@@ -762,9 +773,9 @@ const CreateTourPage = () => {
 
                                                 <button
                                                     onClick={() => handleAddActivity(dayNum)}
-                                                    className="w-full py-6 rounded-[2rem] border-2 border-dashed border-teal-100 text-teal-600 font-black text-[10px] uppercase tracking-widest hover:bg-teal-50/50 hover:border-teal-300 transition-all flex items-center justify-center gap-2"
+                                                    className="w-full py-6 rounded-2xl border-2 border-dashed border-teal-100 text-teal-600 font-black text-[10px] uppercase tracking-widest hover:bg-teal-50/50 hover:border-teal-300 transition-all flex items-center justify-center gap-2"
                                                 >
-                                                    <Plus size={16} /> Add Activity for Day {dayNum}
+                                                    <Plus size={16} /> <span className="md:inline">Add Activity</span> <span className="hidden md:inline">for Day {dayNum}</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -773,7 +784,7 @@ const CreateTourPage = () => {
 
                                 <button
                                     onClick={handleAddDay}
-                                    className="w-full py-8 border-2 border-dashed border-gray-200 rounded-[3rem] text-gray-400 hover:text-teal-600 hover:border-teal-200 hover:bg-teal-50/30 transition-all flex flex-col items-center gap-3 group"
+                                    className="w-full py-8 border-2 border-dashed border-gray-200 rounded-2xl md:rounded-[3rem] text-gray-400 hover:text-teal-600 hover:border-teal-200 hover:bg-teal-50/30 transition-all flex flex-col items-center gap-3 group"
                                 >
                                     <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
                                         <Plus size={24} />
@@ -792,7 +803,7 @@ const CreateTourPage = () => {
                                 <button
                                     onClick={handleSubmit}
                                     disabled={loading}
-                                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-12 py-5 rounded-2xl font-black text-[12px] uppercase tracking-[0.2em] transition-all shadow-2xl shadow-emerald-600/30 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 md:px-12 py-4 md:py-5 rounded-xl md:rounded-2xl font-black text-[10px] md:text-[12px] uppercase tracking-[0.2em] transition-all shadow-2xl shadow-emerald-600/30 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
                                 >
                                     {loading ? "Publishing..." : "Launch Adventure"}
                                     <ImageIcon size={18} />
