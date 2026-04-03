@@ -129,7 +129,10 @@ public class GetUserProfileQueryHandler : IRequestHandler<GetUserProfileQuery, U
                     v.IsAvailable,
                     v.DriverIncluded
                 )).ToList()
-            ) : null
+            ) : null,
+            user.XP,
+            user.Level,
+            user.CurrentTitle
         );
     }
 }

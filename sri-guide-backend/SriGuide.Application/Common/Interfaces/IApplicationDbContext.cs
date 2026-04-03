@@ -35,6 +35,12 @@ public interface IApplicationDbContext
     DbSet<VehicleLike> VehicleLikes { get; }
     DbSet<VehicleReview> VehicleReviews { get; }
     
+    // Gamification
+    DbSet<Quest> Quests { get; }
+    DbSet<QuestSubmission> QuestSubmissions { get; }
+    DbSet<Badge> Badges { get; }
+    DbSet<UserBadge> UserBadges { get; }
+    
     EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

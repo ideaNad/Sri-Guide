@@ -95,13 +95,13 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-start gap-4">
-                    <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 shrink-0">
-                        <ShieldCheck size={20} />
+                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-start gap-4 hover:border-amber-100 transition-colors cursor-pointer" onClick={() => router.push('/dashboard/explorer')}>
+                    <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 shrink-0">
+                        <Compass size={20} />
                     </div>
                     <div>
-                        <h3 className="font-bold text-gray-900 text-lg">{statsLoading ? "..." : (stats?.isVerified ? "Verified" : "Unverified")}</h3>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">Account Status</p>
+                        <h3 className="font-bold text-gray-900 text-lg">Lvl {user.level ?? 1}</h3>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">Island Explorer</p>
                     </div>
                 </div>
             </div>

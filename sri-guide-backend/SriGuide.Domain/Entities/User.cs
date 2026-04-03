@@ -23,6 +23,14 @@ public class User : BaseEntity, ISluggable
     public string? TravelDuration { get; set; }
     public string? PreferredLocation { get; set; }
 
+    // Gamification Data
+    public int XP { get; set; } = 0;
+    public int Level { get; set; } = 1;
+    public string? CurrentTitle { get; set; }
+    
+    public ICollection<QuestSubmission> QuestSubmissions { get; set; } = new List<QuestSubmission>();
+    public ICollection<UserBadge> UserBadges { get; set; } = new List<UserBadge>();
+
     public GuideProfile? GuideProfile { get; set; }
     public AgencyProfile? AgencyProfile { get; set; }
     public EventOrganizerProfile? EventOrganizerProfile { get; set; }

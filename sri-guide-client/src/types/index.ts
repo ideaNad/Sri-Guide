@@ -1,5 +1,8 @@
 export type UserRole = "Tourist" | "Guide" | "TravelAgency" | "TransportProvider" | "EventOrganizer" | "Admin";
 
+export type QuestCategory = "Nature" | "Adventure" | "Culture" | "Food" | "Ocean" | "HiddenGems" | "Extreme";
+export type QuestDifficulty = "Easy" | "Medium" | "Hard" | "Legendary";
+
 export interface User {
     id: string;
     fullName: string;
@@ -18,6 +21,9 @@ export interface User {
     preferredLocation?: string;
     eventOrganizerProfile?: EventOrganizerProfile;
     transportProfile?: TransportProfile;
+    xp?: number;
+    level?: number;
+    currentTitle?: string;
 }
 
 export interface TransportProfile {

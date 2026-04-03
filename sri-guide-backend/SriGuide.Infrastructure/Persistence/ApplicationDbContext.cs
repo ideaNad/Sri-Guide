@@ -41,9 +41,48 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<VehicleLike> VehicleLikes => Set<VehicleLike>();
     public DbSet<VehicleReview> VehicleReviews => Set<VehicleReview>();
 
+    // Gamification
+    public DbSet<Quest> Quests => Set<Quest>();
+    public DbSet<QuestSubmission> QuestSubmissions => Set<QuestSubmission>();
+    public DbSet<Badge> Badges => Set<Badge>();
+    public DbSet<UserBadge> UserBadges => Set<UserBadge>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        // Gamification configurations
+        modelBuilder.Entity<Quest>()
+            .HasOne(q => q.RewardBadge)
+            .WithMany()
+            .HasForeignKey(q => q.RewardBadgeId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<QuestSubmission>()
+            .HasOne(qs => qs.User)
+            .WithMany(u => u.QuestSubmissions)
+            .HasForeignKey(qs => qs.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<QuestSubmission>()
+            .HasOne(qs => qs.Quest)
+            .WithMany(q => q.Submissions)
+            .HasForeignKey(qs => qs.QuestId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserBadge>()
+            .HasOne(ub => ub.User)
+            .WithMany(u => u.UserBadges)
+            .HasForeignKey(ub => ub.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserBadge>()
+            .HasOne(ub => ub.Badge)
+            .WithMany(b => b.UserBadges)
+            .HasForeignKey(ub => ub.BadgeId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        base.OnModelCreating(modelBuilder);
 
         // Configure User unique email
         modelBuilder.Entity<User>()
@@ -287,8 +326,6 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .WithMany()
             .HasForeignKey(vr => vr.UserId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        base.OnModelCreating(modelBuilder);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

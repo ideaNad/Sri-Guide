@@ -18,7 +18,10 @@ public record UserProfileDto(
     GuideProfileDto? GuideProfile,
     AgencyProfileDto? AgencyProfile,
     EventOrganizerProfileDto? EventOrganizerProfile,
-    TransportProfileDto? TransportProfile
+    TransportProfileDto? TransportProfile,
+    int? XP = 0,
+    int? Level = 1,
+    string? CurrentTitle = null
 );
 
 public record EventOrganizerProfileDto(

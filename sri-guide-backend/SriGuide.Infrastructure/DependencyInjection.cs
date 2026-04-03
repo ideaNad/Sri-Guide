@@ -19,6 +19,7 @@ public static class DependencyInjection
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<ISlugService, SlugService>();
+        services.AddScoped<IGamificationService, GamificationService>();
         services.AddHttpClient<IEmailService, BrevoEmailService>();
 
         return services;

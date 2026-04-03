@@ -103,7 +103,9 @@ dotnet restore
 dotnet watch run
 
 # Or run without hot reload
-dotnet run
+dotnet run 
+
+dotnet run --project SriGuide.API/SriGuide.API.csproj
 ```
 
 The API will start at: `https://localhost:5001` / `http://localhost:5000`

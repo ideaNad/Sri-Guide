@@ -11,7 +11,7 @@ import { HelpDrawer } from "@/components/help/HelpDrawer";
 import { 
     LayoutDashboard, User, Settings, ShieldCheck, 
     MessageSquare, Heart, Compass, LogOut, X as CloseIcon,
-    AlertCircle
+    AlertCircle, Trophy
 } from "lucide-react";
 
 interface DashboardSidebarProps {
@@ -24,6 +24,8 @@ const DASHBOARD_LINKS = [
     { label: "My Profile", href: "/dashboard/profile", icon: <User size={18} /> },
     { label: "Saved Tours", href: "/dashboard/saved", icon: <Heart size={18} /> },
     { label: "Find Guides", href: "/guides", icon: <Compass size={18} /> },
+    { label: "Island Explorer", href: "/dashboard/explorer", icon: <Trophy size={18} className="text-amber-500" /> },
+    { label: "My Island Story", href: "/dashboard/story", icon: <motion.div animate={{ rotate: [0, 5, -5, 0] }} transition={{ repeat: Infinity, duration: 5 }}><Compass size={18} className="text-sky-500" /></motion.div> },
 ];
 
 export default function DashboardSidebar({ isOpen, setIsOpen }: DashboardSidebarProps) {
