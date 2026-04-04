@@ -163,6 +163,13 @@ export default function IslandExplorerPage() {
         return dist <= quest.proximityRadiusInMeters;
     };
 
+    const getImageUrl = (path: string) => {
+        if (!path) return "";
+        if (path.startsWith('http')) return path;
+        if (path.startsWith('/uploads')) return `${apiClient.defaults.baseURL?.replace('/api', '')}${path}`;
+        return path; // Frontend public folder assets
+    };
+
     const triggerPhotoUpload = (quest: Quest) => {
         setActiveQuest(quest);
         fileInputRef.current?.click();
@@ -366,12 +373,12 @@ export default function IslandExplorerPage() {
                                     )}
 
                                     <div className="flex items-start gap-4 flex-1">
-                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 overflow-hidden ${getDifficultyColor(quest.difficulty)}`}>
+                                        <div className={`w-40 h-40 rounded-[3.5rem] flex items-center justify-center text-6xl shrink-0 overflow-hidden shadow-2xl border-4 border-white ${getDifficultyColor(quest.difficulty)}`}>
                                             {quest.iconUrl ? (
                                                 <img 
-                                                    src={quest.iconUrl.startsWith('/') ? `${apiClient.defaults.baseURL?.replace('/api', '')}${quest.iconUrl}` : quest.iconUrl} 
+                                                    src={getImageUrl(quest.iconUrl)} 
                                                     alt={quest.name} 
-                                                    className="w-full h-full object-cover"
+                                                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-125"
                                                 />
                                             ) : (
                                                 quest.isCompletedByUser ? '🏆' : '📍'

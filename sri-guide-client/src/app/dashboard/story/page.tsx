@@ -133,7 +133,7 @@ export default function IslandStoryPage() {
                                         {/* Photo Section */}
                                         <div className="w-full md:w-64 h-64 rounded-[2rem] overflow-hidden border-4 border-white shadow-lg shrink-0 relative">
                                             <img 
-                                                src={story.photoProofUrl.startsWith('/') ? `${apiClient.defaults.baseURL?.replace('/api', '')}${story.photoProofUrl}` : story.photoProofUrl} 
+                                                src={story.photoProofUrl.startsWith('http') ? story.photoProofUrl : `${apiClient.defaults.baseURL?.replace('/api', '')}${story.photoProofUrl}`} 
                                                 alt={story.questName}
                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                             />
