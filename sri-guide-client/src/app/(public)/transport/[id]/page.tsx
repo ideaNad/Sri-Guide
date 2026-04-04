@@ -26,6 +26,7 @@ export default function TransportProfilePublicView() {
     const [isLoading, setIsLoading] = useState(true);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -172,7 +173,6 @@ export default function TransportProfilePublicView() {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                         {/* Main Content Area */}
                         <div className="lg:col-span-8 space-y-12">
-                            {/* About Section */}
                             <section className="bg-gray-50/50 p-8 md:p-12 rounded-[3.5rem] border border-gray-100 relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-blue-100/30 rounded-full blur-3xl -mr-32 -mt-32" />
                                 <div className="relative z-10">
@@ -180,9 +180,29 @@ export default function TransportProfilePublicView() {
                                         <Award className="text-blue-600" size={24} />
                                         <h2 className="text-2xl font-black text-gray-900 italic uppercase tracking-tight">Provider Mission</h2>
                                     </div>
-                                    <p className="text-gray-600 font-medium leading-relaxed text-lg italic md:text-xl">
-                                        &ldquo;{transport.description || "Committed to delivering safe, reliable, and premium transport experiences across the beautiful landscapes of Sri Lanka."}&rdquo;
-                                    </p>
+                                    <div className="text-gray-600 font-medium leading-relaxed text-lg italic md:text-xl">
+                                        {(() => {
+                                            const desc = transport.description || "Committed to delivering safe, reliable, and premium transport experiences across the beautiful landscapes of Sri Lanka.";
+                                            const isLong = desc.length > 300;
+                                            const displayDesc = !isLong || isDescriptionExpanded 
+                                                ? desc 
+                                                : desc.substring(0, 300) + "...";
+
+                                            return (
+                                                <>
+                                                    &ldquo;{displayDesc}&rdquo;
+                                                    {isLong && (
+                                                        <button 
+                                                            onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                                                            className="block text-blue-600 hover:text-blue-700 font-black text-[10px] uppercase tracking-widest mt-4 transition-all not-italic"
+                                                        >
+                                                            {isDescriptionExpanded ? 'Read Less Mission' : 'Read Full Mission'}
+                                                        </button>
+                                                    )}
+                                                </>
+                                            );
+                                        })()}
+                                    </div>
                                 </div>
                             </section>
 

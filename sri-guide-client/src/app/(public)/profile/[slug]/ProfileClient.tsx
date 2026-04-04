@@ -132,6 +132,11 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
     // Tab State for Agency Owners with Legacy Guide Profiles
     const showGuideTab = isAgencyPath && profile?.legacyGuideProfile && user?.id === profile.id && searchParams.get('full') === 'true';
     const [activeTab, setActiveTab] = useState<'agency' | 'guide'>('agency');
+    
+    // Bio Expansion State
+    const [isBioExpanded, setIsBioExpanded] = useState(false);
+    const [isLegacyBioExpanded, setIsLegacyBioExpanded] = useState(false);
+    const BIO_LIMIT = 300;
 
     const handleToggleLike = async (id: string, type: string) => {
         if (!user) { setIsAuthModalOpen(true); return; }
@@ -288,12 +293,35 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
                                 )}
                             </div>
 
-                            <div className="max-w-xl mx-auto lg:mx-0 mb-8 text-left bg-white/60 backdrop-blur-sm p-6 rounded-2xl border border-gray-100 shadow-sm">
+                            <div className="max-w-xl mx-auto lg:mx-0 mb-8 text-left bg-white/60 backdrop-blur-sm p-6 rounded-2xl border border-gray-100 shadow-sm transition-all duration-500">
                                 <h3 className="text-sm font-bold text-gray-900 uppercase mb-3 text-center lg:text-left">{isAgencyPath ? 'Our Story' : 'About Me'}</h3>
                                 <div className="text-base text-gray-600 leading-relaxed font-medium">
-                                    {(profile.bio || "No bio available.").split('\n').filter(p => p.trim() !== '').map((paragraph, idx) => (
-                                        <p key={idx} className="mb-4 last:mb-0">{paragraph}</p>
-                                    ))}
+                                    {(() => {
+                                        const bio = profile.bio || "No bio available.";
+                                        const isLong = bio.length > BIO_LIMIT;
+                                        const displayBio = !isLong || isBioExpanded 
+                                            ? bio 
+                                            : bio.substring(0, BIO_LIMIT) + "...";
+
+                                        return (
+                                            <>
+                                                {displayBio.split('\n').filter(p => p.trim() !== '').map((paragraph, idx) => (
+                                                    <p key={idx} className="mb-4 last:mb-0">{paragraph}</p>
+                                                ))}
+                                                {isLong && (
+                                                    <button 
+                                                        onClick={() => setIsBioExpanded(!isBioExpanded)}
+                                                        className="text-primary hover:text-secondary font-black text-[11px] uppercase tracking-widest mt-2 transition-all flex items-center gap-1 group"
+                                                    >
+                                                        {isBioExpanded ? 'Read Less Description' : 'Read Full Story'}
+                                                        <span className={`transition-transform duration-300 ${isBioExpanded ? '-rotate-90' : 'group-hover:translate-x-1'}`}>
+                                                            {isBioExpanded ? '↑' : '→'}
+                                                        </span>
+                                                    </button>
+                                                )}
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                             </div>
 
@@ -574,7 +602,27 @@ export default function ProfileClient({ slug, initialData }: { slug: string, ini
                             <div className="max-w-3xl">
                                 <h3 className="text-xs font-bold tracking-widest text-primary uppercase mb-6">About the Guide</h3>
                                 <div className="text-xl text-gray-700 leading-relaxed font-medium mb-12 italic">
-                                    "{profile.legacyGuideProfile.bio}"
+                                    {(() => {
+                                        const bio = profile.legacyGuideProfile.bio || "";
+                                        const isLong = bio.length > BIO_LIMIT;
+                                        const displayBio = !isLong || isLegacyBioExpanded 
+                                            ? bio 
+                                            : bio.substring(0, BIO_LIMIT) + "...";
+
+                                        return (
+                                            <>
+                                                "{displayBio}"
+                                                {isLong && (
+                                                    <button 
+                                                        onClick={() => setIsLegacyBioExpanded(!isLegacyBioExpanded)}
+                                                        className="block text-primary hover:text-secondary font-black text-[11px] uppercase tracking-widest mt-4 transition-all not-italic"
+                                                    >
+                                                        {isLegacyBioExpanded ? 'Show Less' : 'See Full Bio'}
+                                                    </button>
+                                                )}
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
