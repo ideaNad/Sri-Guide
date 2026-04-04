@@ -1,4 +1,4 @@
-export type UserRole = "Tourist" | "Guide" | "TravelAgency" | "TransportProvider" | "EventOrganizer" | "Admin";
+export type UserRole = "Tourist" | "Guide" | "TravelAgency" | "TransportProvider" | "EventOrganizer" | "RestaurantOwner" | "Admin";
 
 export type QuestCategory = "Nature" | "Adventure" | "Culture" | "Food" | "Ocean" | "HiddenGems" | "Extreme";
 export type QuestDifficulty = "Easy" | "Medium" | "Hard" | "Legendary";

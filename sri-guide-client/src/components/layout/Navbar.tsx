@@ -47,6 +47,7 @@ const Navbar = () => {
         { name: "Adventures", href: "/adventures" },
         { name: "Agencies", href: "/agencies" },
         { name: "Transport", href: "/transport" },
+        { name: "Restaurants", href: "/restaurants" },
     ];
 
     // Navbar background and text color based on scroll

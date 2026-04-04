@@ -75,6 +75,20 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
             await _context.SaveChangesAsync(cancellationToken);
             user.EventOrganizerProfile = profile;
         }
+        else if (user.Role == UserRole.RestaurantOwner)
+        {
+            var profile = new RestaurantProfile
+            {
+                UserId = user.Id,
+                Name = user.FullName, // Default name to user's full name
+                Slug = await _slugService.CreateUniqueSlugAsync<RestaurantProfile>(user.FullName, cancellationToken: cancellationToken),
+                IsVerified = false,
+                IsActive = true
+            };
+            _context.RestaurantProfiles.Add(profile);
+            await _context.SaveChangesAsync(cancellationToken);
+            user.RestaurantProfile = profile;
+        }
 
         var token = _jwtService.GenerateToken(user);
 

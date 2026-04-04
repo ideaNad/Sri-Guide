@@ -1,7 +1,7 @@
 export interface HelpItem {
   title: string;
   description: string;
-  category: 'general' | 'tourist' | 'guide' | 'agency';
+  category: 'general' | 'tourist' | 'guide' | 'agency' | 'restaurant' | 'organizer';
   content?: string;
 }
 
@@ -66,6 +66,40 @@ export const HELP_ITEMS: HelpItem[] = [
     title: 'Agency Dashboard Features',
     description: 'Overview of the tools available for travel agencies.',
     content: 'The Agency Dashboard provides comprehensive tools for managing multiple tours, tracking performance analytics, and handling large-scale bookings for groups.'
+  },
+
+  // Restaurant
+  {
+    category: 'restaurant',
+    title: 'Managing Your Menus',
+    description: 'Learn how to create categories and list your dishes.',
+    content: 'Head to the "Menus & Items" section. Create a menu category (like "Main Course") first, then add individual items with prices, descriptions, and high-quality images.'
+  },
+  {
+    category: 'restaurant',
+    title: 'Using the QR Code',
+    description: 'How to use your unique digital menu QR code.',
+    content: 'Your dashboard displays a unique QR code. Download and print this for your tables. When travelers scan it, they will see your real-time digital menu and profile.'
+  },
+  {
+    category: 'restaurant',
+    title: 'Live Events & Vibrance',
+    description: 'Attracting more travelers with entertainment.',
+    content: 'Use the "Live Events" page to schedule music, DJ nights, or specials. These will appear on the discovery map to help travelers find active spots.'
+  },
+
+  // Organizer
+  {
+    category: 'organizer',
+    title: 'Creating Events',
+    description: 'Guide to setting up your first event listing.',
+    content: 'Use the "Create Event" page to fill in the title, description, and schedule. You can also specify custom fields like "Music Genre" or "Dress Code".'
+  },
+  {
+    category: 'organizer',
+    title: 'Managing Attendees',
+    description: 'Keep track of who is interested in your events.',
+    content: 'Your Organizer Dashboard provides an overview of event performance and participant interest, helping you gauge the success of your live sessions.'
   }
 ];
 

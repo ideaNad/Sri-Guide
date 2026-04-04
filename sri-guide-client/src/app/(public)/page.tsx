@@ -19,6 +19,7 @@ import apiClient from "@/services/api-client";
 import { useAuth } from "@/providers/AuthContext";
 import AuthModal from "@/features/auth/components/AuthModal";
 import GuideDiscoveryCard from "@/components/ui/GuideDiscoveryCard";
+import { RestaurantCard } from "@/components/restaurants/RestaurantCard";
 
 interface DiscoveryItem {
   id: string;
@@ -87,6 +88,8 @@ export default function Home() {
   const [loadingPlaces, setLoadingPlaces] = useState(true);
   const [featuredEvents, setFeaturedEvents] = useState<any[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
+  const [restaurants, setRestaurants] = useState<any[]>([]);
+  const [loadingRestaurants, setLoadingRestaurants] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const fetchTopGuides = React.useCallback(async () => {
@@ -149,14 +152,25 @@ export default function Home() {
   const fetchFeaturedEvents = React.useCallback(async () => {
     try {
       const url = user ? `/events?isFeatured=true&UserId=${user.id}` : "/events?isFeatured=true";
-      const response = await apiClient.get(url);
-      setFeaturedEvents((response.data as any[]).slice(0, 3));
+      const response = await apiClient.get<any[]>(url);
+      setFeaturedEvents((response.data || []).slice(0, 3));
     } catch (error) {
       console.error("Failed to fetch featured events", error);
     } finally {
       setLoadingEvents(false);
     }
   }, [user]);
+
+  const fetchTopRestaurants = React.useCallback(async () => {
+    try {
+      const response = await apiClient.get<any[]>("/restaurants/top?count=3");
+      setRestaurants(response.data);
+    } catch (error) {
+      console.error("Failed to fetch top restaurants", error);
+    } finally {
+      setLoadingRestaurants(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchTopGuides();
@@ -165,7 +179,8 @@ export default function Home() {
     fetchPopularTours();
     fetchPopularPlaces();
     fetchFeaturedEvents();
-  }, [fetchTopGuides, fetchTopAgencies, fetchRecentTrips, fetchPopularTours, fetchPopularPlaces, fetchFeaturedEvents]);
+    fetchTopRestaurants();
+  }, [fetchTopGuides, fetchTopAgencies, fetchRecentTrips, fetchPopularTours, fetchPopularPlaces, fetchFeaturedEvents, fetchTopRestaurants]);
 
   const getImageUrl = (url?: string) => {
     if (!url || url.trim() === "") return "https://placehold.co/600x400?text=No+Image+Available";
@@ -452,6 +467,43 @@ export default function Home() {
                 </div>
               )}
             </div>
+          </div>
+        </section>
+
+        {/* Top Restaurants Section */}
+        <section className="py-24 bg-primary/5 overflow-hidden relative">
+          <div className="absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/10 to-transparent" />
+          <div className="container mx-auto px-4 md:px-6 relative z-10">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+              <SectionHeader
+                badge="Culinary Excellence"
+                title="Top Rated Dining"
+                subtitle="Discover exquisite flavors and authentic Sri Lankan cuisine at these top locations."
+              />
+
+              <Link href="/restaurants" className="mb-12 bg-gray-900 text-white px-8 py-3 font-bold text-[10px] uppercase tracking-widest rounded-full hover:bg-black transition-all shadow-md">
+                View All Restaurants
+              </Link>
+            </div>
+
+            {loadingRestaurants ? (
+              <div className="flex justify-center py-20">
+                <Loader2 className="w-12 h-12 text-primary animate-spin" />
+              </div>
+            ) : restaurants.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {restaurants.map((restaurant) => (
+                  <RestaurantCard
+                    key={restaurant.id}
+                    restaurant={restaurant}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20 text-gray-400 uppercase text-[10px] font-black tracking-widest">
+                No top restaurants available currently
+              </div>
+            )}
           </div>
         </section>
 

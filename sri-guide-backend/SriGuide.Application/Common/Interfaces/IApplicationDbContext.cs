@@ -35,6 +35,15 @@ public interface IApplicationDbContext
     DbSet<VehicleLike> VehicleLikes { get; }
     DbSet<VehicleReview> VehicleReviews { get; }
     
+    // Restaurants
+    DbSet<RestaurantProfile> RestaurantProfiles { get; }
+    DbSet<Menu> Menus { get; }
+    DbSet<MenuItem> MenuItems { get; }
+    DbSet<FoodCategory> FoodCategories { get; }
+    DbSet<RestaurantEvent> RestaurantEvents { get; }
+    DbSet<RestaurantReview> RestaurantReviews { get; }
+    DbSet<RestaurantLike> RestaurantLikes { get; }
+    
     // Gamification
     DbSet<Quest> Quests { get; }
     DbSet<QuestSubmission> QuestSubmissions { get; }

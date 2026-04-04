@@ -17,6 +17,8 @@ export const getDashboardHref = (role?: UserRole | string): string => {
             return "/organizer";
         case "TransportProvider":
             return "/transport-dashboard";
+        case "RestaurantOwner":
+            return "/restaurant-dashboard";
         case "Tourist":
         default:
             return "/dashboard";

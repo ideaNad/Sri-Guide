@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SriGuide.Infrastructure.Persistence;
@@ -12,9 +13,11 @@ using SriGuide.Infrastructure.Persistence;
 namespace SriGuide.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260404085230_AddRestaurantModule")]
+    partial class AddRestaurantModule
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1088,9 +1091,6 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
-                    b.Property<string>("FacebookLink")
-                        .HasColumnType("text");
-
                     b.PrimitiveCollection<List<string>>("Facilities")
                         .HasColumnType("text[]");
 
@@ -1099,9 +1099,6 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
 
                     b.Property<bool>("GroupFriendly")
                         .HasColumnType("boolean");
-
-                    b.Property<string>("InstagramLink")
-                        .HasColumnType("text");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -1114,9 +1111,6 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
 
                     b.Property<double?>("Latitude")
                         .HasColumnType("double precision");
-
-                    b.Property<string>("LinkedinLink")
-                        .HasColumnType("text");
 
                     b.Property<string>("Logo")
                         .HasColumnType("text");
@@ -1155,12 +1149,6 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                     b.Property<string>("Slug")
                         .HasColumnType("text");
 
-                    b.Property<string>("TikTokLink")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TwitterLink")
-                        .HasColumnType("text");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1170,13 +1158,7 @@ namespace SriGuide.Infrastructure.Persistence.Migrations
                     b.Property<int>("VerificationStatus")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Website")
-                        .HasColumnType("text");
-
                     b.Property<string>("WhatsApp")
-                        .HasColumnType("text");
-
-                    b.Property<string>("YouTubeLink")
                         .HasColumnType("text");
 
                     b.HasKey("Id");

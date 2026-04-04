@@ -13,6 +13,7 @@ import {
 import apiClient from "@/services/api-client";
 import FeedbackModal from "@/features/feedback/components/FeedbackModal";
 import { HelpDrawer } from "@/components/help/HelpDrawer";
+import { HELP_ITEMS } from "@/constants/HelpData";
 
 const ORGANIZER_NAV = [
     { name: "Overview", href: "/organizer", icon: <LayoutDashboard size={20} /> },
@@ -160,11 +161,7 @@ export default function OrganizerLayout({ children }: { children: React.ReactNod
                 onOpenChange={setIsHelpOpen}
                 title="Organizer Help Center"
                 description="Learn how to host unforgettable events."
-                items={[
-                    { title: "Creating Events", description: "How to set up your core and custom event fields.", category: 'general' },
-                    { title: "Dynamic Fields", description: "Understanding category-specific custom fields.", category: 'general' },
-                    { title: "Promoting Events", description: "Tips to get more participants for your event.", category: 'general' },
-                ]}
+                items={HELP_ITEMS.filter(item => item.category === 'organizer' || item.category === 'general')}
             />
             
             <aside className="hidden lg:block w-80 fixed inset-y-0 left-0 z-30">

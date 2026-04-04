@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     X, Mail, Lock, User, ShieldCheck,
-    Compass, Briefcase, Building2, Car,
+    Compass, Briefcase, Building2, Car, Utensils,
     CheckCircle2, ArrowRight
 } from "lucide-react";
 import apiClient from "@/services/api-client";
@@ -61,7 +61,8 @@ const AuthModal: React.FC<AuthModalProps> = ({
         { id: "Guide", label: "Guide", icon: <Briefcase size={20} />, description: "Showcase your expertise to the world." },
         { id: "EventOrganizer", label: "Organizer", icon: <CheckCircle2 size={20} />, description: "Create and manage events for the community." },
         // { id: "TravelAgency", label: "Agency", icon: <Building2 size={20} />, description: "Manage guides and large scale tours." },
-        { id: "TransportProvider", label: "Transport", icon: <Car size={20} />, description: "Provide premium vehicle rentals & transfers." }
+        { id: "TransportProvider", label: "Transport", icon: <Car size={20} />, description: "Provide premium vehicle rentals & transfers." },
+        { id: "RestaurantOwner", label: "Restaurant", icon: <Utensils size={20} />, description: "Showcase your dining experience & menus." }
     ];
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -266,26 +267,26 @@ const AuthModal: React.FC<AuthModalProps> = ({
                                                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4 flex items-center gap-2">
                                                     <ShieldCheck size={10} /> Choose Your Role
                                                 </label>
-                                                <div className="grid grid-cols-1 gap-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                     {roles.map((r) => (
                                                         <button
                                                             key={r.id}
                                                             type="button"
                                                             onClick={() => setRole(r.id)}
-                                                            className={`p-6 rounded-[2rem] border-2 text-left transition-all relative group ${role === r.id
-                                                                ? "bg-primary/5 border-primary shadow-xl shadow-primary/10"
+                                                            className={`p-3.5 rounded-2xl border-2 text-left transition-all relative group ${role === r.id
+                                                                ? "bg-primary/5 border-primary shadow-md shadow-primary/10"
                                                                 : "bg-white border-gray-100 hover:border-gray-200"
                                                                 }`}
                                                         >
-                                                            <div className="flex items-center gap-5">
-                                                                <div className={`p-4 rounded-2xl transition-all duration-500 ${role === r.id ? "bg-primary text-white scale-110 shadow-lg shadow-primary/20" : "bg-gray-100 text-gray-500 group-hover:bg-gray-200"}`}>
-                                                                    {React.cloneElement(r.icon as React.ReactElement<any>, { size: 28 })}
+                                                            <div className="flex items-start gap-3">
+                                                                <div className={`p-2.5 rounded-xl transition-all duration-500 ${role === r.id ? "bg-primary text-white scale-105 shadow-sm shadow-primary/20" : "bg-gray-100 text-gray-500 group-hover:bg-gray-200"}`}>
+                                                                    {React.cloneElement(r.icon as React.ReactElement<any>, { size: 18 })}
                                                                 </div>
-                                                                <div className="flex-1">
-                                                                    <span className={`text-base font-black uppercase tracking-widest block mb-1 ${role === r.id ? "text-primary" : "text-gray-900"}`}>
+                                                                <div className="flex-1 mt-0.5">
+                                                                    <span className={`text-xs font-black uppercase tracking-widest block mb-0.5 leading-tight pr-4 ${role === r.id ? "text-primary" : "text-gray-900"}`}>
                                                                         {r.label}
                                                                     </span>
-                                                                    <p className={`text-xs font-medium leading-tight ${role === r.id ? "text-primary/70" : "text-gray-400"}`}>
+                                                                    <p className={`text-[10px] font-medium leading-snug tracking-tight ${role === r.id ? "text-primary/70" : "text-gray-400"}`}>
                                                                         {r.description}
                                                                     </p>
                                                                 </div>
@@ -294,9 +295,9 @@ const AuthModal: React.FC<AuthModalProps> = ({
                                                             {role === r.id && (
                                                                 <motion.div
                                                                     layoutId="activeRole"
-                                                                    className="absolute top-6 right-6 text-primary"
+                                                                    className="absolute top-3 right-3 text-primary"
                                                                 >
-                                                                    <CheckCircle2 size={24} fill="currentColor" className="text-white" />
+                                                                    <CheckCircle2 size={16} fill="currentColor" className="text-white" />
                                                                 </motion.div>
                                                             )}
                                                         </button>

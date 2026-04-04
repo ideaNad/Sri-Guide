@@ -15,7 +15,7 @@ interface LikedItem {
     description: string;
     location: string;
     images: string[];
-    type: "tour" | "adventure" | "event";
+    type: "tour" | "adventure" | "event" | "restaurant";
     likeCount?: number;
     averageRating?: number;
     reviewCount?: number;
@@ -65,7 +65,28 @@ export default function SavedToursPage() {
                 console.error("Failed to fetch liked events", err);
             }
 
-            setSavedItems([...tripsRes.data, ...events]);
+            // Fetch restaurants
+            let restaurants: LikedItem[] = [];
+            try {
+                const restRes = await apiClient.get<any[]>("/restaurants/liked");
+                restaurants = restRes.data.map(r => ({
+                    id: r.id,
+                    title: r.name,
+                    primaryImageUrl: r.coverImage || r.logo,
+                    date: null,
+                    description: r.description || "Premium Restaurant",
+                    location: r.priceRange || "Contact",
+                    images: [],
+                    type: "restaurant" as const,
+                    likeCount: r.reviewCount, // dummy mapping for card UI compatibility
+                    averageRating: r.rating,
+                    reviewCount: r.reviewCount
+                }));
+            } catch (err) {
+                console.error("Failed to fetch liked restaurants", err);
+            }
+
+            setSavedItems([...tripsRes.data, ...events, ...restaurants]);
         } catch (error) {
             console.error("Failed to fetch saved items", error);
         } finally {

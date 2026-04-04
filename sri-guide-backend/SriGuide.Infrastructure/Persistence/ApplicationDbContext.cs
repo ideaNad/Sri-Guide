@@ -41,6 +41,16 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<VehicleLike> VehicleLikes => Set<VehicleLike>();
     public DbSet<VehicleReview> VehicleReviews => Set<VehicleReview>();
 
+    // Restaurant Experience
+    public DbSet<RestaurantProfile> RestaurantProfiles => Set<RestaurantProfile>();
+    public DbSet<Menu> Menus => Set<Menu>();
+    public DbSet<MenuItem> MenuItems => Set<MenuItem>();
+    public DbSet<FoodCategory> FoodCategories => Set<FoodCategory>();
+    public DbSet<RestaurantEvent> RestaurantEvents => Set<RestaurantEvent>();
+    public DbSet<RestaurantReview> RestaurantReviews => Set<RestaurantReview>();
+    public DbSet<RestaurantLike> RestaurantLikes => Set<RestaurantLike>();
+
+
     // Gamification
     public DbSet<Quest> Quests => Set<Quest>();
     public DbSet<QuestSubmission> QuestSubmissions => Set<QuestSubmission>();
@@ -325,6 +335,68 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .HasOne(vr => vr.User)
             .WithMany()
             .HasForeignKey(vr => vr.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Restaurant Experience Relationships
+        modelBuilder.Entity<RestaurantProfile>()
+            .HasOne(r => r.User)
+            .WithOne(u => u.RestaurantProfile)
+            .HasForeignKey<RestaurantProfile>(r => r.UserId);
+
+        modelBuilder.Entity<RestaurantProfile>()
+            .HasIndex(r => r.Slug)
+            .IsUnique();
+
+        modelBuilder.Entity<Menu>()
+            .HasOne(m => m.RestaurantProfile)
+            .WithMany(r => r.Menus)
+            .HasForeignKey(m => m.RestaurantProfileId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MenuItem>()
+            .HasOne(mi => mi.Menu)
+            .WithMany(m => m.Items)
+            .HasForeignKey(mi => mi.MenuId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MenuItem>()
+            .HasOne(mi => mi.FoodCategory)
+            .WithMany()
+            .HasForeignKey(mi => mi.FoodCategoryId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<RestaurantEvent>()
+            .HasOne(re => re.RestaurantProfile)
+            .WithMany(rp => rp.Events)
+            .HasForeignKey(re => re.RestaurantProfileId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<RestaurantReview>()
+            .HasOne(rr => rr.RestaurantProfile)
+            .WithMany(rp => rp.Reviews)
+            .HasForeignKey(rr => rr.RestaurantProfileId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<RestaurantReview>()
+            .HasOne(rr => rr.User)
+            .WithMany()
+            .HasForeignKey(rr => rr.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<RestaurantLike>()
+            .HasIndex(rl => new { rl.UserId, rl.RestaurantProfileId })
+            .IsUnique();
+
+        modelBuilder.Entity<RestaurantLike>()
+            .HasOne(rl => rl.RestaurantProfile)
+            .WithMany(rp => rp.Likes)
+            .HasForeignKey(rl => rl.RestaurantProfileId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<RestaurantLike>()
+            .HasOne(rl => rl.User)
+            .WithMany()
+            .HasForeignKey(rl => rl.UserId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 

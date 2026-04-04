@@ -215,11 +215,9 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
                 {
                     Profile = g,
                     User = g.User,
-                    ReviewCount = _context.Reviews.Count(r => (r.TargetType == "Guide" && r.TargetId == g.UserId) || 
-                                                              (r.TargetType == "Trip" && g.Trips.Any(t => t.Id == r.TargetId))),
+                    ReviewCount = _context.Reviews.Count(r => r.TargetType == "Guide" && r.TargetId == g.UserId),
                     AvgRating = _context.Reviews
-                                    .Where(r => (r.TargetType == "Guide" && r.TargetId == g.UserId) || 
-                                                (r.TargetType == "Trip" && g.Trips.Any(t => t.Id == r.TargetId)))
+                                    .Where(r => r.TargetType == "Guide" && r.TargetId == g.UserId)
                                     .Select(r => (double?)r.Rating)
                                     .Average() ?? 0.0
                 })
@@ -281,15 +279,9 @@ public class GetDiscoveryQueryHandler : IRequestHandler<GetDiscoveryQuery, Pagin
                     Profile = a,
                     User = a.User,
                     ToursCount = _context.Tours.Count(t => t.AgencyId == a.Id),
-                    ReviewCount = _context.Reviews.Count(r => (r.TargetType == "Agency" && r.TargetId == a.UserId) ||
-                                                              ((r.TargetType == "Tour" || r.TargetType == "Trip") && 
-                                                               (_context.Tours.Any(t => t.AgencyId == a.Id && t.Id == r.TargetId) || 
-                                                                _context.Trips.Any(t => t.AgencyId == a.Id && t.Id == r.TargetId)))),
+                    ReviewCount = _context.Reviews.Count(r => r.TargetType == "Agency" && r.TargetId == a.UserId),
                     AvgRating = _context.Reviews
-                        .Where(r => (r.TargetType == "Agency" && r.TargetId == a.UserId) ||
-                                    ((r.TargetType == "Tour" || r.TargetType == "Trip") && 
-                                     (_context.Tours.Any(t => t.AgencyId == a.Id && t.Id == r.TargetId) || 
-                                      _context.Trips.Any(t => t.AgencyId == a.Id && t.Id == r.TargetId))))
+                        .Where(r => r.TargetType == "Agency" && r.TargetId == a.UserId)
                         .Select(r => (double?)r.Rating)
                         .Average() ?? 0.0
                 })

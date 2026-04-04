@@ -16,7 +16,7 @@ interface HelpDrawerProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-type Category = 'all' | 'tourist' | 'guide' | 'agency';
+type Category = 'all' | 'tourist' | 'guide' | 'agency' | 'restaurant' | 'organizer';
 
 const WhatsAppIcon = ({ size = 18, className }: { size?: number; className?: string }) => (
   <svg className={className} viewBox="0 0 448 512" fill="currentColor" xmlns="http://www.w3.org/2000/svg" width={size} height={size}>
@@ -52,6 +52,8 @@ export function HelpDrawer({
     { label: 'Tourist', value: 'tourist' },
     { label: 'Guide', value: 'guide' },
     { label: 'Agency', value: 'agency' },
+    { label: 'Restaurant', value: 'restaurant' },
+    { label: 'Organizer', value: 'organizer' },
   ];
 
   return (

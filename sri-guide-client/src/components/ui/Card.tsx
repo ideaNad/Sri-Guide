@@ -75,6 +75,8 @@ const Card: React.FC<CardProps> = ({
                 return `/events/${identifier}`;
             case "agency":
                 return `/profile/${identifier}?type=agency`;
+            case "restaurant":
+                return `/restaurants/${identifier}`;
             case "guide":
             default:
                 return `/profile/${identifier}`;
