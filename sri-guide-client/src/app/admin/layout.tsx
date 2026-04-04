@@ -9,7 +9,7 @@ import {
     LayoutDashboard, Users, UserCheck, TrendingUp,
     ShieldCheck, LogOut, Menu, X, Compass, Bell, Settings,
     Search, Globe, LayoutGrid, Mail, MessageSquare, Calendar,
-    CheckSquare, FileText, ChevronRight, Moon, Sun, Monitor
+    CheckSquare, FileText, ChevronRight, Moon, Sun, Monitor, Trophy
 } from "lucide-react";
 
 // Vuexy Style Sidebar Groups
@@ -28,6 +28,7 @@ const SIDEBAR_GROUPS = [
             { name: "Upgrade Requests", href: "/admin/upgrades", icon: <TrendingUp size={18} /> },
             { name: "Popular Places", href: "/admin/places", icon: <Globe size={18} /> },
             { name: "Event Categories", href: "/admin/events/categories", icon: <LayoutGrid size={18} /> },
+            { name: "Island Quests", href: "/admin/quests", icon: <Trophy size={18} /> },
             { name: "System Feedbacks", href: "/admin/feedbacks", icon: <MessageSquare size={18} /> },
             { name: "Inquiries", href: "/admin/inquiries", icon: <Mail size={18} /> },
         ]
